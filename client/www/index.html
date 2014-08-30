@@ -11,13 +11,14 @@
     </head>
     <body>
       <h1 id="header">loading...</h1>
-
+      <br/>
+      <a href="game.html">Play!</a>
       <script>
         document.addEventListener('deviceready', function() {
             document.getElementById('header').innerHTML = "Hello World";
             chrome.identity.getAuthToken({ 'interactive': true }, function (token, account) {
                 if (chrome.runtime.lastError) {
-                    console.log(chrome.runtime.lastError);
+                    navigator.app.exitApp();
                     return;
                 }
                 document.getElementById('header').innerHTML = "Hello " + account;
