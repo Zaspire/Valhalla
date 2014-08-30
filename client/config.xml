@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="org.axolemma.valhalla" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Valhalla</name>
+    <description>
+        codename Valhalla
+    </description>
+    <author email="ermilov.maxim@gmail.com">
+        Maxim Ermilov
+    </author>
+    <content src="index.html" />
+    <access origin="*" />
+    <feature name="Google Play Services for Android">
+        <param name="id" value="com.google.playservices" />
+    </feature>
+    <feature name="InAppBrowser">
+        <param name="id" value="org.apache.cordova.inappbrowser" />
+    </feature>
+    <feature name="Chrome Apps Common Utils">
+        <param name="id" value="org.chromium.common" />
+    </feature>
+    <feature name="Google Open Source iOS Framework Plugin">
+        <param name="id" value="org.chromium.frameworks.googleopensource" />
+    </feature>
+    <feature name="Google Plus iOS Framework Plugin">
+        <param name="id" value="org.chromium.frameworks.googleplus" />
+    </feature>
+    <feature name="Chrome Apps Identity API">
+        <param name="id" value="org.chromium.identity" />
+    </feature>
+    <feature name="Chrome App Runtime">
+        <param name="id" value="org.chromium.runtime" />
+    </feature>
+    <feature name="Chrome Apps Storage API">
+        <param name="id" value="org.chromium.storage" />
+    </feature>
+</widget>
