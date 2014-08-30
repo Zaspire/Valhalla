@@ -9,6 +9,9 @@
     </author>
     <content src="index.html" />
     <access origin="*" />
+
+    <preference name="orientation" value="landscape" />
+
     <feature name="Google Play Services for Android">
         <param name="id" value="com.google.playservices" />
     </feature>
