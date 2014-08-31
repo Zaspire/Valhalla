@@ -13,8 +13,9 @@
     <body>
       <h1 id="header">loading...</h1>
       <br/>
-      <a href="game.html">Play!</a>
+      <a id="pp">Play!</a>
       <script>
+        $("#pp").hide();
         var host = 'http://192.168.1.10:3000/';
         document.addEventListener('deviceready', function() {
             document.getElementById('header').innerHTML = "Hello World";
@@ -26,6 +27,8 @@
                 document.getElementById('header').innerHTML = "Hello " + account;
                 $.ajax({ url: host + 'authorize', data: { token: token, email: account} }).done(function(data) {
                     console.log("account verified");
+                    console.log(data);
+                    $("#pp").show().attr("href", "matchmaking.html?token=" + encodeURIComponent(data));
                 }).fail(function() {
                     navigator.app.exitApp();
                     return;

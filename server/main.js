@@ -10,17 +10,22 @@ var crypto = require('crypto');
 var db;
 
 function crypt(str) {
-    var cipher = crypto.createCipher('aes-128-cbc', config.aes_key);
+    var cipher = crypto.createCipher('aes-256-cbc', config.aes_key);
+    cipher.setAutoPadding(true);
 
-    cipher.update(str, 'utf8', 'base64');
-    return cipher.final('base64');
+    var t = [];
+    t.push(cipher.update(str, 'utf-8', 'hex'));
+    t.push(cipher.final('hex'));
+    return t.join('');
 }
 
 function decrypt(str) {
     // FIXME: verify data
-    var decipher = crypto.createDecipher('aes-128-cbc', config.aes_key);
-    decipher.update(str, 'base64', 'utf8');
-    return decipher.final('utf8');
+    var decipher = crypto.createDecipher('aes-256-cbc', config.aes_key);
+    var t = [];
+    t.push(decipher.update(str, 'hex', 'utf-8'));
+    t.push(decipher.final('utf-8'));
+    return t.join('');
 }
 
 function xhrWithAuth(method, url, access_token, callback) {
@@ -48,6 +53,52 @@ function getUserInfo(token, callback) {
 
 app.get('/ok', function(req, res){
     res.send('ok');
+});
+
+app.get('/matchmaking', function(req, res) {
+    var token = req.query.token;
+    //FIXME:
+    if (!token) {
+        res.status(400).end();
+        return;
+    }
+    var email = decrypt(token);
+
+    var matchmaking = db.collection('matchmaking');
+    matchmaking.findOne({ $or: [{ _id: email}, { opponent: email }]}, function (err, doc) {
+        if (err) {
+            res.status(400).end();
+            return;
+        }
+        if (!doc) {
+            matchmaking.findAndModify({ opponent: { $exists: false } }, {$set: {opponent: email}}, {}, function (err, doc) {
+                if (!doc) {
+                    matchmaking.insert({ _id: email }, { w: 0 });
+                    res.send('{}');
+                    return;
+                }
+                db.collection('games').insert({}, { w: 1}, function(err, obj) {
+                    if (err) {
+                        res.status(400).end();
+                        return;
+                    }
+                    console.log(obj[0]);
+                    doc.gameid = obj[0]._id;
+                    doc.opponent = email;
+                    //FIXME: check write result
+                    matchmaking.save(doc, {w:0});
+                    res.send(JSON.stringify({ gameid: obj[0]._id }));
+                    return;
+                })
+            });
+            return;
+        }
+        if (doc.gameid) {
+            res.send(JSON.stringify({ gameid: doc.gameid }));
+            return;
+        }
+        res.send(JSON.stringify({}));
+    });
 });
 
 app.get('/authorize', function(req, res){
