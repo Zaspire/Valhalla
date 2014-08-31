@@ -4,6 +4,7 @@
     "engineStrict": "true",
     "dependencies": {
         "express": "4.*",
-        "xhr2": "*"
+        "xhr2": "*",
+        "mongodb": "1.*"
     }
 }

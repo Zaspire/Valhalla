@@ -1,0 +1,5 @@
+{
+    "mongo": "mongodb://192.168.1.2:27017/Valhalla",
+    "server_port": 3000,
+    "aes_key": "demopassword123424525255353333333333333333333333"
+}
