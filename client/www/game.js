@@ -112,23 +112,80 @@ console.log(this._all);
         midLine.strokeColor = 'red';
         this._all.addChild(midLine);
 
+function createCb2(id) {
+    return function(event) {
+        for (var i = 0; i < self.cardsOnTable.length; i++) {
+            if (self.cardsOnTable[i].id == id)
+                break;
+        }
+        var card = self.cardsOnTable[i]._card;
+        card.bringToFront();
+    }
+}
+function createCb3(id) {
+    return function(event) {
+        for (var i = 0; i < self.cardsOnTable.length; i++) {
+            if (self.cardsOnTable[i].id == id)
+                break;
+        }
+        var card = self.cardsOnTable[i]._card;
+        card.position = event.point;
+    }
+}
+function createCb4(id) {
+    return function(event) {
+        for (var i = 0; i < self.cardsOnTable.length; i++) {
+            if (self.cardsOnTable[i].mine)
+                continue;
+            if (self.cardsOnTable[i]._card.contains(event.point))
+                break;
+        }
+        if (i >= self.cardsOnTable.length) {
+            self.refresh();
+            return;
+        }
+        var dest = self.cardsOnTable[i];
+        for (i = 0; i < self.cardsOnTable.length; i++) {
+            if (self.cardsOnTable[i].id == id)
+                break;
+        }
+        var source = self.cardsOnTable[i];
+
+        dest.health -= source.damage;
+        source.health -= dest.damage;
+
+        if (source.health <= 0) {
+            self.cardsOnTable.splice(self.cardsOnTable.indexOf(source), 1);
+        }
+        if (dest.health <= 0) {
+            self.cardsOnTable.splice(self.cardsOnTable.indexOf(dest), 1);
+        }
+        self.refresh();
+    }
+}
         var x1 = 20, x2 = 20;
         for (var i = 0; i < this.cardsOnTable.length; i++) {
             var desc = this.cardsOnTable[i];
             var card = createCard(desc.damage, desc.health);
 
+this.cardsOnTable[i]._card = card;
+
             var dy;
             this._all.addChild(card);
             if (desc.mine) {
-                card.pivot = card.bounds.bottomLeft;
+                card.pivot = card.bounds.topLeft;
                 card.position.x = x1;
                 x1 += card.bounds.width + 20;
-                dy = -20;
+                dy = +20;
+
+                card.onMouseDown = createCb2(desc.id);
+                card.onMouseDrag = createCb3(desc.id);
+                card.onMouseUp = createCb4(desc.id);
             } else {
-                card.pivot = card.bounds.topLeft;
+                card.pivot = card.bounds.bottomLeft;
                 card.position.x = x2;
                 x2 += card.bounds.width + 20;
-                dy = 20;
+                dy = -20;
             }
 
             card.position.y = SCREEN_HEIGHT / 2 + dy;
@@ -139,8 +196,8 @@ console.log(this._all);
 };
 
 var state = new State();
-state.playerHand = [{damage: 1, health: 10, id: 1}, {damage: 6, health: 3, id: 2}];
-state.cardsOnTable = [{damage: 1, health: 10, mine: true}, {damage: 6, health: 3}];
+state.playerHand = [{mine:true, damage: 1, health: 10, id: 1}, {damage: 6, health: 3, id: 2, mine: true}];
+state.cardsOnTable = [{damage: 1, health: 10, id: 3, mine: true}, {id: 4, damage: 6, health: 3}];
 state.opponentCardsCount = 4;
 state.myTurn = true;
 state.refresh();
