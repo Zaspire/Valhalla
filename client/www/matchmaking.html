@@ -24,8 +24,8 @@
                     return;
                 }
                 data = JSON.parse(data);
-                $("#header").html(data);
-                navigator.location = 'game.html?token='  + encodeURIComponent(params.token) + '&gameid=' + data.gameid;
+                $("#header").html('done');
+                window.location = 'game.html?token='  + encodeURIComponent(params.token) + '&gameid=' + data.gameid;
             }).fail(function() {
                 //FIXME:
                 $("#header").html('fail');
