@@ -4,7 +4,7 @@ var SCREEN_HEIGHT = 768;
 function createCard(damage, health) {
     var group = new Group();
 
-    var border = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(50, 75)));
+    var border = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(100, 150)));
     border.fillColor="#ededed";
     border.strokeColor="#808080";
     border.strokeWidth = 1;
@@ -47,6 +47,16 @@ function State() {
 
     project.view.onResize = this._onResize.bind(this);
 }
+////// HACK to make dnd work on phone
+function onMouseDown(event) {
+}
+
+function onMouseDrag(event) {
+}
+
+function onMouseUp(event) {
+}
+//////
 
 State.prototype = {
     _onResize: function() {
@@ -213,6 +223,7 @@ if (this.myTurn) {
             dTxt.bringToFront();
         }
         this._all.scale(view.bounds.width / SCREEN_WIDTH, view.bounds.height / SCREEN_HEIGHT);
+        paper.view.draw();
     }
 };
 
