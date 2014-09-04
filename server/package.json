@@ -5,6 +5,7 @@
     "dependencies": {
         "express": "4.*",
         "xhr2": "*",
-        "mongodb": "1.*"
+        "mongodb": "1.*",
+        "cors": "2.4.*"
     }
 }

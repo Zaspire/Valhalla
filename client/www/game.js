@@ -76,13 +76,11 @@ console.log(this._all);
         var self = this;
         function createCb(id) {
             return function(event) {
-                for (var i = 0; i < self.playerHand.length; i++) {
-                    if (self.playerHand[i].id == id)
-                        break;
-                }
-                self.cardsOnTable.push(self.playerHand[i]);
-                self.playerHand.splice(i, 1);
-                self.refresh();
+                //FIXME:
+                $.ajax({ url: host + 'game_action', data: { token: params.token, gameid: params.gameid, action: 'card', id1: id} }).done(function(data) {
+                    console.log(data);
+                    updateState();
+                });
             };
         }
         for (var i = 0; i < this.playerHand.length; i++) {
@@ -151,16 +149,11 @@ function createCb4(id) {
         }
         var source = self.cardsOnTable[i];
 
-        dest.health -= source.damage;
-        source.health -= dest.damage;
-
-        if (source.health <= 0) {
-            self.cardsOnTable.splice(self.cardsOnTable.indexOf(source), 1);
-        }
-        if (dest.health <= 0) {
-            self.cardsOnTable.splice(self.cardsOnTable.indexOf(dest), 1);
-        }
-        self.refresh();
+        //FIXME:
+        $.ajax({ url: host + 'game_action', data: { token: params.token, gameid: params.gameid, action: 'attack', id1: source.id, id2: dest.id} }).done(function(data) {
+            console.log(data);
+            updateState();
+        });
     }
 }
         var x1 = 20, x2 = 20;
@@ -177,10 +170,11 @@ this.cardsOnTable[i]._card = card;
                 card.position.x = x1;
                 x1 += card.bounds.width + 20;
                 dy = +20;
-
+if (this.myTurn) {
                 card.onMouseDown = createCb2(desc.id);
                 card.onMouseDrag = createCb3(desc.id);
                 card.onMouseUp = createCb4(desc.id);
+}
             } else {
                 card.pivot = card.bounds.bottomLeft;
                 card.position.x = x2;
@@ -191,27 +185,59 @@ this.cardsOnTable[i]._card = card;
             card.position.y = SCREEN_HEIGHT / 2 + dy;
         }
         this._x1 = x1;
+
+        if (this.myTurn) {
+            var border = new Path.Rectangle(new Rectangle(new Point(500, 10), new Size(75, 50)));
+            border.fillColor="green";
+            border.strokeColor="#808080";
+            border.strokeWidth = 1;
+            var dTxt = new PointText(new Point(510,30));
+            dTxt.content = 'End Turn';
+            dTxt.characterStyle= {
+                font:"Courier",
+                fontSize:16,
+                fillColor:"#000000"
+            }
+            dTxt.paragraphStyle = {
+                justification:"left"
+            };
+            border.onMouseUp = function(event) {
+                //FIXME:
+                $.ajax({ url: host + 'game_action', data: { token: params.token, gameid: params.gameid, action: 'finish'} }).done(function(data) {
+                    console.log(data);
+                    updateState();
+                });
+            }
+            this._all.addChild(dTxt);
+            this._all.addChild(border);
+            dTxt.bringToFront();
+        }
         this._all.scale(view.bounds.width / SCREEN_WIDTH, view.bounds.height / SCREEN_HEIGHT);
     }
 };
 
-var state = new State();
-state.playerHand = [{mine:true, damage: 1, health: 10, id: 1}, {damage: 6, health: 3, id: 2, mine: true}];
-state.cardsOnTable = [{damage: 1, health: 10, id: 3, mine: true}, {id: 4, damage: 6, health: 3}];
-state.opponentCardsCount = 4;
-state.myTurn = true;
-state.refresh();
+var host = 'http://192.168.1.10:3000/';
+var params = {};
+location.search.substr(1).split("&").forEach(function(item) {params[item.split("=")[0]] = item.split("=")[1]});
 
-function onMouseDown(event) {
-    if (event.item)
-        return;
-    var circle = new Path.Circle(event.point, 50);
-    circle.fillColor = 'red';
+var state;
 
-    circle.onMouseDown = function(event) {
-        if (this.fillColor == 'red')
-            this.fillColor = 'black';
-        else
-            this.fillColor = 'red';
-    }
+function updateState() {
+    $.ajax({ url: host + 'game_state', data: { token: params.token, gameid: params.gameid} }).done(function(data) {
+        console.log(data);
+        data = JSON.parse(data);
+        state = new State();
+        state.playerHand = data.playerHand;
+        state.cardsOnTable = data.cardsOnTable;
+        state.opponentCardsCount = data.opponentCardsCount;
+        state.myTurn = data.myTurn;
+        state.refresh();
+        if (!state.myTurn) {
+            //FIXME:
+            setTimeout(updateState, 1000);
+        }
+    }).fail(function() {
+        //FIXME:
+    });
 }
+updateState();
