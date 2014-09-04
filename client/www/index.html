@@ -8,14 +8,33 @@
         <meta name="msapplication-tap-highlight" content="no" />
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
+        <script type="text/javascript" src="third_party/jquery.rwdImageMaps.js"></script>
         <title>Main Menu</title>
+        <style type="text/css" media="screen">
+        img.bg {
+            min-height: 100%;
+            width: 100%;
+            height: auto;
+
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        </style>
     </head>
     <body>
       <h1 id="header">loading...</h1>
       <br/>
-      <a id="pp">Play!</a>
+      <img src="assets/main.jpg" class="bg" usemap="#clickmap"></img>
+      <map name="clickmap">
+          <area shape="rect" id="pp" coords="1286,386,1500,690">
+          <area shape="rect" coords="0,644,250,760" onclick="navigator.app.exitApp()">
+      </map>
       <script>
-        $("#pp").hide();
+        $(document).ready(function(e) {
+            $('img[usemap]').rwdImageMaps();
+        });
+
         var host = 'http://192.168.1.10:3000/';
         document.addEventListener('deviceready', function() {
             document.getElementById('header').innerHTML = "Hello World";
@@ -28,7 +47,7 @@
                 $.ajax({ url: host + 'authorize', data: { token: token, email: account} }).done(function(data) {
                     console.log("account verified");
                     console.log(data);
-                    $("#pp").show().attr("href", "matchmaking.html?token=" + encodeURIComponent(data));
+                    $("#pp").attr("href", "matchmaking.html?token=" + encodeURIComponent(data));
                 }).fail(function() {
                     navigator.app.exitApp();
                     return;
