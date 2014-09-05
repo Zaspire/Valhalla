@@ -2,6 +2,7 @@ var env = process.env.NODE_ENV || 'development';
 
 var assert = require('assert');
 
+var fs = require('fs');
 var express = require('express');
 var cors = require('cors');
 var morgan = require('morgan');
