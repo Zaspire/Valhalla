@@ -71,11 +71,28 @@ function clone(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 
+var nextCardId = 12;
+function randomInt(upper) {
+    return Math.floor(Math.random() * upper + 1);
+}
+function createCard() {
+    return {
+        id: nextCardId++,
+        health: randomInt(9),
+        damage: randomInt(9)
+    };
+}
+
 function onNewGame(email1, email2, cb) {
-    var defaultCards = [{damage: 1, health: 10, id: 1}, {damage: 6, health: 3, id: 2}];
+    var hand1 = [];
+    var hand2 = [];
+    for (var i = 0; i < 4; i++) {
+        hand1.push(createCard());
+        hand2.push(createCard());
+    }
     var state = { players: [email1, email2], turn: email1}
-    state[base64_encode(email1)] = defaultCards; //FIXME: generate ids
-    state[base64_encode(email2)] = defaultCards; //FIXME: generate ids
+    state[base64_encode(email1)] = {hand: hand1, health: 31};
+    state[base64_encode(email2)] = {hand: hand2, health: 31};
     db.collection('games').insert(state, { w: 1}, cb);
 }
 
@@ -98,14 +115,39 @@ app.get('/game_action', function(req, res) {
             res.status(400).end();
             return;
         }
+
         assert(doc.players.indexOf(email) != -1);
         var opponentEmail = clone(doc.players);
         opponentEmail.splice(opponentEmail.indexOf(email), 1);
         opponentEmail = opponentEmail[0];
 
-        var myCards = doc[base64_encode(email)];
-        var opponentCards = doc[base64_encode(opponentEmail)];
+        var myHealth = doc[base64_encode(email)].health;
+        var opponentHealth = doc[base64_encode(opponentEmail)].health;
+        if (myHealth <= 0 || opponentHealth <= 0) {
+            res.status(400).end();
+            return;
+        }
+
+        var myCards = doc[base64_encode(email)].hand;
+        var opponentCards = doc[base64_encode(opponentEmail)].hand;
         switch (action) {
+        case 'attack_player':
+            for (var i = 0; i < myCards.length; i++) {
+                if (myCards[i].id == id1) {
+                    if (!myCards[i].onTable) {
+                        res.status(400).end();
+                        return;
+                    } else {
+                        break;
+                    }
+                }
+            }
+            if (i >= myCards.length) {
+                res.status(400).end();
+                return;
+            }
+            doc[base64_encode(opponentEmail)].health -= myCards[i].damage;
+            break;
         case 'attack':
             for (var i = 0; i < myCards.length; i++) {
                 if (myCards[i].id == id1) {
@@ -118,8 +160,8 @@ app.get('/game_action', function(req, res) {
                 }
             }
             for (var k = 0; k < opponentCards.length; k++) {
-                if (opponentCards[k].id == id1) {
-                    if (!myCards[k].onTable) {
+                if (opponentCards[k].id == id2) {
+                    if (!opponentCards[k].onTable) {
                         res.status(400).end();
                         return;
                     } else {
@@ -128,8 +170,8 @@ app.get('/game_action', function(req, res) {
                 }
             }
             if (i >= myCards.length || k >= opponentCards.length) {
-                        res.status(400).end();
-                        return;
+                res.status(400).end();
+                return;
             }
             opponentCards[k].health -= myCards[i].damage;
             myCards[i].health -= opponentCards[k].damage;
@@ -142,6 +184,7 @@ app.get('/game_action', function(req, res) {
             break;
         case 'finish':
             doc.turn = opponentEmail;
+            opponentCards.push(createCard());
             break;
         case 'card':
             for (var i = 0; i < myCards.length; i++) {
@@ -161,9 +204,11 @@ app.get('/game_action', function(req, res) {
             res.status(400).end();
             return;
         }
-        //FIXME:
-        db.collection('games').save(doc, {w: 0});
-        res.send('{}');
+
+        db.collection('games').save(doc, {w: 1}, function () {
+            //FIXME: check error
+            res.send('{}');
+        });
     })
 });
 
@@ -187,13 +232,24 @@ app.get('/game_state', function(req, res) {
         opponentEmail.splice(opponentEmail.indexOf(email), 1);
         opponentEmail = opponentEmail[0];
 
-        var myCards = doc[base64_encode(email)];
-        var opponentCards = doc[base64_encode(opponentEmail)];
+        var s = "WIP";
+        if (doc[base64_encode(opponentEmail)].health <= 0)
+            s = "WIN";
+        if (doc[base64_encode(email)].health <= 0)
+            s = "LOSE";
+        if (s != "WIP") {
+            db.collection('matchmaking').remove({ gameid: new mongodb.ObjectID(gameid) }, { w: 0 });
+        }
+        var myCards = doc[base64_encode(email)].hand;
+        var opponentCards = doc[base64_encode(opponentEmail)].hand;
 
         var state = { myTurn: doc.turn == email,
+                      state: s,
                       opponentCardsCount: opponentCards.filter(function(o) {return !o.onTable}).length,
                       cardsOnTable: [],
-                      playerHand: []};
+                      playerHand: [],
+                      health: doc[base64_encode(email)].health,
+                      opponentHealth: doc[base64_encode(opponentEmail)].health };
         state.playerHand = myCards.filter(function(o) {
             return !o.onTable;
         }).map(function(o) {

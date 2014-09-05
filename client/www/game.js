@@ -44,6 +44,8 @@ function State() {
     this.playerHand = [];
     this.cardsOnTable = [];
     this.myTurn = false;
+    this.health = 30;
+    this.opponentHealth = 30;
 
     project.view.onResize = this._onResize.bind(this);
 }
@@ -80,6 +82,77 @@ console.log(this._all);
         bg.strokeColor="#808080";
         bg.strokeWidth = 1;
         this._all.addChild(bg);
+
+        if (this.state == "WIN") {
+            var txt = new PointText(new Point(0,70));
+            txt.content = 'WIN';
+            txt.characterStyle= {
+                font:"Courier",
+                fontSize:30,
+                fillColor:"#000000"
+            }
+            txt.paragraphStyle = {
+                justification:"left"
+            };
+            this._all.addChild(txt);
+            bg.onMouseDown = function() {
+                window.location = "index.html";
+            }
+            return;
+        }
+        if (this.state == "LOSE") {
+            var txt = new PointText(new Point(0,70));
+            txt.content = 'LOSE';
+            txt.characterStyle= {
+                font:"Courier",
+                fontSize:30,
+                fillColor:"#000000"
+            }
+            txt.paragraphStyle = {
+                justification:"left"
+            };
+            this._all.addChild(txt);
+            bg.onMouseDown = function() {
+                window.location = "index.html";
+            }
+            return;
+        }
+
+        var selfHealth = new Path.Circle(new Point(1000, 700), 50);
+        selfHealth.fillColor="#cc00cc";
+        selfHealth.strokeColor="#808080";
+        selfHealth.strokeWidth = 1;
+        this._all.addChild(selfHealth);
+        var txt = new PointText(new Point(1000,700));
+        txt.content = '\u2764' + this.health;
+        txt.characterStyle= {
+            font:"Courier",
+            fontSize:14,
+            fillColor:"#000000"
+        }
+        txt.paragraphStyle = {
+            justification:"left"
+        };
+        this._all.addChild(txt);
+
+        var opponentHealth = new Path.Circle(new Point(1000, 100), 50);
+        opponentHealth.fillColor="#cc00cc";
+        opponentHealth.strokeColor="#808080";
+        opponentHealth.strokeWidth = 1;
+        this._opponentHealth = opponentHealth;
+        this._all.addChild(opponentHealth);
+        var txt = new PointText(new Point(1000,70));
+        txt.content = '\u2764' + this.opponentHealth;
+        txt.characterStyle= {
+            font:"Courier",
+            fontSize:14,
+            fillColor:"#000000"
+        }
+        txt.paragraphStyle = {
+            justification:"left"
+        };
+        this._all.addChild(txt);
+
 
         var x = 20;
 
@@ -142,6 +215,13 @@ function createCb3(id) {
 }
 function createCb4(id) {
     return function(event) {
+        if (self._opponentHealth.contains(event.point)) {
+            //FIXME:
+            $.ajax({ url: host + 'game_action', data: { token: params.token, gameid: params.gameid, action: 'attack_player', id1: id} }).done(function(data) {
+                updateState();
+            });
+            return;
+        }
         for (var i = 0; i < self.cardsOnTable.length; i++) {
             if (self.cardsOnTable[i].mine)
                 continue;
@@ -242,6 +322,10 @@ function updateState() {
         state.cardsOnTable = data.cardsOnTable;
         state.opponentCardsCount = data.opponentCardsCount;
         state.myTurn = data.myTurn;
+        state.state = data.state;
+
+        state.health = data.health;
+        state.opponentHealth = data.opponentHealth;
         state.refresh();
         if (!state.myTurn) {
             //FIXME:
