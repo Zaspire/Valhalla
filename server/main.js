@@ -1,8 +1,11 @@
 var env = process.env.NODE_ENV || 'development';
 
 var assert = require('assert');
+
 var express = require('express');
 var cors = require('cors');
+var morgan = require('morgan');
+
 var XMLHttpRequest = require('xhr2');
 var config = require('./config.' + env + '.json');
 var mongodb = require('mongodb');
@@ -12,6 +15,8 @@ var crypto = require('crypto');
 var db;
 var app = express();
 app.use(cors());
+var accessLogStream = fs.createWriteStream(__dirname + '/access.log', {flags: 'a'})
+app.use(morgan('dev', {stream: accessLogStream}));
 
 function crypt(str) {
     var cipher = crypto.createCipher('aes-256-cbc', config.aes_key);
@@ -73,13 +78,14 @@ function clone(obj) {
 
 var nextCardId = 12;
 function randomInt(upper) {
-    return Math.floor(Math.random() * upper + 1);
+    return Math.floor(Math.random() * upper);
 }
 function createCard() {
     return {
         id: nextCardId++,
         health: randomInt(9),
-        damage: randomInt(9)
+        damage: randomInt(9),
+        cost: randomInt(9)
     };
 }
 
