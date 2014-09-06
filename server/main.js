@@ -16,6 +16,7 @@ var crypto = require('crypto');
 var db;
 var app = express();
 app.use(cors());
+app.disable('x-powered-by');
 var accessLogStream = fs.createWriteStream(__dirname + '/access.log', {flags: 'a'})
 app.use(morgan('dev', {stream: accessLogStream}));
 
