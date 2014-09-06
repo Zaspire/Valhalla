@@ -1,7 +1,7 @@
 var SCREEN_WIDTH = 1280;
 var SCREEN_HEIGHT = 768;
 
-function createCard(damage, health) {
+function createCard(damage, health, cost) {
     var group = new Group();
 
     var border = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(100, 150)));
@@ -10,32 +10,45 @@ function createCard(damage, health) {
     border.strokeWidth = 1;
     group.addChild(border);
 
-if (damage !== undefined) {
-    var dTxt = new PointText(new Point(5,65));
-    dTxt.content = '\u2694' + damage;
-    dTxt.characterStyle= {
-        font:"Courier",
-        fontSize:14,
-        fillColor:"#000000"
+    if (damage !== undefined) {
+        var dTxt = new PointText(new Point(5,65));
+        dTxt.content = '\u2694' + damage;
+        dTxt.characterStyle= {
+            font:"Courier",
+            fontSize:14,
+            fillColor:"#000000"
+        }
+        dTxt.paragraphStyle = {
+            justification:"left"
+        };
+        group.addChild(dTxt);
     }
-    dTxt.paragraphStyle = {
-        justification:"left"
-    };
-    group.addChild(dTxt);
-}
-if (health !== undefined) {
-    var hTxt = new PointText(new Point(25,65));
-    hTxt.content = '\u2764' + health;
-    hTxt.characterStyle= {
-        font:"Courier",
-        fontSize:14,
-        fillColor:"#000000"
+    if (health !== undefined) {
+        var hTxt = new PointText(new Point(25,65));
+        hTxt.content = '\u2764' + health;
+        hTxt.characterStyle= {
+            font:"Courier",
+            fontSize:14,
+            fillColor:"#000000"
+        }
+        hTxt.paragraphStyle = {
+            justification:"left"
+        };
+        group.addChild(hTxt);
     }
-    hTxt.paragraphStyle = {
-        justification:"left"
-    };
-    group.addChild(hTxt);
-}
+    if (cost !== undefined) {
+        var cTxt = new PointText(new Point(5,25));
+        cTxt.content = '\u2B1F' + cost;
+        cTxt.characterStyle= {
+            font:"Courier",
+            fontSize:14,
+            fillColor:"#000000"
+        }
+        cTxt.paragraphStyle = {
+            justification:"left"
+        };
+        group.addChild(cTxt);
+    }
     return group;
 }
 
@@ -135,6 +148,20 @@ console.log(this._all);
         };
         this._all.addChild(txt);
 
+        //MANA
+        txt = new PointText(new Point(900,700));
+        txt.content = '\u2B1F' + this.mana;
+        txt.characterStyle= {
+            font:"Courier",
+            fontSize:14,
+            fillColor:"#000000"
+        }
+        txt.paragraphStyle = {
+            justification:"left"
+        };
+        this._all.addChild(txt);
+
+
         var opponentHealth = new Path.Circle(new Point(1000, 100), 50);
         opponentHealth.fillColor="#cc00cc";
         opponentHealth.strokeColor="#808080";
@@ -167,7 +194,7 @@ console.log(this._all);
             };
         }
         for (var i = 0; i < this.playerHand.length; i++) {
-            var card = createCard(this.playerHand[i].damage, this.playerHand[i].health);
+            var card = createCard(this.playerHand[i].damage, this.playerHand[i].health, this.playerHand[i].cost);
 
             this._all.addChild(card);
             card.pivot = card.bounds.topLeft;
@@ -323,6 +350,7 @@ function updateState() {
         state.opponentCardsCount = data.opponentCardsCount;
         state.myTurn = data.myTurn;
         state.state = data.state;
+        state.mana = data.mana;
 
         state.health = data.health;
         state.opponentHealth = data.opponentHealth;

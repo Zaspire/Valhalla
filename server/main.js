@@ -80,7 +80,7 @@ function clone(obj) {
 
 var nextCardId = 12;
 function randomInt(upper) {
-    return Math.floor(Math.random() * upper);
+    return Math.floor(Math.random() * upper + 1);
 }
 function createCard() {
     return {
@@ -99,8 +99,8 @@ function onNewGame(email1, email2, cb) {
         hand2.push(createCard());
     }
     var state = { players: [email1, email2], turn: email1}
-    state[base64_encode(email1)] = {hand: hand1, health: 31};
-    state[base64_encode(email2)] = {hand: hand2, health: 31};
+    state[base64_encode(email1)] = {hand: hand1, health: 31, mana: 1, maxMana: 1};
+    state[base64_encode(email2)] = {hand: hand2, health: 31, mana: 1, maxMana: 1};
     db.collection('games').insert(state, { w: 1}, cb);
 }
 
@@ -191,16 +191,21 @@ app.get('/game_action', function(req, res) {
             }
             break;
         case 'finish':
+            var opponent = doc[base64_encode(opponentEmail)];
+
             doc.turn = opponentEmail;
+            opponent.maxMana = Math.min(10, opponent.maxMana + 1);
+            opponent.mana = opponent.maxMana;
             opponentCards.push(createCard());
             break;
         case 'card':
             for (var i = 0; i < myCards.length; i++) {
                 if (myCards[i].id == id1) {
-                    if (myCards[i].onTable) {
+                    if (myCards[i].onTable || myCards[i].cost > doc[base64_encode(email)].mana) {
                         res.status(400).end();
                         return;
                     } else {
+                        doc[base64_encode(email)].mana -= myCards[i].cost;
                         myCards[i].onTable = true;
                         break;
                     }
@@ -253,6 +258,7 @@ app.get('/game_state', function(req, res) {
 
         var state = { myTurn: doc.turn == email,
                       state: s,
+                      mana: doc[base64_encode(email)].mana,
                       opponentCardsCount: opponentCards.filter(function(o) {return !o.onTable}).length,
                       cardsOnTable: [],
                       playerHand: [],
