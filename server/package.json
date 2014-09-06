@@ -1,7 +1,8 @@
 {
     "name": "ValhallaServer",
     "version": "0.0.1",
-    "engineStrict": "true",
+    "private": true,
+    "engineStrict": true,
     "dependencies": {
         "express": "4.*",
         "xhr2": "*",

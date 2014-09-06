@@ -9,7 +9,8 @@
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
         <script type="text/javascript" src="third_party/jquery.rwdImageMaps.js"></script>
-        <title>Main Menu</title>
+        <script type="text/javascript" src="common.js"></script>
+        <title>Longin</title>
         <style type="text/css" media="screen">
         img.bg {
             min-height: 100%;
@@ -35,7 +36,6 @@
             $('img[usemap]').rwdImageMaps();
         });
 
-        var host = 'http://192.168.1.10:3000/';
         document.addEventListener('deviceready', function() {
             document.getElementById('header').innerHTML = "Hello World";
             chrome.identity.getAuthToken({ 'interactive': true }, function (token, account) {

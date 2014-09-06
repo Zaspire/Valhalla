@@ -334,7 +334,6 @@ if (this.myTurn) {
     }
 };
 
-var host = 'http://192.168.1.10:3000/';
 var params = {};
 location.search.substr(1).split("&").forEach(function(item) {params[item.split("=")[0]] = item.split("=")[1]});
 
