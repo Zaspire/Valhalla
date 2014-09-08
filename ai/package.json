@@ -1,0 +1,9 @@
+{
+    "name": "Loki",
+    "version": "0.1.0",
+    "private": true,
+    "engineStrict": true,
+    "dependencies": {
+        "xhr2": "*"
+    }
+}

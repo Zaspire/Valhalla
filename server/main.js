@@ -30,6 +30,7 @@ function crypt(str) {
     return t.join('');
 }
 
+console.log(crypt('BOT:example@gmail.com'));
 console.log(crypt('ermilov.maxim@gmail.com'));
 console.log(crypt('example@gmail.com'));
 
@@ -286,12 +287,20 @@ app.get('/game_state', function(req, res) {
 
 app.get('/matchmaking', function(req, res) {
     var token = req.query.token;
+    var bot = req.query.bot;
     //FIXME:
     if (!token) {
         res.status(400).end();
         return;
     }
     var email = decrypt(token);
+    if (bot) {
+        bot = decrypt(bot);
+        if (bot.indexOf('BOT:') == 0)
+            bot = true;
+        else
+            bot = false;
+    }
 
     var matchmaking = db.collection('matchmaking');
     matchmaking.findOne({ $or: [{ _id: email}, { opponent: email }]}, function (err, doc) {
