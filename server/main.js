@@ -297,7 +297,13 @@ app.get('/matchmaking', function(req, res) {
     });
 });
 
+app.param('token', function(req, res, next, id) {
+    req.email = common.decrypt(req.params.token);
+    next();
+});
+
 app.get('/v1/authorize/:gtoken/:email', account.authorize);
+app.get('/v1/my_cards/:token', account.myCards);
 
 mongo.connect(common.config.mongo, function(err, _db) {
     if(err) throw err;

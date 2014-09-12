@@ -89,3 +89,17 @@ exports.authorize = function(req, res) {
         res.status(400).end();
     });
 }
+
+exports.myCards = function(req, res) {
+    var email = req.email;
+    pdb.collection('accounts').findOne({ _id: email }).done(function(doc) {
+        if (!doc) {
+            res.status(400).end();
+            return;
+        }
+        res.send(JSON.stringify(doc.cards));
+    }, function(e) {
+        console.log(e);
+        res.status(400).end();
+    });
+}

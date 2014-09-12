@@ -14,7 +14,7 @@
       <h1 id="header">waiting opponent...</h1>
       <script type="text/javascript">
         var params = {};
-        location.search.substr(1).split("&").forEach(function(item) {params[item.split("=")[0]] = item.split("=")[1]});
+        params.token = localStorage.getItem('token');
 
         function request() {
             $.ajax({ url: host + 'matchmaking', data: { token: params.token} }).done(function(data) {
@@ -24,7 +24,9 @@
                 }
                 data = JSON.parse(data);
                 $("#header").html('done');
-                window.location = 'game.html?token='  + encodeURIComponent(params.token) + '&gameid=' + data.gameid;
+
+                localStorage.setItem('gameid', data.gameid);
+                window.location = 'game.html';
             }).fail(function() {
                 //FIXME:
                 $("#header").html('fail');

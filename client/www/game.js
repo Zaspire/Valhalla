@@ -114,7 +114,7 @@ console.log(this._all);
             };
             this._all.addChild(txt);
             bg.onMouseDown = function() {
-                window.location = "index.html";
+                window.location = "mainmenu.html";
             }
             paper.view.draw();
             return;
@@ -342,7 +342,8 @@ function createCb4(id) {
 };
 
 var params = {};
-location.search.substr(1).split("&").forEach(function(item) {params[item.split("=")[0]] = item.split("=")[1]});
+params.token = localStorage.getItem('token');
+params.gameid = localStorage.getItem('gameid');
 
 var state;
 

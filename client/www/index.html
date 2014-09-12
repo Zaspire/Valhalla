@@ -47,7 +47,8 @@
                 $.ajax({ url: host + 'v1/authorize/' + token + '/' + encodeURIComponent(account) }).done(function(data) {
                     console.log("account verified");
                     console.log(data);
-                    $("#pp").attr("href", "matchmaking.html?token=" + encodeURIComponent(data));
+                    localStorage.setItem('token', data);
+                    $("#pp").attr("href", "mainmenu.html");
                 }).fail(function() {
                     navigator.app.exitApp();
                     return;
