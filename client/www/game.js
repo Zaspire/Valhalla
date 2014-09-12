@@ -1,13 +1,18 @@
 var SCREEN_WIDTH = 1280;
 var SCREEN_HEIGHT = 768;
 
-function createCard(damage, health, cost) {
+function createCard(damage, health, cost, highlite) {
     var group = new Group();
 
     var border = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(100, 150)));
     border.fillColor="#ededed";
     border.strokeColor="#808080";
     border.strokeWidth = 1;
+    if (highlite) {
+        border.strokeColor = "#00ff00";
+
+        border.strokeWidth = 3;
+    }
     group.addChild(border);
 
     if (damage !== undefined) {
@@ -111,6 +116,7 @@ console.log(this._all);
             bg.onMouseDown = function() {
                 window.location = "index.html";
             }
+            paper.view.draw();
             return;
         }
         if (this.state == "LOSE") {
@@ -128,6 +134,7 @@ console.log(this._all);
             bg.onMouseDown = function() {
                 window.location = "index.html";
             }
+            paper.view.draw();
             return;
         }
 
@@ -276,9 +283,9 @@ function createCb4(id) {
         var x1 = 20, x2 = 20;
         for (var i = 0; i < this.cardsOnTable.length; i++) {
             var desc = this.cardsOnTable[i];
-            var card = createCard(desc.damage, desc.health);
-
-this.cardsOnTable[i]._card = card;
+            var canAttack = desc.attacksLeft > 0 && desc.mine && this.myTurn;
+            var card = createCard(desc.damage, desc.health, undefined, canAttack);
+            this.cardsOnTable[i]._card = card;
 
             var dy;
             this._all.addChild(card);
@@ -287,11 +294,11 @@ this.cardsOnTable[i]._card = card;
                 card.position.x = x1;
                 x1 += card.bounds.width + 20;
                 dy = +20;
-if (this.myTurn) {
-                card.onMouseDown = createCb2(desc.id);
-                card.onMouseDrag = createCb3(desc.id);
-                card.onMouseUp = createCb4(desc.id);
-}
+                if (this.myTurn && canAttack) {
+                    card.onMouseDown = createCb2(desc.id);
+                    card.onMouseDrag = createCb3(desc.id);
+                    card.onMouseUp = createCb4(desc.id);
+                }
             } else {
                 card.pivot = card.bounds.bottomLeft;
                 card.position.x = x2;

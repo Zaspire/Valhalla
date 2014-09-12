@@ -1,5 +1,5 @@
 {
-    "host": "http://192.168.1.2:3000/",
+    "host": "http://192.168.1.10:3000/",
     "bot_ids": [{ "email": "24507e83178ff14d23c1a6c9c90d84191b36408ff6ec408b2ddbd6a3cfc4c34f",
                   "confirmation": "2b010651a04ba026947cdc94c40ac86157614318a8f282506b70b877b7bd6b71"
                 }]

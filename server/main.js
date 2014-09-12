@@ -42,7 +42,7 @@ function createCard() {
         health: randomInt(9),
         damage: randomInt(9),
         cost: randomInt(9),
-        attacks: 1
+        attacksLeft: 1
     };
 }
 
@@ -105,10 +105,11 @@ app.get('/game_action', function(req, res) {
                     }
                 }
             }
-            if (i >= myCards.length) {
+            if (i >= myCards.length || myCards[i].attacksLeft <= 0) {
                 res.status(400).end();
                 return;
             }
+            myCards[i].attacksLeft--;
             doc[base64_encode(opponentEmail)].health -= myCards[i].damage;
             break;
         case 'attack':
@@ -132,10 +133,11 @@ app.get('/game_action', function(req, res) {
                     }
                 }
             }
-            if (i >= myCards.length || k >= opponentCards.length) {
+            if (i >= myCards.length || k >= opponentCards.length || myCards[i].attacksLeft <= 0) {
                 res.status(400).end();
                 return;
             }
+            myCards[i].attacksLeft--;
             opponentCards[k].health -= myCards[i].damage;
             myCards[i].health -= opponentCards[k].damage;
             if (opponentCards[k].health <= 0) {
@@ -151,6 +153,9 @@ app.get('/game_action', function(req, res) {
             doc.turn = opponentEmail;
             opponent.maxMana = Math.min(10, opponent.maxMana + 1);
             opponent.mana = opponent.maxMana;
+            for (var i = 0; i < opponentCards.length; i++) {
+                opponentCards[i].attacksLeft = 1;
+            }
             opponentCards.push(createCard());
             break;
         case 'card':
@@ -274,7 +279,6 @@ app.get('/matchmaking', function(req, res) {
                         res.status(400).end();
                         return;
                     }
-                    console.log(obj[0]);
                     doc.gameid = obj[0]._id;
                     doc.opponent = email;
                     //FIXME: check write result
