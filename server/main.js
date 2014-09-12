@@ -1,17 +1,16 @@
-var env = process.env.NODE_ENV || 'development';
-
 var assert = require('assert');
+var Q = require('q');
 
 var fs = require('fs');
 var express = require('express');
 var cors = require('cors');
 var morgan = require('morgan');
 
-var XMLHttpRequest = require('xhr2');
-var config = require('./config.' + env + '.json');
 var mongodb = require('mongodb');
 var mongo = require('mongodb').MongoClient;
-var crypto = require('crypto');
+
+var account = require('./account');
+var common = require('./common');
 
 var db;
 var app = express();
@@ -19,52 +18,6 @@ app.use(cors());
 app.disable('x-powered-by');
 var accessLogStream = fs.createWriteStream(__dirname + '/access.log', {flags: 'a'})
 app.use(morgan('dev', {stream: accessLogStream}));
-
-function crypt(str) {
-    var cipher = crypto.createCipher('aes-256-cbc', config.aes_key);
-    cipher.setAutoPadding(true);
-
-    var t = [];
-    t.push(cipher.update(str, 'utf-8', 'hex'));
-    t.push(cipher.final('hex'));
-    return t.join('');
-}
-
-console.log(crypt('BOT:example@gmail.com'));
-console.log(crypt('ermilov.maxim@gmail.com'));
-console.log(crypt('example@gmail.com'));
-
-function decrypt(str) {
-    // FIXME: verify data
-    var decipher = crypto.createDecipher('aes-256-cbc', config.aes_key);
-    var t = [];
-    t.push(decipher.update(str, 'hex', 'utf-8'));
-    t.push(decipher.final('utf-8'));
-    return t.join('');
-}
-
-function xhrWithAuth(method, url, access_token, callback) {
-    function requestStart() {
-        var xhr = new XMLHttpRequest();
-        xhr.open(method, url);
-        xhr.setRequestHeader('Authorization', 'Bearer ' + access_token);
-        xhr.onload = requestComplete;
-        xhr.send();
-    }
-
-    function requestComplete() {
-        callback(this.status, this.response);
-    }
-
-    requestStart();
-}
-
-function getUserInfo(token, callback) {
-    xhrWithAuth('GET',
-                'https://www.googleapis.com/plus/v1/people/me',
-                token,
-                callback);
-}
 
 app.get('/ok', function(req, res){
     res.send('ok');
@@ -88,7 +41,8 @@ function createCard() {
         id: nextCardId++,
         health: randomInt(9),
         damage: randomInt(9),
-        cost: randomInt(9)
+        cost: randomInt(9),
+        attacks: 1
     };
 }
 
@@ -118,7 +72,7 @@ app.get('/game_action', function(req, res) {
         res.status(400).end();
         return;
     }
-    var email = decrypt(token);
+    var email = common.decrypt(token);
     db.collection('games').findOne({ _id: new mongodb.ObjectID(gameid) }, function(err, doc) {
         if (err || !doc || doc.turn != email) {
             res.status(400).end();
@@ -234,7 +188,7 @@ app.get('/game_state', function(req, res) {
         res.status(400).end();
         return;
     }
-    var email = decrypt(token);
+    var email = common.decrypt(token);
     db.collection('games').findOne({ _id: new mongodb.ObjectID(gameid) }, function(err, doc) {
         if (err || !doc) {
             res.status(400).end();
@@ -293,9 +247,9 @@ app.get('/matchmaking', function(req, res) {
         res.status(400).end();
         return;
     }
-    var email = decrypt(token);
+    var email = common.decrypt(token);
     if (bot) {
-        bot = decrypt(bot);
+        bot = common.decrypt(bot);
         if (bot.indexOf('BOT:') == 0)
             bot = true;
         else
@@ -339,34 +293,13 @@ app.get('/matchmaking', function(req, res) {
     });
 });
 
-app.get('/authorize', function(req, res){
-    var token = req.query.token;
-    var email = req.query.email;
-    if (!token || !email) {
-        res.status(400).end();
-        return;
-    }
-    getUserInfo(token, function(status, response) {
-        response = JSON.parse(response);
-        if (status == 200 && response.emails) {
-            for (var i = 0; i < response.emails.length; i++) {
-                var o = response.emails[0];
-                if (o.value == email) {
-                    res.send(crypt(email));
-                    db.collection('accounts').insert(response, { w: 0 });
-                    return;
-                }
-            }
-        }
-        res.status(400).end();
-    });
-});
+app.get('/v1/authorize/:gtoken/:email', account.authorize);
 
-mongo.connect(config.mongo, function(err, _db) {
+mongo.connect(common.config.mongo, function(err, _db) {
     if(err) throw err;
 
     db = _db;
-    var server = app.listen(config.server_port, function() {
+    var server = app.listen(common.config.server_port, function() {
         console.log('Listening on port %d', server.address().port);
     });
 });

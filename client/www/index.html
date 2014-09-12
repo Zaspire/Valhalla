@@ -44,7 +44,7 @@
                     return;
                 }
                 document.getElementById('header').innerHTML = "Hello " + account;
-                $.ajax({ url: host + 'authorize', data: { token: token, email: account} }).done(function(data) {
+                $.ajax({ url: host + 'v1/authorize/' + token + '/' + encodeURIComponent(account) }).done(function(data) {
                     console.log("account verified");
                     console.log(data);
                     $("#pp").attr("href", "matchmaking.html?token=" + encodeURIComponent(data));
