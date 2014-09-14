@@ -1,3 +1,6 @@
+var params = {};
+params.token = localStorage.getItem('token');
+
 var SCREEN_WIDTH = 1280;
 var SCREEN_HEIGHT = 768;
 
@@ -72,12 +75,24 @@ function draw(cards) {
 
     var x = 20;
     var y = 20;
+
+    function createCb(i) {
+        return function(event) {
+            cards[i].selected = !cards[i].selected;
+            draw(cards);
+        };
+    }
+    var selected = 0;
     for (var i = 0; i < cards.length; i++) {
         var card = cards[i];
-        var g = createCard(card.damage, card.health, card.cost);
+        var g = createCard(card.damage, card.health, card.cost, card.selected);
+
+        if (card.selected)
+            selected++;
         g.pivot = g.bounds.topLeft;
         g.position.x = x;
         g.position.y = y;
+        g.onMouseDown = createCb(i);
         x += g.bounds.width + 20;
         if (i % 10 == 9) {
             y += g.bounds.height + 20;
@@ -85,15 +100,35 @@ function draw(cards) {
         }
         this._all.addChild(g);
     }
+    if (selected == 30) {
+        var button = new Path.Rectangle(new Rectangle(new Point(x, y), new Size(100, 100)));
+        button.fillColor="#00ff00";
+        button.strokeColor="#808080";
+        button.strokeWidth = 1;
+        button.onMouseDown = function() {
+            save(cards);
+        };
+        this._all.addChild(button);
+    }
     this._all.scale(view.bounds.width / SCREEN_WIDTH, view.bounds.height / SCREEN_HEIGHT);
     paper.view.draw();
 }
 
+function save(cards) {
+    var deck = cards.filter(function(o){return o.selected;}).map(function(o) {return o.id;});
+
+    $.ajax({ url: host + 'v1/my_cards/' + params.token + '/set', data: { deck: deck } }).done(function(data) {
+        console.log(data);
+        getCards();
+    }).fail(function() {
+        //FIXME:
+    });
+}
+
 function getCards() {
-    var params = {};
-    params.token = localStorage.getItem('token');
 
     $.ajax({ url: host + 'v1/my_cards/' + params.token }).done(function(data) {
+        console.log(data);
         draw(JSON.parse(data));
     }).fail(function() {
         //FIXME:

@@ -30,3 +30,4 @@ function decrypt(str) {
 exports.crypt = crypt;
 exports.decrypt = decrypt;
 exports.config = config;
+exports.DECK_SIZE = 30;

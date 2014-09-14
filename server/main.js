@@ -304,6 +304,7 @@ app.param('token', function(req, res, next, id) {
 
 app.get('/v1/authorize/:gtoken/:email', account.authorize);
 app.get('/v1/my_cards/:token', account.myCards);
+app.get('/v1/my_cards/:token/set', account.setDeck);
 
 mongo.connect(common.config.mongo, function(err, _db) {
     if(err) throw err;
