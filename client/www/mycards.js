@@ -1,82 +1,7 @@
+paper.settings.applyMatrix = false;
+
 var params = {};
 params.token = localStorage.getItem('token');
-
-var SCREEN_WIDTH = 1280;
-var SCREEN_HEIGHT = 768;
-
-function createCard(damage, health, cost, highlite) {
-    var group = new Group();
-
-    var bg = new Raster('fg');
-    bg.pivot = bg.bounds.topLeft;
-    bg.position.x = 0;
-    bg.position.y = 0;
-    bg.scaling = [0.25, 0.25];
-    group.addChild(bg);
-    if (highlite) {
-        var border = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(bg.bounds.width, bg.bounds.height)));
-        border.strokeColor = "#00ff00";
-
-        border.strokeWidth = 3;
-        group.addChild(border);
-        bg.bringToFront();
-    }
-    if (damage% 2) {
-        var hero = new Raster('h1');
-        hero.pivot = hero.bounds.topLeft;
-        hero.position.x = 0;
-        hero.position.y = 0;
-        hero.scaling = [0.25, 0.25];
-        group.addChild(hero);
-    } else {
-        var hero = new Raster('h2');
-        hero.pivot = hero.bounds.topLeft;
-        hero.position.x = 0;
-        hero.position.y = 0;
-        hero.scaling = [0.25, 0.25];
-        group.addChild(hero);
-    }
-    if (damage !== undefined) {
-        var dTxt = new PointText(new Point(15,120));
-        dTxt.content = damage;
-        dTxt.characterStyle= {
-            font:"Courier",
-            fontSize:14,
-            fillColor:"#000000"
-        }
-        dTxt.paragraphStyle = {
-            justification:"left"
-        };
-        group.addChild(dTxt);
-    }
-    if (health !== undefined) {
-        var hTxt = new PointText(new Point(70,120));
-        hTxt.content = health;
-        hTxt.characterStyle= {
-            font:"Courier",
-            fontSize:14,
-            fillColor:"#000000"
-        }
-        hTxt.paragraphStyle = {
-            justification:"left"
-        };
-        group.addChild(hTxt);
-    }
-    if (cost !== undefined) {
-        var cTxt = new PointText(new Point(10,20));
-        cTxt.content = cost;
-        cTxt.characterStyle= {
-            font:"Courier",
-            fontSize:14,
-            fillColor:"#000000"
-        }
-        cTxt.paragraphStyle = {
-            justification:"left"
-        };
-        group.addChild(cTxt);
-    }
-    return group;
-}
 
 function draw(cards) {
     project.clear();
@@ -110,12 +35,14 @@ function draw(cards) {
         g.pivot = g.bounds.topLeft;
         g.position.x = x;
         g.position.y = y;
-        g.onMouseDown = createCb(i);
+//        g.onMouseDown = createCb(i);
         x += g.bounds.width + 20;
         if (i % 10 == 9) {
             y += g.bounds.height + 20;
             x = 20
         }
+
+        addCardMagnifier(this, g, card.selected?"red":"green", createCb(i));
         this._all.addChild(g);
     }
     if (selected == 30) {
@@ -127,6 +54,18 @@ function draw(cards) {
             save(cards);
         };
         this._all.addChild(button);
+    } else {
+        var txt = new PointText(new Point(x,y + 50));
+        txt.content = selected + '/30';
+        txt.characterStyle= {
+            font:"Courier",
+            fontSize:50,
+            fillColor:"#000000"
+        }
+        txt.paragraphStyle = {
+            justification:"left"
+        };
+        this._all.addChild(txt);
     }
     this._all.scale(view.bounds.width / SCREEN_WIDTH, view.bounds.height / SCREEN_HEIGHT);
     paper.view.draw();

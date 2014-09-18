@@ -1,61 +1,15 @@
-var SCREEN_WIDTH = 1280;
-var SCREEN_HEIGHT = 768;
+paper.settings.applyMatrix = false;
 
-function createCard(damage, health, cost, highlite) {
-    var group = new Group();
-
-    var border = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(100, 150)));
-    border.fillColor="#ededed";
-    border.strokeColor="#808080";
-    border.strokeWidth = 1;
-    if (highlite) {
-        border.strokeColor = "#00ff00";
-
-        border.strokeWidth = 3;
-    }
-    group.addChild(border);
-
-    if (damage !== undefined) {
-        var dTxt = new PointText(new Point(5,65));
-        dTxt.content = '\u2694' + damage;
-        dTxt.characterStyle= {
-            font:"Courier",
-            fontSize:14,
-            fillColor:"#000000"
-        }
-        dTxt.paragraphStyle = {
-            justification:"left"
-        };
-        group.addChild(dTxt);
-    }
-    if (health !== undefined) {
-        var hTxt = new PointText(new Point(25,65));
-        hTxt.content = '\u2764' + health;
-        hTxt.characterStyle= {
-            font:"Courier",
-            fontSize:14,
-            fillColor:"#000000"
-        }
-        hTxt.paragraphStyle = {
-            justification:"left"
-        };
-        group.addChild(hTxt);
-    }
-    if (cost !== undefined) {
-        var cTxt = new PointText(new Point(5,25));
-        cTxt.content = '\u2B1F' + cost;
-        cTxt.characterStyle= {
-            font:"Courier",
-            fontSize:14,
-            fillColor:"#000000"
-        }
-        cTxt.paragraphStyle = {
-            justification:"left"
-        };
-        group.addChild(cTxt);
-    }
-    return group;
+////// HACK to make dnd work on phone
+function onMouseDown(event) {
 }
+
+function onMouseDrag(event) {
+}
+
+function onMouseUp(event) {
+}
+//////
 
 function State() {
     this.opponentCardsCount = 0;
@@ -67,16 +21,6 @@ function State() {
 
     project.view.onResize = this._onResize.bind(this);
 }
-////// HACK to make dnd work on phone
-function onMouseDown(event) {
-}
-
-function onMouseDrag(event) {
-}
-
-function onMouseUp(event) {
-}
-//////
 
 State.prototype = {
     _onResize: function() {
@@ -191,15 +135,25 @@ console.log(this._all);
         var x = 20;
 
         var self = this;
-        function createCb(id) {
+        function createCb(id, card) {
+            var prevPosition = card.position;
             return function(event) {
+                if (card.position == prevPosition)
+                    return;
+                if (card.position.y >= SCREEN_HEIGHT - card.bounds.height) {
+                    updateState();
+                    return;
+                }
+
                 //FIXME:
                 $.ajax({ url: host + 'game_action', data: { token: params.token, gameid: params.gameid, action: 'card', id1: id} }).done(function(data) {
-                    console.log(data);
+                    updateState();
+                }).fail(function() {
                     updateState();
                 });
             };
         }
+
         for (var i = 0; i < this.playerHand.length; i++) {
             var card = createCard(this.playerHand[i].damage, this.playerHand[i].health, this.playerHand[i].cost);
 
@@ -208,10 +162,13 @@ console.log(this._all);
             card.position.x = x;
             card.position.y = SCREEN_HEIGHT - card.bounds.height;
             x += card.bounds.width + 20;
-
+            this.playerHand[i]._card = card;
             if (this.myTurn) {
-                card.onMouseDown = createCb(this.playerHand[i].id);
+                card.onMouseDown = createCb2(card);
+                card.onMouseDrag = createCb3(card);
+                card.onMouseUp = createCb(this.playerHand[i].id, card);
             }
+            addCardMagnifier(self, card);
         }
         x = 20;
         for (var i = 0; i < this.opponentCardsCount; i++) {
@@ -226,30 +183,29 @@ console.log(this._all);
         var midLine = new Path.Line(new Point(0, SCREEN_HEIGHT / 2), new Point(SCREEN_WIDTH, SCREEN_HEIGHT / 2));
         midLine.strokeColor = 'red';
         this._all.addChild(midLine);
-
-function createCb2(id) {
-    return function(event) {
-        for (var i = 0; i < self.cardsOnTable.length; i++) {
-            if (self.cardsOnTable[i].id == id)
-                break;
+        if (card) {
+            var dropZone = new Path.Line(new Point(0, SCREEN_HEIGHT - card.bounds.height), new Point(SCREEN_WIDTH, SCREEN_HEIGHT - card.bounds.height));
+            dropZone.strokeColor = 'yellow';
+            this._all.addChild(dropZone);
         }
-        var card = self.cardsOnTable[i]._card;
+
+function createCb2(card) {
+    return function(event) {
         card.bringToFront();
     }
 }
-function createCb3(id) {
+function createCb3(card) {
     return function(event) {
-        for (var i = 0; i < self.cardsOnTable.length; i++) {
-            if (self.cardsOnTable[i].id == id)
-                break;
-        }
-        var card = self.cardsOnTable[i]._card;
-        card.position = event.point;
+        card.position = self._all.globalToLocal(event.point);
     }
 }
-function createCb4(id) {
+function createCb4(id, card) {
+    var prevPosition = card.position;
     return function(event) {
-        if (self._opponentHealth.contains(event.point)) {
+        if (prevPosition == card.position)
+            return;
+        var point = self._all.globalToLocal(event.point);
+        if (self._opponentHealth.contains(point)) {
             //FIXME:
             $.ajax({ url: host + 'game_action', data: { token: params.token, gameid: params.gameid, action: 'attack_player', id1: id} }).done(function(data) {
                 updateState();
@@ -259,7 +215,7 @@ function createCb4(id) {
         for (var i = 0; i < self.cardsOnTable.length; i++) {
             if (self.cardsOnTable[i].mine)
                 continue;
-            if (self.cardsOnTable[i]._card.contains(event.point))
+            if (self.cardsOnTable[i]._card.contains(point))
                 break;
         }
         if (i >= self.cardsOnTable.length) {
@@ -267,6 +223,7 @@ function createCb4(id) {
             return;
         }
         var dest = self.cardsOnTable[i];
+
         for (i = 0; i < self.cardsOnTable.length; i++) {
             if (self.cardsOnTable[i].id == id)
                 break;
@@ -294,19 +251,20 @@ function createCb4(id) {
                 card.position.x = x1;
                 x1 += card.bounds.width + 20;
                 dy = +20;
+                card.position.y = SCREEN_HEIGHT / 2 + dy;
                 if (this.myTurn && canAttack) {
-                    card.onMouseDown = createCb2(desc.id);
-                    card.onMouseDrag = createCb3(desc.id);
-                    card.onMouseUp = createCb4(desc.id);
+                    card.onMouseDown = createCb2(card);
+                    card.onMouseDrag = createCb3(card);
+                    card.onMouseUp = createCb4(desc.id, card);
                 }
             } else {
-                card.pivot = card.bounds.bottomLeft;
+                card.pivot = card.bounds.topLeft;
                 card.position.x = x2;
                 x2 += card.bounds.width + 20;
-                dy = -20;
+                dy = -20 - card.bounds.height;
+                card.position.y = SCREEN_HEIGHT / 2 + dy;
             }
-
-            card.position.y = SCREEN_HEIGHT / 2 + dy;
+            addCardMagnifier(this, card);
         }
         this._x1 = x1;
 
