@@ -4,10 +4,9 @@ var XMLHttpRequest = require('xhr2');
 var pmongo = require('promised-mongo');
 
 var common = require('./common');
+var heroes = require('./heroes');
 
 var pdb = pmongo(common.config.mongo);
-
-var nextCardId = 12;
 
 function xhrWithAuth(method, url, access_token) {
     var deferred = Q.defer();
@@ -36,24 +35,21 @@ function getUserInfo(token) {
                        token);
 }
 
-function randomInt(upper) {
-    return Math.floor(Math.random() * upper + 1);
-}
-function createCard() {
-    return {
-        id: nextCardId++,
-        health: randomInt(9),
-        damage: randomInt(9),
-        cost: randomInt(9)
-    };
-}
-
 function starterCards() {
+    var type2count = {
+        'h1': 10,
+        'h2': 10,
+        'creep1': 5,
+        'creep2': 5,
+        'creep3': 5
+    };
     var res = [];
-    for (var i = 0; i < 31; i++) {
-        var card = createCard();
-        delete card.id;
-        res.push(card);
+    for (var id in type2count) {
+        assert(id in heroes.heroes);
+        var type = heroes.heroes[id];
+        var card = {type: id, damage: type.damage, cost: type.cost, health: type.health };
+        for (var i = 0; i <type2count[id]; i++)
+            res.push(common.clone(card));
     }
     return res;
 }

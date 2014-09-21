@@ -32,31 +32,8 @@ function clone(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 
-var nextCardId = 12;
 function randomInt(upper) {
     return Math.floor(Math.random() * upper + 1);
-}
-function createCard() {
-    return {
-        id: nextCardId++,
-        health: randomInt(9),
-        damage: randomInt(9),
-        cost: randomInt(9),
-        attacksLeft: 1
-    };
-}
-
-function onNewGame(email1, email2, cb) {
-    var hand1 = [];
-    var hand2 = [];
-    for (var i = 0; i < 4; i++) {
-        hand1.push(createCard());
-        hand2.push(createCard());
-    }
-    var state = { players: [email1, email2], turn: email1}
-    state[base64_encode(email1)] = {hand: hand1, health: 31, mana: 1, maxMana: 1};
-    state[base64_encode(email2)] = {hand: hand2, health: 31, mana: 1, maxMana: 1};
-    db.collection('games').insert(state, { w: 1}, cb);
 }
 
 app.get('/game_action', function(req, res) {
@@ -93,6 +70,7 @@ app.get('/game_action', function(req, res) {
 
         var myCards = doc[base64_encode(email)].hand;
         var opponentCards = doc[base64_encode(opponentEmail)].hand;
+        var opponentDeck = doc[base64_encode(opponentEmail)].deck;
         switch (action) {
         case 'attack_player':
             for (var i = 0; i < myCards.length; i++) {
@@ -156,7 +134,10 @@ app.get('/game_action', function(req, res) {
             for (var i = 0; i < opponentCards.length; i++) {
                 opponentCards[i].attacksLeft = 1;
             }
-            opponentCards.push(createCard());
+            assert(opponentDeck.length);
+            var card = opponentDeck.shift();
+            card.attacksLeft = 0;
+            opponentCards.push(card);
             break;
         case 'card':
             for (var i = 0; i < myCards.length; i++) {
@@ -167,6 +148,7 @@ app.get('/game_action', function(req, res) {
                     } else {
                         doc[base64_encode(email)].mana -= myCards[i].cost;
                         myCards[i].onTable = true;
+                        myCards[i].attacksLeft = 0;
                         break;
                     }
                 }
@@ -244,63 +226,12 @@ app.get('/game_state', function(req, res) {
     });
 });
 
-app.get('/matchmaking', function(req, res) {
-    var token = req.query.token;
-    var bot = req.query.bot;
-    //FIXME:
-    if (!token) {
-        res.status(400).end();
-        return;
-    }
-    var email = common.decrypt(token);
-    if (bot) {
-        bot = common.decrypt(bot);
-        if (bot.indexOf('BOT:') == 0)
-            bot = true;
-        else
-            bot = false;
-    }
-
-    var matchmaking = db.collection('matchmaking');
-    matchmaking.findOne({ $or: [{ _id: email}, { opponent: email }]}, function (err, doc) {
-        if (err) {
-            res.status(400).end();
-            return;
-        }
-        if (!doc) {
-            matchmaking.findAndModify({ opponent: { $exists: false } }, {$set: {opponent: email}}, {}, function (err, doc) {
-                if (!doc) {
-                    matchmaking.insert({ _id: email }, { w: 0 });
-                    res.send('{}');
-                    return;
-                }
-                onNewGame(doc._id, email, function(err, obj) {
-                    if (err) {
-                        res.status(400).end();
-                        return;
-                    }
-                    doc.gameid = obj[0]._id;
-                    doc.opponent = email;
-                    //FIXME: check write result
-                    matchmaking.save(doc, {w:0});
-                    res.send(JSON.stringify({ gameid: obj[0]._id }));
-                    return;
-                });
-            });
-            return;
-        }
-        if (doc.gameid) {
-            res.send(JSON.stringify({ gameid: doc.gameid }));
-            return;
-        }
-        res.send(JSON.stringify({}));
-    });
-});
-
 app.param('token', function(req, res, next, id) {
     req.email = common.decrypt(req.params.token);
     next();
 });
+
+app.get('/v1/matchmaking/:token', require('./matchmaking').matchmaking);
 
 app.get('/v1/authorize/:gtoken/:email', account.authorize);
 app.get('/v1/my_cards/:token', account.myCards);

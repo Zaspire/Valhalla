@@ -17,7 +17,7 @@
         params.token = localStorage.getItem('token');
 
         function request() {
-            $.ajax({ url: host + 'matchmaking', data: { token: params.token} }).done(function(data) {
+            $.ajax({ url: host + 'v1/matchmaking/' + params.token }).done(function(data) {
                 if (data == '{}') {
                     setTimeout(request, 1000);
                     return;

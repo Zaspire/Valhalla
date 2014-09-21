@@ -1,8 +1,8 @@
 paper.install(window);
 
-function addCardMagnifier(self, card, buttonColor, cb) {
+function addCardMagnifier(self, card, type, buttonColor, cb) {
     var transition = "easeOutBounce";
-    var time = 2;
+    var time = 1;
     var rx, ry;
     var prevPosition = card.position;
     card.onClick = function(event) {
@@ -22,8 +22,12 @@ function addCardMagnifier(self, card, buttonColor, cb) {
         bg.fillColor="#000000";
         group.addChild(bg);
 
-        var heroName = "Hero Name";
-        var ability = "First ability description";
+        var heroName = heroes[type].name;
+        var ability = "";
+        if (heroes[type].abilities) {
+            var z = heroes[type].abilities[0];
+            ability = z.castType + ': ' + z.abilityType;
+        }
         var ulti = "Collest ulti ever";
         var txt = new PointText(new Point(920,60));
         txt.content = heroName;
@@ -102,11 +106,12 @@ function addCardMagnifier(self, card, buttonColor, cb) {
     }
 }
 
-function createCard(damage, health, cost, highlite) {
+function createCard(damage, health, cost, highlite, type) {
     var group = new Group();
-var m = new paper.Matrix(0.25, 0, 0, 0.25, 0, 0);
-group.matrix = m;
-group.applyMatrix = false;
+    var m = new paper.Matrix(0.25, 0, 0, 0.25, 0, 0);
+    group.matrix = m;
+    group.applyMatrix = false;
+
     var bg = new Raster('fg');
     bg.pivot = bg.bounds.topLeft;
     bg.position.x = 0;
@@ -120,21 +125,13 @@ group.applyMatrix = false;
         group.addChild(border);
         bg.bringToFront();
     }
-if (damage) {
-    if (damage% 2) {
-        var hero = new Raster('h1');
-        hero.pivot = hero.bounds.topLeft;
-        hero.position.x = 0;
-        hero.position.y = 0;
-        group.addChild(hero);
-    } else {
-        var hero = new Raster('h2');
+    if (type && heroes[type].img) {
+        var hero = new Raster(type);
         hero.pivot = hero.bounds.topLeft;
         hero.position.x = 0;
         hero.position.y = 0;
         group.addChild(hero);
     }
-}
     if (damage !== undefined) {
         var dTxt = new PointText(new Point(55,485));
         dTxt.content = damage;

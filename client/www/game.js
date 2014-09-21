@@ -155,7 +155,7 @@ console.log(this._all);
         }
 
         for (var i = 0; i < this.playerHand.length; i++) {
-            var card = createCard(this.playerHand[i].damage, this.playerHand[i].health, this.playerHand[i].cost);
+            var card = createCard(this.playerHand[i].damage, this.playerHand[i].health, this.playerHand[i].cost, false, this.playerHand[i].type);
 
             this._all.addChild(card);
             card.pivot = card.bounds.topLeft;
@@ -168,7 +168,7 @@ console.log(this._all);
                 card.onMouseDrag = createCb3(card);
                 card.onMouseUp = createCb(this.playerHand[i].id, card);
             }
-            addCardMagnifier(self, card);
+            addCardMagnifier(self, card, this.playerHand[i].type);
         }
         x = 20;
         for (var i = 0; i < this.opponentCardsCount; i++) {
@@ -241,7 +241,7 @@ function createCb4(id, card) {
         for (var i = 0; i < this.cardsOnTable.length; i++) {
             var desc = this.cardsOnTable[i];
             var canAttack = desc.attacksLeft > 0 && desc.mine && this.myTurn;
-            var card = createCard(desc.damage, desc.health, undefined, canAttack);
+            var card = createCard(desc.damage, desc.health, undefined, canAttack, desc.type);
             this.cardsOnTable[i]._card = card;
 
             var dy;
@@ -264,7 +264,7 @@ function createCb4(id, card) {
                 dy = -20 - card.bounds.height;
                 card.position.y = SCREEN_HEIGHT / 2 + dy;
             }
-            addCardMagnifier(this, card);
+            addCardMagnifier(this, card, this.cardsOnTable[i].type);
         }
         this._x1 = x1;
 

@@ -28,7 +28,7 @@ function draw(cards) {
     var selected = 0;
     for (var i = 0; i < cards.length; i++) {
         var card = cards[i];
-        var g = createCard(card.damage, card.health, card.cost, card.selected);
+        var g = createCard(card.damage, card.health, card.cost, card.selected, card.type);
 
         if (card.selected)
             selected++;
@@ -42,7 +42,7 @@ function draw(cards) {
             x = 20
         }
 
-        addCardMagnifier(this, g, card.selected?"red":"green", createCb(i));
+        addCardMagnifier(this, g, card.type, card.selected?"red":"green", createCb(i));
         this._all.addChild(g);
     }
     if (selected == 30) {
