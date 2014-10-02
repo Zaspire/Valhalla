@@ -6,11 +6,6 @@ var common = require('./common');
 
 var pdb = pmongo(common.config.mongo);
 
-function base64_encode(str) {
-    var b = new Buffer(str);
-    return b.toString('base64');
-}
-
 function generateDeck(account) {
     var deck = [];
     for (var i = 0; i < account.deck.length; i++) {
@@ -45,9 +40,9 @@ function onNewGame(email1, email2) {
             hand2.push(deck2.shift());
         }
 
-        var state = { players: [email1, email2], turn: email1}
-        state[base64_encode(email1)] = {hand: hand1, deck: deck1, health: 31, mana: 1, maxMana: 1};
-        state[base64_encode(email2)] = {hand: hand2, deck: deck2, health: 31, mana: 1, maxMana: 1};
+        var state = { players: [email1, email2], turn: email1, actionsCount: 0 };
+        state[common.base64_encode(email1)] = {hand: hand1, deck: deck1, health: 31, mana: 1, maxMana: 1};
+        state[common.base64_encode(email2)] = {hand: hand2, deck: deck2, health: 31, mana: 1, maxMana: 1};
 
         return pdb.collection('games').insert(state);
     });
@@ -92,7 +87,6 @@ exports.matchmaking = function(req, res) {
             res.send('{}');
     }, function(e) {
         console.log(e);
-throw e;
         res.status(400).end();
     });
 }

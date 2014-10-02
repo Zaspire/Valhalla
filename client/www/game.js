@@ -11,6 +11,23 @@ function onMouseUp(event) {
 }
 //////
 
+function gameAction(action, id1, id2) {
+    var uri = host + 'v1/game_action/' + params.token + '/' + params.gameid + '/' + action + '/';
+
+    var data = {};
+    if (id1 !== undefined)
+        data.id1 = id1;
+    if (id2 !== undefined)
+        data.id2 = id2;
+    $.ajax({ url: uri, data: data }).done(function(data) {
+        updateState();
+    }).fail(function() {
+        // FIXME:
+        updateState();
+    });
+}
+
+
 function State() {
     this.opponentCardsCount = 0;
     this.playerHand = [];
@@ -146,11 +163,7 @@ console.log(this._all);
                 }
 
                 //FIXME:
-                $.ajax({ url: host + 'game_action', data: { token: params.token, gameid: params.gameid, action: 'card', id1: id} }).done(function(data) {
-                    updateState();
-                }).fail(function() {
-                    updateState();
-                });
+                gameAction('card', id);
             };
         }
 
@@ -207,9 +220,7 @@ function createCb4(id, card) {
         var point = self._all.globalToLocal(event.point);
         if (self._opponentHealth.contains(point)) {
             //FIXME:
-            $.ajax({ url: host + 'game_action', data: { token: params.token, gameid: params.gameid, action: 'attack_player', id1: id} }).done(function(data) {
-                updateState();
-            });
+            gameAction('attack_player', id);
             return;
         }
         for (var i = 0; i < self.cardsOnTable.length; i++) {
@@ -231,10 +242,7 @@ function createCb4(id, card) {
         var source = self.cardsOnTable[i];
 
         //FIXME:
-        $.ajax({ url: host + 'game_action', data: { token: params.token, gameid: params.gameid, action: 'attack', id1: source.id, id2: dest.id} }).done(function(data) {
-            console.log(data);
-            updateState();
-        });
+        gameAction('attack', source.id, dest.id);
     }
 }
         var x1 = 20, x2 = 20;
@@ -285,10 +293,7 @@ function createCb4(id, card) {
             };
             border.onMouseUp = function(event) {
                 //FIXME:
-                $.ajax({ url: host + 'game_action', data: { token: params.token, gameid: params.gameid, action: 'finish'} }).done(function(data) {
-                    console.log(data);
-                    updateState();
-                });
+                gameAction('finish');
             }
             this._all.addChild(dTxt);
             this._all.addChild(border);

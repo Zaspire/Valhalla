@@ -31,6 +31,11 @@ exports.clone = function(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 
+exports.base64_encode = function(str) {
+    var b = new Buffer(str);
+    return b.toString('base64');
+}
+
 exports.shuffle = function(o){
     for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
     return o;

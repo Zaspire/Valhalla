@@ -5,6 +5,7 @@
     "engineStrict": true,
     "dependencies": {
         "express": "4.*",
+        "underscore": "1.7.*",
         "xhr2": "*",
         "mongodb": "1.4.*",
         "cors": "2.4.*",
