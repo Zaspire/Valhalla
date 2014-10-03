@@ -42,7 +42,7 @@ var heroes = {
     }
 };
 
-if (exports) {
+if (typeof exports !== 'undefined') {
     exports.heroes = heroes;
     exports.AbilityType = AbilityType;
     exports.CastType = CastType;
