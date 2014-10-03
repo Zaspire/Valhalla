@@ -7,6 +7,11 @@ var pmongo = require('promised-mongo');
 var common = require('./common');
 var pdb = pmongo(common.config.mongo);
 
+var ATTACK_PLAYER = 'attack_player';
+var END_TURN = 'finish';
+var PLAY_CARD = 'card';
+var ATTACK = 'attack';
+
 function GameState(doc, email) {
     assert(doc.players.indexOf(email) != -1);
     assert(doc.turn == email);
@@ -36,11 +41,17 @@ function GameState(doc, email) {
     this.opponentDeck = doc[common.base64_encode(this.opponentEmail)].deck;
 
     this.actionsCount = doc.actionsCount;
+
+    this.log = doc.log;
 }
 
 GameState.prototype = {
     isFinished: function() {
         return this.myHealth <= 0 || this.opponentHealth <= 0;
+    },
+
+    _log: function(action, p1, p2) {
+        this.log.push({ action: action, params: [ p1, p2 ] });
     },
 
     _myCard: function(id) {
@@ -103,6 +114,7 @@ GameState.prototype = {
         this.opponentHealth -= card.damage;
 
         this.actionsCount++;
+        this._log(ATTACK_PLAYER, id1);
     },
 
     attack: function(id1, id2) {
@@ -119,6 +131,7 @@ GameState.prototype = {
         this._removeDeadCards();
 
         this.actionsCount++;
+        this._log(ATTACK, id1, id2);
     },
 
     playCard: function(id1) {
@@ -131,6 +144,7 @@ GameState.prototype = {
         this.myMana -= card.cost;
 
         this.actionsCount++;
+        this._log(PLAY_CARD, id1, card);
     },
 
     endTurn: function() {
@@ -150,6 +164,7 @@ GameState.prototype = {
         this.opponentCards.push(card);
 
         this.actionsCount++;
+        this._log(END_TURN);
     },
 
     serialize: function() {
@@ -157,6 +172,7 @@ GameState.prototype = {
             _id: this._id,
             turn: this.turn,
             players: [ this.email, this.opponentEmail ],
+            log: this.log
         };
 
         doc[common.base64_encode(this.email)] = { hand: this.myCards,
@@ -191,16 +207,16 @@ exports.gameAction = function(req, res) {
             throw new Error('game finshed');
 
         switch (action) {
-        case 'attack_player':
+        case ATTACK_PLAYER:
             state.attackPlayer(id1);
             break;
-        case 'finish':
+        case END_TURN:
             state.endTurn();
             break;
-        case 'card':
+        case PLAY_CARD:
             state.playCard(id1);
             break;
-        case 'attack':
+        case ATTACK:
             state.attack(id1, id2);
             break;
         default:
@@ -210,6 +226,7 @@ exports.gameAction = function(req, res) {
         var r = state.serialize();
 console.log(require('deep-diff')(doc, r));
 
+        r.initial = doc.initial;
         delete r._id;
         return pdb.collection('games').findAndModifyEx({ query: { _id: doc._id, actionsCount: doc.actionsCount },
                                                   update: { $set: r }});
@@ -218,5 +235,46 @@ console.log(require('deep-diff')(doc, r));
     }, function(e) {
         console.log(e);
         res.status(400).end();
-    })
+    });
 };
+
+exports.gameState = function(req, res) {
+    var email = req.email;
+    var gameid = req.gameid;
+
+    pdb.collection('games').findOne({ _id: new mongodb.ObjectID(gameid) }).then(function (doc) {
+        if (!doc)
+            throw new Error('incorrect gameid');
+        assert(doc.players.indexOf(email) != -1);
+
+        var opponentEmail = common.clone(doc.players);
+        opponentEmail.splice(opponentEmail.indexOf(email), 1);
+        opponentEmail = opponentEmail[0];
+
+        var opponentState = doc.initial[common.base64_encode(opponentEmail)];
+        var myState = doc.initial[common.base64_encode(email)];
+        var result = { log: doc.log,
+                       initial: {
+                           my: {
+                               hand: myState.hand,
+                               deckSize: myState.deck.length,
+                               health: myState.health,
+                               mana: myState.mana,
+                               maxMana: myState.maxMana
+                           },
+                           opponent: {
+                               handSize: opponentState.hand.length,
+                               deckSize: opponentState.deck.length,
+                               health: opponentState.health,
+                               mana: opponentState.mana,
+                               maxMana: opponentState.maxMana
+                           }
+                       }};
+        return result;
+    }).done(function(result) {
+        res.send(JSON.stringify(result));
+    }, function(e) {
+        console.log(e);
+        res.status(400).end();
+    });
+}

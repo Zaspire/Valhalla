@@ -40,9 +40,11 @@ function onNewGame(email1, email2) {
             hand2.push(deck2.shift());
         }
 
-        var state = { players: [email1, email2], turn: email1, actionsCount: 0 };
+        var state = { players: [email1, email2], turn: email1, actionsCount: 0, log: [] };
         state[common.base64_encode(email1)] = {hand: hand1, deck: deck1, health: 31, mana: 1, maxMana: 1};
         state[common.base64_encode(email2)] = {hand: hand2, deck: deck2, health: 31, mana: 1, maxMana: 1};
+
+        state.initial = common.clone(state);
 
         return pdb.collection('games').insert(state);
     });

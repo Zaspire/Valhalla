@@ -94,6 +94,7 @@ app.param('gameid', function(req, res, next, id) {
 
 app.get('/v1/matchmaking/:token', require('./matchmaking').matchmaking);
 app.get('/v1/game_action/:token/:gameid/:action/', require('./game_state').gameAction);
+app.get('/v1/game_state/:token/:gameid', require('./game_state').gameState);
 
 app.get('/v1/authorize/:gtoken/:email', account.authorize);
 app.get('/v1/my_cards/:token', account.myCards);
