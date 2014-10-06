@@ -639,9 +639,9 @@ console.log(this._queue[0].obj);
         } else {
             newX = SCREEN_WIDTH - cardView.bounds.width;
             if (card.owner == Owner.ME) {
-                newY = SCREEN_HEIGHT / 2 - 5 - cardView.bounds.height;
-            } else {
                 newY = SCREEN_HEIGHT / 2 + 5;
+            } else {
+                newY = SCREEN_HEIGHT / 2 - 5 - cardView.bounds.height;
             }
         }
 
