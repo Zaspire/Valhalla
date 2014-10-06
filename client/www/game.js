@@ -11,6 +11,11 @@ function onMouseUp(event) {
 }
 //////
 
+////// HACK to make animation work
+var onFrame = new Function();
+//////
+
+
 function assert(a) {
     if (!a)
         throw new Error();
@@ -443,6 +448,8 @@ function CardView(model, card, parent, view) {
 
     defineGProperty(this, 'highlite', false);
 
+    this._queue = [];
+
     this._init();
 }
 
@@ -463,6 +470,9 @@ CardView.prototype = {
         bg.position.x = 0;
         bg.position.y = 0;
         group.addChild(bg);
+
+        this._x = 0;
+        this._y = 0;
 
         this._addHighlite();
         this._addDamage();
@@ -487,6 +497,27 @@ CardView.prototype = {
             this.model.me.on('changed::mana', this._updateHighlite.bind(this));
             this._updateHighlite();
         }
+    },
+
+    _startNextAnimation: function() {
+        var self = this
+        var params = this._queue[0].params;
+
+        params.onComplete = function () {
+            self._queue.shift();
+            if (self._queue.length)
+                self._startNextAnimation();
+        }
+console.log(this._queue[0].obj);
+        Tweener.addTween(this._queue[0].obj, params);
+    },
+
+    _queueAnimation: function(obj, params) {
+        assert(!('onComplete' in params));
+        this._queue.push({obj: obj, params: params});
+
+        if (this._queue.length == 1)
+            this._startNextAnimation();
     },
 
     _addHeroImage: function() {
@@ -534,6 +565,9 @@ CardView.prototype = {
         if (!this.highlite)
             return;
         this.group.position = this.parent.globalToLocal(event.point);
+
+        this._x = this.group.position._x;
+        this._y = this.group.position._y;
     },
 
     _onMouseUp: function(event) {
@@ -585,29 +619,37 @@ CardView.prototype = {
         var cardView = this.group;
         var index = this.model.cardPosition(card);
 
+        var newX, newY;
+
         cardView.pivot = this.parent.bounds.topLeft;
         if (card.state == CardState.HAND) {
-            cardView.position.x = 20 * (index + 1) + index * cardView.bounds.width;
+            newX = 20 * (index + 1) + index * cardView.bounds.width;
             if (card.owner == Owner.ME) {
-                cardView.position.y = SCREEN_HEIGHT - cardView.bounds.height;
+                newY = SCREEN_HEIGHT - cardView.bounds.height;
             } else {
-                cardView.position.y = 5;
+                newY = 5;
             }
         } else if (card.state == CardState.TABLE) {
+            newX = 20 * (index + 1) + index * cardView.bounds.width;
             if (card.owner == Owner.ME) {
-                cardView.position.x = 20 * (index + 1) + index * cardView.bounds.width;
-                cardView.position.y = SCREEN_HEIGHT / 2 + 20;
+                newY = SCREEN_HEIGHT / 2 + 20;
             } else {
-                cardView.position.x = 20 * (index + 1) + index * cardView.bounds.width;
-                cardView.position.y = SCREEN_HEIGHT / 2 - 20 - cardView.bounds.height;
+                newY = SCREEN_HEIGHT / 2 - 20 - cardView.bounds.height;
             }
         } else {
-            cardView.position.x = SCREEN_WIDTH - cardView.bounds.width;
+            newX = SCREEN_WIDTH - cardView.bounds.width;
             if (card.owner == Owner.ME) {
-                cardView.position.y = SCREEN_HEIGHT / 2 - 5 - cardView.bounds.height;
+                newY = SCREEN_HEIGHT / 2 - 5 - cardView.bounds.height;
             } else {
-                cardView.position.y = SCREEN_HEIGHT / 2 + 5;
+                newY = SCREEN_HEIGHT / 2 + 5;
             }
+        }
+
+        if (newX != this._x || newY != this._y) {
+            this._queueAnimation(this.group.position, { x: newX, y: newY,
+                                                        time: 1, transition: "easeInCubic", })
+            this._x = newX;
+            this._y = newY;
         }
         //FIXME
         paper.view.update();
