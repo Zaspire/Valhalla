@@ -755,7 +755,7 @@ function GameStateView(model) {
     this._all.position = [0,0];
     this._all.applyMatrix = false;
 
-    var bg = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(SCREEN_WIDTH -4 , SCREEN_HEIGHT -4)));
+    var bg = new Path.Rectangle(new Rectangle(new Point(1, 1), new Size(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1)));
     bg.fillColor="#ffffff";
     bg.strokeColor="#808080";
     bg.strokeWidth = 1;
