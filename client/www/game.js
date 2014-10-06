@@ -11,6 +11,879 @@ function onMouseUp(event) {
 }
 //////
 
+function assert(a) {
+    if (!a)
+        throw new Error();
+}
+
+function defineGProperty(self, prop, val) {
+    self['__' + prop] = val;
+    Object.defineProperty(self, prop, {
+        get: function() {
+            return self['__' + prop];
+        },
+        set: function(val) {
+            self['__' + prop] = val;
+
+            self.emit('changed::' + prop);
+        }
+    });
+}
+
+function GObject(props) {
+    EventEmitter2.call(this);
+
+    for (var prop in props) {
+        defineGProperty(this, prop, props[prop]);
+    }
+}
+GObject.prototype.__proto__ = EventEmitter2.prototype;
+
+var params = {};
+params.token = localStorage.getItem('token');
+params.gameid = localStorage.getItem('gameid');
+
+var CardState = {
+    DECK: 1,
+    HAND: 2,
+    TABLE: 3
+};
+
+var GameState = {
+    IN_PROGRESS: 1,
+    WIN: 2,
+    LOSE: 3
+};
+var Owner = {
+    ME: 1,
+    OPPONENT: 2
+};
+
+var ATTACK_PLAYER = 'attack_player';
+var END_TURN = 'finish';
+var PLAY_CARD = 'card';
+var ATTACK = 'attack';
+
+function GameStateModel() {
+    EventEmitter2.call(this);
+
+    defineGProperty(this, 'state', GameState.IN_PROGRESS);
+    defineGProperty(this, 'turn', Owner.OPPONENT);
+    this._nextCardUniqId = 1;
+
+
+    this._requestGameState(this._init.bind(this));
+    // signals: ready, onNewCard, reposition
+
+    this.setMaxListeners(70);
+}
+
+GameStateModel.prototype = {
+    __proto__: EventEmitter2.prototype,
+    _createPlayer: function(mana, maxMana, health, owner) {
+        var player =  new GObject({ mana: mana,
+                                    maxMana: maxMana,
+                                    health: health });
+
+        player.owner = owner;
+
+        player.setMaxListeners(35);
+        return player;
+    },
+
+    _createCard: function(owner, type, attacksLeft, state, id, damage, health, cost) {
+        var card = new GObject({ owner: owner,
+                                 type: type,
+                                 damage: damage,
+                                 health: health,
+                                 cost: cost,
+                                 id: id,
+                                 attacksLeft: attacksLeft,
+                                 state: state });
+
+        card.__cardUnitField = this._nextCardUniqId++;
+
+        this.emit('onNewCard', card);
+
+        var self = this;
+        card.on('changed::state', function() {
+            self.emit('reposition');
+        });
+
+        return card;
+    },
+
+    _requestGameState: function(cb) {
+        var self = this;
+        var uri = host + 'v1/game_state/' + params.token + '/' + params.gameid;
+
+        $.ajax({ url: uri }).done(cb).fail(function() {
+            //FIXME
+        });
+    },
+
+    _init: function(data) {
+        var self = this;
+        self._cards = [];
+
+        var data = JSON.parse(data);
+        self.me = self._createPlayer(data.initial.my.mana, data.initial.my.maxMana, data.initial.my.health, Owner.ME);
+        self.opponent = self._createPlayer(data.initial.opponent.mana, data.initial.opponent.maxMana, data.initial.opponent.health, Owner.OPPONENT);
+        self.players = [self.me, self.opponent];
+
+        self._initial = data.initial;
+        self._log = [];
+
+        if (data.initial.turn)
+            self.turn = Owner.ME;
+
+        for (var i = 0; i < data.initial.my.hand.length; i++) {
+            var card = data.initial.my.hand[i];
+            var c = self._createCard(Owner.ME, card.type, 0, CardState.HAND, card.id, card.damage, card.health, card.cost);
+            self._cards.push(c);
+        }
+        for (var i = 0; i < data.initial.my.deckSize; i++) {
+            var c = self._createCard(Owner.ME, undefined, 0, CardState.DECK, undefined);
+            self._cards.push(c);
+        }
+
+        for (var i = 0; i < data.initial.opponent.deckSize; i++) {
+            var c = self._createCard(Owner.OPPONENT, undefined, 0, CardState.DECK, undefined);
+            self._cards.push(c);
+        }
+        for (var i = 0; i < data.initial.opponent.handSize; i++) {
+            var c = self._createCard(Owner.OPPONENT, undefined, 0, CardState.HAND, undefined);
+            self._cards.push(c);
+        }
+
+        self.emit('ready');
+
+        myController.blockLog = true;
+        for (var i = 0; i < data.log.length; i++) {
+            self._handleAction(data.log[i]);
+        }
+        myController.blockLog = false;
+
+        setInterval(function() {
+            self._requestGameState(self._updateState.bind(self));
+        }, 1000);
+    },
+
+    _handleAction: function(e) {
+        var controller = opponentController;
+        if (e.me)
+            controller = myController;
+        switch (e.action) {
+        case ATTACK_PLAYER:
+            controller.attackPlayer(e.params[0]);
+            break;
+        case ATTACK:
+            controller.attack(e.params[0], e.params[1]);
+            break;
+        case PLAY_CARD:
+            controller.playCard(e.params[0], e.params[1]);
+            break;
+        case END_TURN:
+            controller.endTurn(null, e.params[1]);
+            break;
+        default:
+            assert(false);
+        };
+    },
+
+    _compareLogEntries: function(e1, e2) {
+        if (e1.action != e2.action)
+            return false;
+
+        if (e1.me != e2.me)
+            return false;
+
+        if (typeof(e1.params[0]) == 'string' && e1.params[0] != e1.params[0])
+            return false;
+        if (typeof(e1.params[1]) == 'string' && e1.params[1] != e1.params[1])
+            return false;
+        //FIXME: compare card id in params
+        return true;
+    },
+
+    _updateState: function(data) {
+        var data = JSON.parse(data);
+
+        assert(_.isEqual(data.initial, this._initial));
+
+        //FIXME:
+        if (data.log.length <  this._log.length) {
+            console.log(data.log);
+            console.log(this._log)
+        }
+        assert(data.log.length >= this._log.length);
+        for (var i = 0; i < this._log.length; i++) {
+            if (!this._compareLogEntries(data.log[i], this._log[i])) {
+                console.warn('different log');
+                console.warn(data.log[i])
+                console.warn(this._log[i])
+            }
+        }
+
+        for (var i = this._log.length; i < data.log.length; i++) {
+            this._handleAction(data.log[i]);
+        }
+    },
+
+    cardPosition: function(card) {
+        var arr;
+        arr = this._cards.filter(function(c) {
+            return c.owner == card.owner && c.state == card.state;
+        });
+        var t = arr.indexOf(card)
+        if (t == -1)
+            return arr.length;
+        return t;
+    }
+};
+
+function GameStateController(model, owner) {
+    this.model = model;
+    this.owner = owner;
+
+    var self = this;
+    //FIXME:
+    model.on('ready', function() {
+        self._init(model, owner);
+    });
+}
+
+GameStateController.prototype = {
+    _init: function(model, owner) {
+        assert(model.players.length == 2);
+        this.me = model.players.filter(function (p) {return p.owner == owner;})[0];
+        this.opponent = model.players.filter(function (p) {return p.owner != owner;})[0];
+    },
+
+    isFinished: function() {
+        return this.me.health <= 0 || this.opponent.health <= 0;
+    },
+
+    _log: function(action, p1, p2) {
+/*        if (this.blockLog)
+            return;*/
+        var r = {action: action, params: [p1, p2]};
+        if (this.me.owner == Owner.ME)
+            r.me = true;
+
+        this.model._log.push(r);
+    },
+
+    _initCard: function(desc, card) {
+        var props = ['type', 'attacksLeft', 'id', 'damage', 'health', 'cost'];
+
+        for (var i = 0; i < props.length; i++) {
+            var prop = props[i];
+            card[prop] = desc[prop];
+        }
+    },
+
+    _myCard: function(id) {
+        var r = this.model._cards.filter(function (c) {return c.id == id;});
+
+        if (!r)
+            throw new Error('incorrect card id');
+        assert(r.length == 1);
+        r = r[0];
+        assert(r.owner == this.owner);
+
+        return r;
+    },
+
+    _opponentCard: function(id) {
+        var r = this.model._cards.filter(function (c) {return c.id == id;});
+
+        if (!r)
+            throw new Error('incorrect card id');
+        assert(r.length == 1);
+        r = r[0];
+        assert(r.owner != this.owner);
+
+        return r;
+    },
+
+    _removeDeadCards: function() {
+        function isAlive(card) {
+            return card.health > 0 || card.health === undefined;
+        }
+        this.model.emit('reposition');
+        this.model._cards = this.model._cards.filter(isAlive);
+    },
+
+    canAttack: function(id1) {
+        var card = this._myCard(id1);
+
+        if (card.state != CardState.TABLE || card.attacksLeft <= 0)
+            return false;
+
+        return true;
+    },
+
+    canBeAttacked: function(id2) {
+        var card = this._opponentCard(id2);
+
+        if (card.state != CardState.TABLE)
+            return false;
+
+        return true;
+    },
+
+    canPlayCard: function(id1) {
+        var card = this._myCard(id1);
+
+        if (card.state == CardState.TABLE || card.cost > this.me.mana)
+            return false;
+
+        return true;
+    },
+
+    attackPlayer: function(id1) {
+        if (!this.canAttack(id1))
+            throw new Error('invalid action');
+
+        var card = this._myCard(id1);
+        card.attacksLeft--;
+
+        this.opponent.health -= card.damage;
+
+//        this.actionsCount++;
+        this._log(ATTACK_PLAYER, id1);
+    },
+
+    attack: function(id1, id2) {
+        if (!this.canAttack(id1) || !this.canBeAttacked(id2))
+            throw new Error('invalid action');
+
+        var card1 = this._myCard(id1), card2 = this._opponentCard(id2);
+
+        card1.attacksLeft--;
+
+        card2.health -= card1.damage;
+        card1.health -= card2.damage;
+
+        this._removeDeadCards();
+
+  //      this.actionsCount++;
+        this._log(ATTACK, id1, id2);
+    },
+
+    playCard: function(id1, _card) {
+        var self = this;
+        try {
+            var card = this._myCard(id1);
+        } catch (e) {
+            if (_card) {
+                var deck = this.model._cards.filter(function(c) {
+                    return c.owner == self.owner && c.state == CardState.HAND;
+                });
+                assert(deck.length);
+                var c = deck[0];
+
+                this._initCard(_card, c);
+            } else
+                throw e;
+        }
+
+        if (!this.canPlayCard(id1))
+            throw new Error('invalid action');
+
+        var card = this._myCard(id1);
+        card.state = CardState.TABLE;
+        card.attacksLeft = 0;
+        this.me.mana -= card.cost;
+
+//        this.actionsCount++;
+        this._log(PLAY_CARD, id1, card);
+    },
+
+    endTurn: function(a1, a2) {
+        var opponent = this.owner == Owner.ME ? Owner.OPPONENT: Owner.ME;
+        assert(this.model.turn == this.owner);
+        this.model.turn = opponent;
+        this.opponent.maxMana = Math.min(10, this.opponent.maxMana + 1);
+        this.opponent.mana = this.opponent.maxMana;
+
+        this.model._cards.forEach(function(card, index, array) {
+            if (card.state != CardState.TABLE || card.owner != opponent)
+                return;
+            card.attacksLeft = 1;
+        });
+
+        var deck = this.model._cards.filter(function(card) {
+            return card.owner == opponent && card.state == CardState.DECK;
+        });
+        // FIXME:
+        assert(deck.length);
+
+        var card = deck[0];
+        card.attacksLeft = 0;
+        card.state = CardState.HAND;
+
+        if (a2) {
+            this._initCard(a2, card);
+        }
+
+//        this.actionsCount++;
+        this._log(END_TURN, null, card);
+    }
+};
+
+function CardView(model, card, parent, view) {
+    EventEmitter2.call(this);
+
+    this.view = view;
+    this.card = card;
+    this.model = model;
+    this.parent = parent;
+
+    defineGProperty(this, 'highlite', false);
+
+    this._init();
+}
+
+CardView.prototype = {
+    __proto__: EventEmitter2.prototype,
+
+    _init: function() {
+        // FIXME: remove all listeners on destroy
+        var group = new Group();
+        this.group = group;
+        var m = new paper.Matrix(0.25, 0, 0, 0.25, 0, 0);
+        group.matrix = m;
+        group.applyMatrix = false;
+
+        var bg = new Raster('fg');
+        this._bg = bg;
+        bg.pivot = bg.bounds.topLeft;
+        bg.position.x = 0;
+        bg.position.y = 0;
+        group.addChild(bg);
+
+        this._addHighlite();
+        this._addDamage();
+        this._addHealth();
+        this._addCost();
+        this._addHeroImage();
+
+        this._updatePosition();
+        this.card.on('changed::state', this._updatePosition.bind(this));
+        this.model.on('reposition', this._updatePosition.bind(this));
+
+        this.group.onMouseDown = this._onMouseDown.bind(this);
+        this.group.onMouseDrag = this._onMouseDrag.bind(this);
+        this.group.onMouseUp = this._onMouseUp.bind(this);
+
+        this.parent.addChild(this.group);
+
+        if (this.card.owner == Owner.ME) {
+            this.model.on('changed::turn', this._updateHighlite.bind(this));
+            this.card.on('changed::attacksLeft', this._updateHighlite.bind(this));
+            this.card.on('changed::state', this._updateHighlite.bind(this));
+            this.model.me.on('changed::mana', this._updateHighlite.bind(this));
+            this._updateHighlite();
+        }
+    },
+
+    _addHeroImage: function() {
+        var self = this;
+        function update() {
+            if (self.card.type && heroes[self.card.type].img) {
+                var hero = new Raster(self.card.type);
+                hero.pivot = hero.bounds.topLeft;
+                hero.position.x = 0;
+                hero.position.y = 0;
+                self.group.addChild(hero);
+            }
+            paper.view.update();
+        }
+        this.card.on('changed::type', update);
+        update();
+    },
+
+    _updateHighlite: function() {
+        var value = true;
+
+        if (this.model.turn != this.card.owner)
+            value = false;
+
+        if (this.card.state == CardState.DECK)
+            value = false;
+
+        if (this.card.state == CardState.HAND && this.model.me.mana < this.card.cost)
+            value = false;
+
+        if (this.card.state == CardState.TABLE && this.card.attacksLeft <= 0)
+            value = false;
+
+        this.highlite = value;
+    },
+
+    _onMouseDown: function(event) {
+        if (!this.highlite)
+            return;
+
+        this.group.bringToFront();
+    },
+
+    _onMouseDrag: function(event) {
+        if (!this.highlite)
+            return;
+        this.group.position = this.parent.globalToLocal(event.point);
+    },
+
+    _onMouseUp: function(event) {
+        if (!this.highlite)
+            return;
+
+        if (this.card.state == CardState.HAND) {
+            if (this.group.position.y >= SCREEN_HEIGHT - this.group.bounds.height) {
+                this._updatePosition();
+                return;
+            }
+
+            myController.playCard(this.card.id);
+            gameAction('card', this.card.id);
+            return;
+        }
+        if (this.card.state == CardState.TABLE) {
+            var point = this.parent.globalToLocal(event.point);
+
+            if (this.view.opponentHealth.contains(point)) {
+                gameAction('attack_player', this.card.id);
+                myController.attackPlayer(this.card.id);
+                this._updatePosition();
+                return;
+            }
+            for (var i = 0; i < this.view.cards.length; i++) {
+                //FIXME:
+                var other = this.view.cards[i]
+                if (this == other)
+                    continue;
+                if (other.card.state != CardState.TABLE)
+                    continue;
+                if (other.card.owner == this.card.owner)
+                    continue;
+                if (other.group.contains(point)) {
+                    gameAction('attack', this.card.id, other.card.id);
+                    myController.attack(this.card.id, other.card.id);
+                    this._updatePosition();
+                    return;
+                }
+            }
+            this._updatePosition();
+            return;
+        }
+    },
+
+    _updatePosition: function() {
+        var card = this.card;
+        var cardView = this.group;
+        var index = this.model.cardPosition(card);
+
+        cardView.pivot = this.parent.bounds.topLeft;
+        if (card.state == CardState.HAND) {
+            cardView.position.x = 20 * (index + 1) + index * cardView.bounds.width;
+            if (card.owner == Owner.ME) {
+                cardView.position.y = SCREEN_HEIGHT - cardView.bounds.height;
+            } else {
+                cardView.position.y = 5;
+            }
+        } else if (card.state == CardState.TABLE) {
+            if (card.owner == Owner.ME) {
+                cardView.position.x = 20 * (index + 1) + index * cardView.bounds.width;
+                cardView.position.y = SCREEN_HEIGHT / 2 + 20;
+            } else {
+                cardView.position.x = 20 * (index + 1) + index * cardView.bounds.width;
+                cardView.position.y = SCREEN_HEIGHT / 2 - 20 - cardView.bounds.height;
+            }
+        } else {
+            cardView.position.x = SCREEN_WIDTH - cardView.bounds.width;
+            if (card.owner == Owner.ME) {
+                cardView.position.y = SCREEN_HEIGHT / 2 - 5 - cardView.bounds.height;
+            } else {
+                cardView.position.y = SCREEN_HEIGHT / 2 + 5;
+            }
+        }
+        //FIXME
+        paper.view.update();
+    },
+
+    _addHighlite: function() {
+        var border = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(this._bg.bounds.width, this._bg.bounds.height)));
+        border.strokeColor = "#00ff00";
+
+        border.strokeWidth = 3;
+        var self = this;
+        function updateVisibility() {
+            border.visible = self.highlite;
+        }
+        updateVisibility();
+        this.on('changed::highlite', updateVisibility);
+
+        this.group.addChild(border);
+        this._bg.bringToFront();
+    },
+
+    _addDamage: function() {
+        var dTxt = new PointText(new Point(55,485));
+        dTxt.characterStyle= {
+            font:"Courier",
+            fontSize:80,
+            fillColor:"#000000"
+        }
+        dTxt.paragraphStyle = {
+            justification:"left"
+        };
+
+        var self = this;
+        function updateText() {
+            dTxt.content = self.card.damage;
+            dTxt.visible = self.card.damage !== undefined;
+            paper.view.update();
+        }
+        updateText();
+        this.card.on('changed::damage', updateText);
+
+        this.group.addChild(dTxt);
+    },
+
+    _addHealth: function() {
+        var hTxt = new PointText(new Point(290,486));
+        hTxt.characterStyle= {
+            font:"Courier",
+            fontSize:80,
+            fillColor:"#000000"
+        }
+        hTxt.paragraphStyle = {
+            justification:"left"
+        };
+
+        var self = this;
+        function updateText() {
+            hTxt.content = self.card.health;
+            hTxt.visible = self.card.health !== undefined;
+
+            if (self.card.health !== undefined) {
+                if (self.card.health <= 0)
+                    self.group.remove();
+            }
+            paper.view.update();
+        }
+        updateText();
+        this.card.on('changed::health', updateText);
+
+        this.group.addChild(hTxt);
+    },
+
+    _addCost: function() {
+        var cTxt = new PointText(new Point(33,84));
+        cTxt.characterStyle= {
+            font:"Courier",
+            fontSize:80,
+            fillColor:"#000000"
+        }
+        cTxt.paragraphStyle = {
+            justification:"left"
+        };
+
+        var self = this;
+        function updateText() {
+            cTxt.content = self.card.cost;
+            cTxt.visible = self.card.cost !== undefined;
+            paper.view.update();
+        }
+        updateText();
+        this.card.on('changed::cost', updateText);
+
+        this.group.addChild(cTxt);
+    }
+};
+
+function GameStateView(model) {
+    this.model = model;
+
+    this.cards = [];
+
+    this._all = new Group();
+    this._all.pivot = this._all.bounds.topLeft;
+    this._all.position = [0,0];
+    this._all.applyMatrix = false;
+
+    var bg = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(SCREEN_WIDTH -4 , SCREEN_HEIGHT -4)));
+    bg.fillColor="#ffffff";
+    bg.strokeColor="#808080";
+    bg.strokeWidth = 1;
+    this._all.addChild(bg);
+
+    this._all.matrix.scale(view.bounds.width / SCREEN_WIDTH, view.bounds.height / SCREEN_HEIGHT);
+
+    this.model.on('ready', this._init.bind(this));
+    this.model.on('onNewCard', this._onNewCard.bind(this));
+}
+
+GameStateView.prototype = {
+    _init: function() {
+        this._addOpponentHealth();
+        this._addHealth();
+        this._addMana();
+        this._addNextTurnButton();
+
+        var midLine = new Path.Line(new Point(0, SCREEN_HEIGHT / 2), new Point(SCREEN_WIDTH, SCREEN_HEIGHT / 2));
+        midLine.strokeColor = 'red';
+        this._all.addChild(midLine);
+        paper.view.update();
+    },
+
+    _addOpponentHealth: function() {
+        var self = this;
+        var opponentHealth = new Path.Circle(new Point(1000, 100), 50);
+        opponentHealth.fillColor = "#cc00cc";
+        opponentHealth.strokeColor = "#808080";
+        opponentHealth.strokeWidth = 1;
+        this._all.addChild(opponentHealth);
+
+        this.opponentHealth = opponentHealth;
+
+        var txt = new PointText(new Point(1000,70));
+
+        txt.content = '\u2764' + this.model.opponent.health;
+        this.model.opponent.on('changed::health', function() {
+            txt.content = '\u2764' + self.model.opponent.health;
+            paper.view.update();
+        });
+        txt.characterStyle= {
+            font:"Courier",
+            fontSize:14,
+            fillColor:"#000000"
+        }
+        txt.paragraphStyle = {
+            justification:"left"
+        };
+        this._all.addChild(txt);
+    },
+
+    _addHealth: function() {
+        var self = this;
+        var selfHealth = new Path.Circle(new Point(1000, 700), 50);
+        selfHealth.fillColor="#cc00cc";
+        selfHealth.strokeColor="#808080";
+        selfHealth.strokeWidth = 1;
+        this._all.addChild(selfHealth);
+        var txt = new PointText(new Point(1000,700));
+        txt.content = '\u2764' + this.model.me.health;
+        this.model.me.on('changed::health', function() {
+            txt.content = '\u2764' + self.model.me.health;
+            paper.view.update();
+        });
+        txt.characterStyle= {
+            font:"Courier",
+            fontSize:14,
+            fillColor:"#000000"
+        }
+        txt.paragraphStyle = {
+            justification:"left"
+        };
+        this._all.addChild(txt);
+    },
+
+    _addMana: function() {
+        var self = this;
+        var txt = new PointText(new Point(900,700));
+        txt.content = '\u2B1F' + this.model.me.mana;
+        this.model.me.on('changed::mana', function() {
+            txt.content = '\u2B1F' + self.model.me.mana;
+            paper.view.update();
+        });
+        txt.characterStyle= {
+            font:"Courier",
+            fontSize:14,
+            fillColor:"#000000"
+        }
+        txt.paragraphStyle = {
+            justification:"left"
+        };
+        this._all.addChild(txt);
+    },
+
+    _addNextTurnButton: function() {
+        var border = new Path.Rectangle(new Rectangle(new Point(500, 10), new Size(75, 50)));
+        border.fillColor="green";
+        border.strokeColor="#808080";
+        border.strokeWidth = 1;
+
+        var dTxt = new PointText(new Point(510,30));
+        dTxt.content = 'End Turn';
+        dTxt.characterStyle= {
+            font:"Courier",
+            fontSize:16,
+            fillColor:"#000000"
+        }
+        dTxt.paragraphStyle = {
+            justification:"left"
+        };
+
+        border.onMouseUp = function(event) {
+            //FIXME:
+            gameAction('finish');
+        }
+
+        border.addChild(dTxt);
+        this._all.addChild(border);
+
+        dTxt.bringToFront();
+
+        border.visible = this.model.turn == Owner.ME;
+        dTxt.visible = border.visible;
+
+        var self = this;
+        this.model.on('changed::turn', function () {
+            border.visible = self.model.turn == Owner.ME;
+            dTxt.visible = border.visible;
+        });
+    },
+
+    _onNewCard: function(card) {
+        var self = this;
+        var cardView = new CardView(this.model, card, this._all, view);
+
+        this.cards.push(cardView);
+    },
+
+    _endScreen: function() {
+        assert(this.model.state != GameState.IN_PROGRESS);
+
+        var txt = new PointText(new Point(0,70));
+
+        if (this.model.state == GameState.WIN)
+            txt.content = 'WIN';
+        else
+            txt.content = 'LOSE';
+        txt.characterStyle= {
+            font:"Courier",
+            fontSize:30,
+            fillColor:"#000000"
+        }
+        txt.paragraphStyle = {
+            justification:"left"
+        };
+        this._all.addChild(txt);
+        bg.onMouseDown = function() {
+            window.location = "mainmenu.html";
+        }
+        paper.view.update();
+    }
+};
+
+var model = new GameStateModel();
+var view = new GameStateView(model);
+var myController = new GameStateController(model, Owner.ME);
+var opponentController = new GameStateController(model, Owner.OPPONENT);
+
 function gameAction(action, id1, id2) {
     var uri = host + 'v1/game_action/' + params.token + '/' + params.gameid + '/' + action + '/';
 
@@ -20,317 +893,7 @@ function gameAction(action, id1, id2) {
     if (id2 !== undefined)
         data.id2 = id2;
     $.ajax({ url: uri, data: data }).done(function(data) {
-        updateState();
     }).fail(function() {
         // FIXME:
-        updateState();
     });
 }
-
-
-function State() {
-    this.opponentCardsCount = 0;
-    this.playerHand = [];
-    this.cardsOnTable = [];
-    this.myTurn = false;
-    this.health = 30;
-    this.opponentHealth = 30;
-
-    project.view.onResize = this._onResize.bind(this);
-}
-
-State.prototype = {
-    _onResize: function() {
-/*        console.log(project.view.bounds);
-console.log(view.bounds.width);
-console.log(this._all);
-        if (this._all)
-            this._all.scale((view.bounds.width / SCREEN_WIDTH) / this._all.scaling.x, (view.bounds.height / SCREEN_HEIGHT) / this._all.scaling.y);*/
-        this.refresh();
-    },
-
-    refresh: function() {
-        project.clear();
-
-        this._all = new Group();
-        this._all.pivot = this._all.bounds.topLeft;
-        this._all.position = [0,0];
-
-        var bg = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(SCREEN_WIDTH -4 , SCREEN_HEIGHT -4)));
-        bg.fillColor="#ffffff";
-        bg.strokeColor="#808080";
-        bg.strokeWidth = 1;
-        this._all.addChild(bg);
-
-        if (this.state == "WIN") {
-            var txt = new PointText(new Point(0,70));
-            txt.content = 'WIN';
-            txt.characterStyle= {
-                font:"Courier",
-                fontSize:30,
-                fillColor:"#000000"
-            }
-            txt.paragraphStyle = {
-                justification:"left"
-            };
-            this._all.addChild(txt);
-            bg.onMouseDown = function() {
-                window.location = "mainmenu.html";
-            }
-            paper.view.draw();
-            return;
-        }
-        if (this.state == "LOSE") {
-            var txt = new PointText(new Point(0,70));
-            txt.content = 'LOSE';
-            txt.characterStyle= {
-                font:"Courier",
-                fontSize:30,
-                fillColor:"#000000"
-            }
-            txt.paragraphStyle = {
-                justification:"left"
-            };
-            this._all.addChild(txt);
-            bg.onMouseDown = function() {
-                window.location = "index.html";
-            }
-            paper.view.draw();
-            return;
-        }
-
-        var selfHealth = new Path.Circle(new Point(1000, 700), 50);
-        selfHealth.fillColor="#cc00cc";
-        selfHealth.strokeColor="#808080";
-        selfHealth.strokeWidth = 1;
-        this._all.addChild(selfHealth);
-        var txt = new PointText(new Point(1000,700));
-        txt.content = '\u2764' + this.health;
-        txt.characterStyle= {
-            font:"Courier",
-            fontSize:14,
-            fillColor:"#000000"
-        }
-        txt.paragraphStyle = {
-            justification:"left"
-        };
-        this._all.addChild(txt);
-
-        //MANA
-        txt = new PointText(new Point(900,700));
-        txt.content = '\u2B1F' + this.mana;
-        txt.characterStyle= {
-            font:"Courier",
-            fontSize:14,
-            fillColor:"#000000"
-        }
-        txt.paragraphStyle = {
-            justification:"left"
-        };
-        this._all.addChild(txt);
-
-
-        var opponentHealth = new Path.Circle(new Point(1000, 100), 50);
-        opponentHealth.fillColor="#cc00cc";
-        opponentHealth.strokeColor="#808080";
-        opponentHealth.strokeWidth = 1;
-        this._opponentHealth = opponentHealth;
-        this._all.addChild(opponentHealth);
-        var txt = new PointText(new Point(1000,70));
-        txt.content = '\u2764' + this.opponentHealth;
-        txt.characterStyle= {
-            font:"Courier",
-            fontSize:14,
-            fillColor:"#000000"
-        }
-        txt.paragraphStyle = {
-            justification:"left"
-        };
-        this._all.addChild(txt);
-
-
-        var x = 20;
-
-        var self = this;
-        function createCb(id, card) {
-            var prevPosition = card.position;
-            return function(event) {
-                if (card.position == prevPosition)
-                    return;
-                if (card.position.y >= SCREEN_HEIGHT - card.bounds.height) {
-                    updateState();
-                    return;
-                }
-
-                //FIXME:
-                gameAction('card', id);
-            };
-        }
-
-        for (var i = 0; i < this.playerHand.length; i++) {
-            var card = createCard(this.playerHand[i].damage, this.playerHand[i].health, this.playerHand[i].cost, false, this.playerHand[i].type);
-
-            this._all.addChild(card);
-            card.pivot = card.bounds.topLeft;
-            card.position.x = x;
-            card.position.y = SCREEN_HEIGHT - card.bounds.height;
-            x += card.bounds.width + 20;
-            this.playerHand[i]._card = card;
-            if (this.myTurn) {
-                card.onMouseDown = createCb2(card);
-                card.onMouseDrag = createCb3(card);
-                card.onMouseUp = createCb(this.playerHand[i].id, card);
-            }
-            addCardMagnifier(self, card, this.playerHand[i].type);
-        }
-        x = 20;
-        for (var i = 0; i < this.opponentCardsCount; i++) {
-            var card = createCard();
-
-            this._all.addChild(card);
-            card.pivot = card.bounds.topLeft;
-            card.position.x = x;
-            card.position.y = 5;
-            x += card.bounds.width + 20;
-        }
-        var midLine = new Path.Line(new Point(0, SCREEN_HEIGHT / 2), new Point(SCREEN_WIDTH, SCREEN_HEIGHT / 2));
-        midLine.strokeColor = 'red';
-        this._all.addChild(midLine);
-        if (card) {
-            var dropZone = new Path.Line(new Point(0, SCREEN_HEIGHT - card.bounds.height), new Point(SCREEN_WIDTH, SCREEN_HEIGHT - card.bounds.height));
-            dropZone.strokeColor = 'yellow';
-            this._all.addChild(dropZone);
-        }
-
-function createCb2(card) {
-    return function(event) {
-        card.bringToFront();
-    }
-}
-function createCb3(card) {
-    return function(event) {
-        card.position = self._all.globalToLocal(event.point);
-    }
-}
-function createCb4(id, card) {
-    var prevPosition = card.position;
-    return function(event) {
-        if (prevPosition == card.position)
-            return;
-        var point = self._all.globalToLocal(event.point);
-        if (self._opponentHealth.contains(point)) {
-            //FIXME:
-            gameAction('attack_player', id);
-            return;
-        }
-        for (var i = 0; i < self.cardsOnTable.length; i++) {
-            if (self.cardsOnTable[i].mine)
-                continue;
-            if (self.cardsOnTable[i]._card.contains(point))
-                break;
-        }
-        if (i >= self.cardsOnTable.length) {
-            self.refresh();
-            return;
-        }
-        var dest = self.cardsOnTable[i];
-
-        for (i = 0; i < self.cardsOnTable.length; i++) {
-            if (self.cardsOnTable[i].id == id)
-                break;
-        }
-        var source = self.cardsOnTable[i];
-
-        //FIXME:
-        gameAction('attack', source.id, dest.id);
-    }
-}
-        var x1 = 20, x2 = 20;
-        for (var i = 0; i < this.cardsOnTable.length; i++) {
-            var desc = this.cardsOnTable[i];
-            var canAttack = desc.attacksLeft > 0 && desc.mine && this.myTurn;
-            var card = createCard(desc.damage, desc.health, undefined, canAttack, desc.type);
-            this.cardsOnTable[i]._card = card;
-
-            var dy;
-            this._all.addChild(card);
-            if (desc.mine) {
-                card.pivot = card.bounds.topLeft;
-                card.position.x = x1;
-                x1 += card.bounds.width + 20;
-                dy = +20;
-                card.position.y = SCREEN_HEIGHT / 2 + dy;
-                if (this.myTurn && canAttack) {
-                    card.onMouseDown = createCb2(card);
-                    card.onMouseDrag = createCb3(card);
-                    card.onMouseUp = createCb4(desc.id, card);
-                }
-            } else {
-                card.pivot = card.bounds.topLeft;
-                card.position.x = x2;
-                x2 += card.bounds.width + 20;
-                dy = -20 - card.bounds.height;
-                card.position.y = SCREEN_HEIGHT / 2 + dy;
-            }
-            addCardMagnifier(this, card, this.cardsOnTable[i].type);
-        }
-        this._x1 = x1;
-
-        if (this.myTurn) {
-            var border = new Path.Rectangle(new Rectangle(new Point(500, 10), new Size(75, 50)));
-            border.fillColor="green";
-            border.strokeColor="#808080";
-            border.strokeWidth = 1;
-            var dTxt = new PointText(new Point(510,30));
-            dTxt.content = 'End Turn';
-            dTxt.characterStyle= {
-                font:"Courier",
-                fontSize:16,
-                fillColor:"#000000"
-            }
-            dTxt.paragraphStyle = {
-                justification:"left"
-            };
-            border.onMouseUp = function(event) {
-                //FIXME:
-                gameAction('finish');
-            }
-            this._all.addChild(dTxt);
-            this._all.addChild(border);
-            dTxt.bringToFront();
-        }
-        this._all.scale(view.bounds.width / SCREEN_WIDTH, view.bounds.height / SCREEN_HEIGHT);
-        paper.view.draw();
-    }
-};
-
-var params = {};
-params.token = localStorage.getItem('token');
-params.gameid = localStorage.getItem('gameid');
-
-var state;
-
-function updateState() {
-    $.ajax({ url: host + 'game_state', data: { token: params.token, gameid: params.gameid} }).done(function(data) {
-        console.log(data);
-        data = JSON.parse(data);
-        state = new State();
-        state.playerHand = data.playerHand;
-        state.cardsOnTable = data.cardsOnTable;
-        state.opponentCardsCount = data.opponentCardsCount;
-        state.myTurn = data.myTurn;
-        state.state = data.state;
-        state.mana = data.mana;
-
-        state.health = data.health;
-        state.opponentHealth = data.opponentHealth;
-        state.refresh();
-        if (!state.myTurn) {
-            //FIXME:
-            setTimeout(updateState, 1000);
-        }
-    }).fail(function() {
-        //FIXME:
-    });
-}
-updateState();

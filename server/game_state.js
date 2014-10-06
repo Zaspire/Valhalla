@@ -51,7 +51,7 @@ GameState.prototype = {
     },
 
     _log: function(action, p1, p2) {
-        this.log.push({ action: action, params: [ p1, p2 ] });
+        this.log.push({ email: this.email, action: action, params: [ p1, p2 ] });
     },
 
     _myCard: function(id) {
@@ -164,7 +164,7 @@ GameState.prototype = {
         this.opponentCards.push(card);
 
         this.actionsCount++;
-        this._log(END_TURN);
+        this._log(END_TURN, null, card);
     },
 
     serialize: function() {
@@ -253,8 +253,18 @@ exports.gameState = function(req, res) {
 
         var opponentState = doc.initial[common.base64_encode(opponentEmail)];
         var myState = doc.initial[common.base64_encode(email)];
-        var result = { log: doc.log,
+
+        var log = doc.log.map(function (e) {
+            //FIXME: filter card info
+            var r = { action: e.action, params: e.params};
+            if (e.email == email)
+                r.me = true;
+            return r;
+        });
+
+        var result = { log: log,
                        initial: {
+                           turn: doc.initial.turn == email,
                            my: {
                                hand: myState.hand,
                                deckSize: myState.deck.length,
