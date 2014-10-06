@@ -508,7 +508,6 @@ CardView.prototype = {
             if (self._queue.length)
                 self._startNextAnimation();
         }
-console.log(this._queue[0].obj);
         Tweener.addTween(this._queue[0].obj, params);
     },
 
@@ -853,39 +852,43 @@ GameStateView.prototype = {
     },
 
     _addNextTurnButton: function() {
-        var border = new Path.Rectangle(new Rectangle(new Point(500, 10), new Size(75, 50)));
+        var group = new Group();
+        group.position = [1100, 10]
+
+        var border = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(100, 50)));
         border.fillColor="green";
         border.strokeColor="#808080";
         border.strokeWidth = 1;
+        border.pivot = group.bounds.topLeft;
 
-        var dTxt = new PointText(new Point(510,30));
+        var dTxt = new PointText(new Point(0, 30));
+        dTxt.pivot = dTxt.bounds.topLeft;
         dTxt.content = 'End Turn';
         dTxt.characterStyle= {
             font:"Courier",
-            fontSize:16,
+            fontSize:22,
             fillColor:"#000000"
         }
         dTxt.paragraphStyle = {
             justification:"left"
         };
 
-        border.onMouseUp = function(event) {
+        group.onMouseUp = function(event) {
             //FIXME:
             gameAction('finish');
         }
 
-        border.addChild(dTxt);
-        this._all.addChild(border);
+        group.addChild(border);
+        group.addChild(dTxt);
+        this._all.addChild(group);
 
         dTxt.bringToFront();
 
-        border.visible = this.model.turn == Owner.ME;
-        dTxt.visible = border.visible;
+        group.visible = this.model.turn == Owner.ME;
 
         var self = this;
         this.model.on('changed::turn', function () {
-            border.visible = self.model.turn == Owner.ME;
-            dTxt.visible = border.visible;
+            group.visible = self.model.turn == Owner.ME;
         });
     },
 
