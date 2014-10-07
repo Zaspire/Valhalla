@@ -259,6 +259,8 @@ exports.gameState = function(req, res) {
             var r = { action: e.action, params: e.params};
             if (e.email == email)
                 r.me = true;
+            if (r.action === END_TURN && r.me)
+                r.params = [null, null];
             return r;
         });
 
