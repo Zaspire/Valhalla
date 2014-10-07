@@ -78,7 +78,7 @@ function GameStateModel() {
 
 
     this._requestGameState(this._init.bind(this));
-    // signals: ready, onNewCard, reposition
+    // signals: ready, onNewCard, reposition, oldMovesDone
 
     this.setMaxListeners(70);
 }
@@ -169,7 +169,10 @@ GameStateModel.prototype = {
         for (var i = 0; i < data.log.length; i++) {
             self._handleAction(data.log[i]);
         }
+        //FIXME:
         myController.blockLog = false;
+
+        self.emit('oldMovesDone');
 
         setInterval(function() {
             self._requestGameState(self._updateState.bind(self));
@@ -787,17 +790,22 @@ function GameStateView(model) {
     this._all.pivot = this._all.bounds.topLeft;
     this._all.position = [0,0];
     this._all.applyMatrix = false;
+    this._all.matrix.scale(view.bounds.width / SCREEN_WIDTH, view.bounds.height / SCREEN_HEIGHT);
 
     var bg = new Path.Rectangle(new Rectangle(new Point(1, 1), new Size(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1)));
     bg.fillColor="#ffffff";
     bg.strokeColor="#808080";
     bg.strokeWidth = 1;
     this._all.addChild(bg);
-
-    this._all.matrix.scale(view.bounds.width / SCREEN_WIDTH, view.bounds.height / SCREEN_HEIGHT);
+    var midLine = new Path.Line(new Point(0, SCREEN_HEIGHT / 2), new Point(SCREEN_WIDTH, SCREEN_HEIGHT / 2));
+    midLine.strokeColor = 'red';
+    this._all.addChild(midLine);
 
     this.model.on('ready', this._init.bind(this));
     this.model.on('onNewCard', this._onNewCard.bind(this));
+    this.model.on('oldMovesDone', (function() {
+        this._animationDisabled = false;
+    }).bind(this));
 }
 
 GameStateView.prototype = {
@@ -806,14 +814,6 @@ GameStateView.prototype = {
         this._addHealth();
         this._addMana();
         this._addNextTurnButton();
-
-        var midLine = new Path.Line(new Point(0, SCREEN_HEIGHT / 2), new Point(SCREEN_WIDTH, SCREEN_HEIGHT / 2));
-        midLine.strokeColor = 'red';
-        this._all.addChild(midLine);
-
-        this._animationDisabled = false;
-
-        paper.view.update();
     },
 
     addAnimationBarrier: function() {

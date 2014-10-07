@@ -22,22 +22,66 @@ var heroes = {
         cost: 4,
         img: "2.png"
     },
+    h3: {
+        name: "Untitled Hero 4",
+        damage: 3,
+        health: 3,
+        cost: 3,
+        img: "3.png"
+    },
+    h4: {
+        name: "Untitled Hero 3",
+        damage: 4,
+        health: 4,
+        cost: 4,
+        img: "4.png"
+    },
+    h5: {
+        name: "Untitled Hero 5",
+        damage: 5,
+        health: 5,
+        cost: 5,
+        img: "5.png"
+    },
+    h6: {
+        name: "Untitled Hero 6",
+        damage: 6,
+        health: 6,
+        cost: 6,
+        img: "6.png"
+    },
+    h7: {
+        name: "Untitled Hero 7",
+        damage: 7,
+        health: 7,
+        cost: 7,
+        img: "7.png"
+    },
+    h8: {
+        name: "Untitled Hero 8",
+        damage: 8,
+        health: 8,
+        cost: 8,
+        img: "8.png"
+    },
+    h9: {
+        name: "Untitled Hero 9",
+        damage: 9,
+        health: 9,
+        cost: 9,
+        img: "9.png"
+    },
+    h10: {
+        name: "Untitled Hero 10",
+        damage: 10,
+        health: 10,
+        cost: 10,
+        img: "10.png"
+    },
     creep1: {
         name: "Weak Creep",
         damage: 1,
         health: 1,
-        cost: 1,
-    },
-    creep2: {
-        name: "Creep",
-        damage: 2,
-        health: 2,
-        cost: 1,
-    },
-    creep3: {
-        name: "Mega Creep",
-        damage: 3,
-        health: 3,
         cost: 1,
     }
 };
