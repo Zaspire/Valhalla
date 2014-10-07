@@ -1,9 +1,50 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <meta charset="utf-8" />
+        <title>MainMenu</title>
+        <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
+        <script type="text/javascript" src="third_party/jquery.rwdImageMaps.js"></script>
+        <style type="text/css" media="screen">
+        img.bg {
+            min-height: 100%;
+            width: 100%;
+            height: auto;
+
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        img.pulse {
+            -webkit-animation: Pulsate 5s infinite;
+            animation: Pulsate 5s infinite;
+        }
+        @keyframes Pulsate {
+            0%   { opacity: 0; }
+            50%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        @-webkit-keyframes Pulsate {
+            0%   { opacity: 0; }
+            50%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        </style>
+    </head>
 <body>
-  <a href="matchmaking.html">Play Online</a>
-  <br/>
-  <a href="mycards.html">My Cards</a>
+  <img src="assets/menu1.jpg" class="bg" usemap="#clickmap"></img>
+  <img src="assets/menu2.jpg" class="bg pulse" usemap="#clickmap"></img>
+
+  <map name="clickmap">
+      <area shape="rect" coords="674,0,1330,340" href="matchmaking.html">
+      <area shape="rect" coords="636,844,1236,1072" href="mycards.html">
+  </map>
+
+  <script>
+      $(document).ready(function(e) {
+          $('img[usemap]').rwdImageMaps();
+      });
+  </script>
 </body>
 </html>
 
