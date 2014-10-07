@@ -354,6 +354,8 @@ GameStateController.prototype = {
         var card = this._myCard(id1);
         card.attacksLeft--;
 
+
+
         this.opponent.health -= card.damage;
 
 //        this.actionsCount++;
