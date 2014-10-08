@@ -245,11 +245,18 @@ exports.gameState = function(req, res) {
     pdb.collection('games').findOne({ _id: new mongodb.ObjectID(gameid) }).then(function (doc) {
         if (!doc)
             throw new Error('incorrect gameid');
+
         assert(doc.players.indexOf(email) != -1);
 
         var opponentEmail = common.clone(doc.players);
         opponentEmail.splice(opponentEmail.indexOf(email), 1);
         opponentEmail = opponentEmail[0];
+
+        if (doc[common.base64_encode(opponentEmail)].health <= 0 || doc[common.base64_encode(email)].health <= 0) {
+            pdb.collection('matchmaking').remove({ gameid: new mongodb.ObjectID(gameid) }).done(function() {}, function(e) {
+                console.log(e);
+            });
+        }
 
         var opponentState = doc.initial[common.base64_encode(opponentEmail)];
         var myState = doc.initial[common.base64_encode(email)];

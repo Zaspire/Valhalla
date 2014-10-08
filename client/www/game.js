@@ -57,7 +57,8 @@ var CardState = {
 var GameState = {
     IN_PROGRESS: 1,
     WIN: 2,
-    LOSE: 3
+    LOSE: 3,
+    DRAW: 4
 };
 var Owner = {
     ME: 1,
@@ -136,6 +137,16 @@ GameStateModel.prototype = {
         var data = JSON.parse(data);
         self.me = self._createPlayer(data.initial.my.mana, data.initial.my.maxMana, data.initial.my.health, Owner.ME);
         self.opponent = self._createPlayer(data.initial.opponent.mana, data.initial.opponent.maxMana, data.initial.opponent.health, Owner.OPPONENT);
+
+        this.me.on('changed::health', function() {
+            //FIXME:
+            if (self.me.health <= 0 && self.opponent.health <= 0)
+                self.state = GameState.WIN;
+            if (self.me.health <= 0)
+                self.state = GameState.LOSE;
+            if (self.opponent.health <= 0)
+                self.state = GameState.WIN;
+        });
         self.players = [self.me, self.opponent];
 
         self._initial = data.initial;
@@ -806,6 +817,11 @@ function GameStateView(model) {
     this.model.on('oldMovesDone', (function() {
         this._animationDisabled = false;
     }).bind(this));
+
+    this.model.on('changed::state', (function() {
+        if (this.state != GameState.IN_PROGRESS)
+            this._endScreen();
+    }).bind(this));
 }
 
 GameStateView.prototype = {
@@ -985,6 +1001,13 @@ GameStateView.prototype = {
     _endScreen: function() {
         assert(this.model.state != GameState.IN_PROGRESS);
 
+        this._all.removeChildren();
+        var bg = new Path.Rectangle(new Rectangle(new Point(1, 1), new Size(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1)));
+        bg.fillColor="#ffffff";
+        bg.strokeColor="#808080";
+        bg.strokeWidth = 1;
+        this._all.addChild(bg);
+
         var txt = new PointText(new Point(0,70));
 
         if (this.model.state == GameState.WIN)
@@ -1000,7 +1023,7 @@ GameStateView.prototype = {
             justification:"left"
         };
         this._all.addChild(txt);
-        bg.onMouseDown = function() {
+        this._all.onMouseDown = function() {
             window.location = "mainmenu.html";
         }
         paper.view.update();
