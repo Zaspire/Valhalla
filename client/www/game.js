@@ -528,7 +528,7 @@ CardView.prototype = {
 //FIXME:
         this.group.bringToFront();
 
-        var p = this.view.myHealth.position;
+        var p = this.view.myHealth.bounds.center;
         this._animatePositionUpdate(p.x - this.group.bounds.width, p.y - this.group.bounds.height);
 
         this.view.addAnimationBarrier();
@@ -544,7 +544,7 @@ CardView.prototype = {
 
         this.group.bringToFront();
 
-        var p = otherView.group.position;
+        var p = otherView.group.bounds.center;
 
         this.view.addAnimationBarrier();
         this._animatePositionUpdate(p.x - this.group.bounds.width, p.y - this.group.bounds.height);
