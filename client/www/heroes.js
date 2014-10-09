@@ -78,6 +78,35 @@ var heroes = {
         cost: 10,
         img: "10.png"
     },
+    h11: {
+        name: "Untitled Hero 11",
+        damage: 11,
+        health: 11,
+        cost: 10,
+        img: "11.png"
+    },
+    h12: {
+        name: "Untitled Hero 12",
+        damage: 12,
+        health: 12,
+        cost: 10,
+        img: "12.png"
+    },
+    h13: {
+        name: "Untitled Hero 13",
+        damage: 13,
+        health: 13,
+        cost: 10,
+        img: "13.png"
+    },
+    h14: {
+        name: "Untitled Hero 14",
+        damage: 14,
+        health: 14,
+        cost: 10,
+        img: "14.png"
+    },
+
     creep1: {
         name: "Weak Creep",
         damage: 1,

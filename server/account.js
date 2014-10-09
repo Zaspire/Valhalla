@@ -37,16 +37,20 @@ function getUserInfo(token) {
 
 function starterCards() {
     var type2count = {
-        'h1': 3,
-        'h2': 3,
-        'h3': 3,
-        'h4': 3,
-        'h5': 3,
-        'h6': 3,
-        'h7': 3,
-        'h8': 3,
-        'h9': 3,
-        'h10': 3,
+        'h1': 2,
+        'h2': 2,
+        'h3': 2,
+        'h4': 2,
+        'h5': 2,
+        'h6': 2,
+        'h7': 2,
+        'h8': 2,
+        'h9': 2,
+        'h10': 2,
+        'h11': 2,
+        'h12': 2,
+        'h13': 2,
+        'h14': 2,
         'creep1': 5,
     };
     var res = [];
