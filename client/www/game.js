@@ -604,6 +604,7 @@ CardView.prototype = {
     },
 
     _onMouseDown: function(event) {
+        this._mouseDownTime = new Date();
         if (!this.highlite)
             return;
 
@@ -619,7 +620,103 @@ CardView.prototype = {
         this._y = this.group.position._y;
     },
 
+    _magnify: function() {
+        this.group.bringToFront();
+
+        var group = new Group();
+        this.parent.addChild(group);
+        group.opacity = 0;
+
+        var bg = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(SCREEN_WIDTH, SCREEN_HEIGHT)));
+        bg.fillColor="#000000";
+        group.addChild(bg);
+
+        var heroName = heroes[this.card.type].name;
+        var ability = "";
+        if (heroes[this.card.type].abilities) {
+            var z = heroes[this.card.type].abilities[0];
+            ability = z.castType + ': ' + z.abilityType;
+        }
+        var ulti = "Collest ulti ever";
+        var txt = new PointText(new Point(920,60));
+        txt.content = heroName;
+        txt.characterStyle= {
+            font:"Courier",
+            fontSize:40,
+            fillColor:"#dddddd"
+        }
+        txt.paragraphStyle = {
+            justification:"center"
+        };
+        group.addChild(txt);
+
+        txt = new PointText(new Point(920,200));
+        txt.content = ability;
+        txt.characterStyle= {
+            font:"Courier",
+            fontSize:30,
+            fillColor:"#dddddd"
+        }
+        txt.paragraphStyle = {
+            justification:"center"
+        };
+        group.addChild(txt);
+        txt = new PointText(new Point(920,250));
+        txt.content = ulti;
+        txt.characterStyle= {
+            font:"Courier",
+            fontSize:30,
+            fillColor:"#dddddd"
+        }
+        txt.paragraphStyle = {
+            justification:"center"
+        };
+        group.addChild(txt);
+
+        this.group.bringToFront();
+
+        var fg = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(SCREEN_WIDTH, SCREEN_HEIGHT)));
+        fg.fillColor="#ff0000";
+        fg.opacity = 0;
+//FIXME: add only after complete
+        var self = this;
+
+        var time = 1;
+        var transition = "easeInCubic";
+        var prevHeight = this.group.bounds.height;
+        var origX = self.group.position.x, origY = self.group.position.y;
+        fg.onMouseDown = function() {
+            Tweener.addTween(self.group.position, { x: origX, y: origY, time: 1,
+                                                    transition: transition,
+                                                    onComplete: function() {
+                fg.remove();
+                group.remove();
+                self.view.unblockAnimation();
+            } })
+            var o = {height: self.group.bounds.height};
+            Tweener.addTween(o, { height: prevHeight, time: time,
+                                  transition: transition,
+                                  onUpdate: function() {self.group.matrix.scale(o.height/self.group.bounds.height)} });
+            Tweener.addTween(group, { opacity: 0, time: time, transition: transition });
+        }
+        this.parent.addChild(fg);
+        fg.bringToFront();
+
+        this.view.blockAnimation();
+
+        var o = {height: prevHeight};
+        Tweener.addTween(o, { height: SCREEN_HEIGHT, time: time, transition: transition,
+                              onUpdate: function() {self.group.matrix.scale(o.height/self.group.bounds.height)} });
+        Tweener.addTween(group, { opacity: 1, time: time, transition: transition });
+        Tweener.addTween(this.group.position, { x: 0, y: 0, time: time,
+                                                transition: transition });
+    },
+
     _onMouseUp: function(event) {
+        if (new Date() - this._mouseDownTime < 200) {
+            this._magnify();
+            return;
+        }
         if (!this.highlite)
             return;
 
@@ -832,6 +929,15 @@ GameStateView.prototype = {
         this._addNextTurnButton();
     },
 
+    blockAnimation: function() {
+        this._blockAnimation = true;
+    },
+
+    unblockAnimation: function() {
+        this._blockAnimation = false;
+        this._startNextAnimation();
+    },
+
     addAnimationBarrier: function() {
         this._queue.push(null);
     },
@@ -845,6 +951,9 @@ GameStateView.prototype = {
 
     _startNextAnimation: function() {
         var self = this
+
+        if (this._blockAnimation)
+            return;
 
         if (!this._queue.length)
             return;
