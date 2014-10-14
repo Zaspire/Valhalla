@@ -4,6 +4,7 @@
     "private": true,
     "engineStrict": true,
     "dependencies": {
+        "underscore": "*",
         "xhr2": "*"
     }
 }

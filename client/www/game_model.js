@@ -1,3 +1,9 @@
+var runningUnderNode = typeof exports !== 'undefined';
+
+if (runningUnderNode) {
+    EventEmitter2 = require('events').EventEmitter;
+}
+
 function assert(a) {
     if (!a)
         throw new Error();
@@ -10,6 +16,8 @@ function defineGProperty(self, prop, val) {
             return self['__' + prop];
         },
         set: function(val) {
+            if (self['__' + prop] === val)
+                return;
             self['__' + prop] = val;
 
             self.emit('changed::' + prop);
@@ -48,12 +56,15 @@ var END_TURN = 'finish';
 var PLAY_CARD = 'card';
 var ATTACK = 'attack';
 
-function GameStateModel() {
+function GameStateModel(host, token, gameid) {
     EventEmitter2.call(this);
 
     defineGProperty(this, 'state', GameState.IN_PROGRESS);
     defineGProperty(this, 'turn', Owner.OPPONENT);
     this._nextCardUniqId = 1;
+    this._token = token;
+    this._gameid = gameid;
+    this._host = host;
 
 
     this._requestGameState(this._init.bind(this));
@@ -100,12 +111,25 @@ GameStateModel.prototype = {
     },
 
     _requestGameState: function(cb) {
-        var self = this;
-        var uri = host + 'v1/game_state/' + params.token + '/' + params.gameid;
+        var uri = this._host + 'v1/game_state/' + this._token + '/' + this._gameid;
 
-        $.ajax({ url: uri }).done(cb).fail(function() {
-            //FIXME
-        });
+        if (runningUnderNode) {
+            function doRequest(url, cb) {
+                require('http').get(url, function(res) {
+                    res.setEncoding('utf8');
+                    res.on('data', function (chunk) {
+                        cb(chunk);
+                    });
+                }).on('error', function(e) {
+                    console.log("Got error: " + e.message);
+                });
+            }
+            doRequest(uri, cb);
+        } else {
+            $.ajax({ url: uri }).done(cb).fail(function() {
+                //FIXME
+            });
+        }
     },
 
     _init: function(data) {
@@ -154,12 +178,9 @@ GameStateModel.prototype = {
 
         self.emit('ready');
 
-        myController.blockLog = true;
         for (var i = 0; i < data.log.length; i++) {
             self._handleAction(data.log[i]);
         }
-        //FIXME:
-        myController.blockLog = false;
 
         self.emit('oldMovesDone');
 
@@ -168,10 +189,18 @@ GameStateModel.prototype = {
         }, 1000);
     },
 
+    setMyController: function(controller) {
+        this._myController = controller;
+    },
+
+    setOpponentController: function(controller) {
+        this._opponentController = controller;
+    },
+
     _handleAction: function(e) {
-        var controller = opponentController;
+        var controller = this._opponentController;
         if (e.me)
-            controller = myController;
+            controller = this._myController;
         switch (e.action) {
         case ATTACK_PLAYER:
             controller.attackPlayer(e.params[0]);
@@ -208,14 +237,16 @@ GameStateModel.prototype = {
     _updateState: function(data) {
         var data = JSON.parse(data);
 
-        assert(_.isEqual(data.initial, this._initial));
+        if (!runningUnderNode)
+            assert(_.isEqual(data.initial, this._initial));
 
         //FIXME:
         if (data.log.length <  this._log.length) {
             console.log(data.log);
             console.log(this._log)
         }
-        assert(data.log.length >= this._log.length);
+
+//        assert(data.log.length >= this._log.length);
         for (var i = 0; i < this._log.length; i++) {
             if (!this._compareLogEntries(data.log[i], this._log[i])) {
                 console.warn('different log');
@@ -240,3 +271,205 @@ GameStateModel.prototype = {
         return t;
     }
 };
+
+function GameStateController(model, owner) {
+    this.model = model;
+    this.owner = owner;
+
+    var self = this;
+    //FIXME:
+    model.on('ready', function() {
+        self._init(model, owner);
+    });
+}
+
+GameStateController.prototype = {
+    _init: function(model, owner) {
+        assert(model.players.length == 2);
+        this.me = model.players.filter(function (p) {return p.owner == owner;})[0];
+        this.opponent = model.players.filter(function (p) {return p.owner != owner;})[0];
+    },
+
+    isFinished: function() {
+        return this.me.health <= 0 || this.opponent.health <= 0;
+    },
+
+    _log: function(action, p1, p2) {
+        var r = {action: action, params: [p1, p2]};
+        if (this.me.owner == Owner.ME)
+            r.me = true;
+
+        this.model._log.push(r);
+    },
+
+    _initCard: function(desc, card) {
+        var props = ['type', 'attacksLeft', 'id', 'damage', 'health', 'cost'];
+
+        for (var i = 0; i < props.length; i++) {
+            var prop = props[i];
+            card[prop] = desc[prop];
+        }
+    },
+
+    _myCard: function(id) {
+        var r = this.model._cards.filter(function (c) {return c.id == id;});
+
+        if (!r)
+            throw new Error('incorrect card id');
+        assert(r.length == 1);
+        r = r[0];
+        assert(r.owner == this.owner);
+
+        return r;
+    },
+
+    _opponentCard: function(id) {
+        var r = this.model._cards.filter(function (c) {return c.id == id;});
+
+        if (!r)
+            throw new Error('incorrect card id');
+        assert(r.length == 1);
+        r = r[0];
+        assert(r.owner != this.owner);
+
+        return r;
+    },
+
+    _removeDeadCards: function() {
+        function isAlive(card) {
+            return card.health > 0 || card.health === undefined;
+        }
+        this.model.emit('reposition');
+        this.model._cards = this.model._cards.filter(isAlive);
+    },
+
+    canAttack: function(id1) {
+        var card = this._myCard(id1);
+
+        if (card.state != CardState.TABLE || card.attacksLeft <= 0)
+            return false;
+
+        return true;
+    },
+
+    canBeAttacked: function(id2) {
+        var card = this._opponentCard(id2);
+
+        if (card.state != CardState.TABLE)
+            return false;
+
+        return true;
+    },
+
+    canPlayCard: function(id1) {
+        var card = this._myCard(id1);
+
+        if (card.state == CardState.TABLE || card.cost > this.me.mana)
+            return false;
+
+        return true;
+    },
+
+    attackPlayer: function(id1) {
+        if (!this.canAttack(id1))
+            throw new Error('invalid action');
+
+        var card = this._myCard(id1);
+        card.attacksLeft--;
+
+        card.emit('attackPlayer');
+
+        this.opponent.health -= card.damage;
+
+//        this.actionsCount++;
+        this._log(ATTACK_PLAYER, id1);
+    },
+
+    attack: function(id1, id2) {
+        if (!this.canAttack(id1) || !this.canBeAttacked(id2))
+            throw new Error('invalid action');
+
+        var card1 = this._myCard(id1), card2 = this._opponentCard(id2);
+
+        card1.emit('attack', card2);
+
+        card1.attacksLeft--;
+
+        card2.health -= card1.damage;
+        card1.health -= card2.damage;
+
+        this._removeDeadCards();
+
+  //      this.actionsCount++;
+        this._log(ATTACK, id1, id2);
+    },
+
+    playCard: function(id1, _card) {
+        var self = this;
+        try {
+            var card = this._myCard(id1);
+        } catch (e) {
+            if (_card) {
+                var deck = this.model._cards.filter(function(c) {
+                    return c.owner == self.owner && c.state == CardState.HAND;
+                });
+                assert(deck.length);
+                var c = deck[0];
+
+                this._initCard(_card, c);
+            } else
+                throw e;
+        }
+
+        if (!this.canPlayCard(id1))
+            throw new Error('invalid action');
+
+        var card = this._myCard(id1);
+        card.state = CardState.TABLE;
+        card.attacksLeft = 0;
+        this.me.mana -= card.cost;
+
+//        this.actionsCount++;
+        this._log(PLAY_CARD, id1, card);
+    },
+
+    endTurn: function(a1, a2) {
+        var opponent = this.owner == Owner.ME ? Owner.OPPONENT: Owner.ME;
+        assert(this.model.turn == this.owner);
+
+        this.model._cards.forEach(function(card, index, array) {
+            if (card.state != CardState.TABLE || card.owner != opponent)
+                return;
+            card.attacksLeft = 1;
+        });
+
+        var deck = this.model._cards.filter(function(card) {
+            return card.owner == opponent && card.state == CardState.DECK;
+        });
+        // FIXME:
+        assert(deck.length);
+
+        var card = deck[0];
+        card.attacksLeft = 0;
+        card.state = CardState.HAND;
+
+        if (a2) {
+            this._initCard(a2, card);
+        }
+
+//        this.actionsCount++;
+        this._log(END_TURN, null, card);
+
+        this.opponent.maxMana = Math.min(10, this.opponent.maxMana + 1);
+        this.opponent.mana = this.opponent.maxMana;
+        this.model.turn = opponent;
+    }
+};
+
+if (runningUnderNode) {
+    exports.GameStateModel = GameStateModel;
+    exports.GameStateController = GameStateController;
+    exports.Owner = Owner;
+    exports.CardState = CardState;
+    exports.GameState = GameState;
+}

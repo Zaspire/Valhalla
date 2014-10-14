@@ -1,74 +1,167 @@
 var env = process.env.NODE_ENV || 'development';
 
+var _ = require('underscore');
 var XMLHttpRequest = require('xhr2');
+var http = require('http');
 var assert = require('assert');
 var config = require('./config.' + env + '.json');
+var GameStateModel = require('./game_model').GameStateModel;
+var GameStateController = require('./game_model').GameStateController;
+var Owner = require('./game_model').Owner;
+var CardState = require('./game_model').CardState;
+var GameState = require('./game_model').GameState;
 
 function doRequest(url, cb) {
+console.log(url);
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url);
     xhr.onload = function() {
         //FIXME:
         assert(this.status == 200);
-        cb(this.response);
+        if (cb)
+            cb(this.response);
     };
     xhr.send();
 }
 
-function play(id, gameid) {
-    function again() {
-        play(id, gameid);
-    }
-    console.log('PLAY');
-    doRequest(config.host + 'game_state?token=' + id.email + '&gameid=' + gameid, function(response) {
-        response = JSON.parse(response);
-        if (response.state != "WIP") {
-            return matchmaking(id);
+function AI(id) {
+    this._token = id.email;
+}
+
+AI.prototype = {
+    matchmaking: function() {
+        var self = this;
+        var uri = config.host + 'v1/matchmaking/' + this._token;
+        doRequest(uri, function(data) {
+            data = JSON.parse(data);
+            if (data.gameid) {
+                self.play(data.gameid);
+                return;
+            }
+            setTimeout(self.matchmaking.bind(self), 2000);
+        });
+    },
+
+    play: function(gameid) {
+        console.log('joining game: ' + gameid);
+
+        this._gameid = gameid;
+        this.model = new GameStateModel(config.host, this._token, gameid);
+        this.myController = new GameStateController(this.model, Owner.ME);
+        this.opponentController = new GameStateController(this.model, Owner.OPPONENT);
+
+        this.model.setOpponentController(this.opponentController);
+        this.model.setMyController(this.myController);
+
+        this.model.on('oldMovesDone', this._initGame.bind(this));
+    },
+
+    _gameStateChanged: function() {
+        if (this.model.state != GameState.IN_PROGRESS) {
+            //FIXME: disconnect callbacks
+            this.matchmaking();
         }
-        if (!response.myTurn) {
-            setTimeout(again, 2000);
-            return;
-        }
-        for (var i = 0; i < response.playerHand.length; i++) {
-            var card = response.playerHand[i];
-            if (card.cost <= response.mana) {
-                doRequest(config.host + 'game_action?token=' + id.email + '&gameid=' + gameid + '&action=card&id1=' + card.id, function(response) {
-                    setTimeout(again, 500);
-                });
+    },
+
+    _doMove: function() {
+        assert(this.model.turn == Owner.ME);
+
+        var l;
+        var check = (function() {
+            console.log(l, this.model._log.length);
+            if (l > this.model._log.length) {
+                setTimeout(check, 1400);
+                return;
+            }
+            this._doMove();
+        }).bind(this);
+
+        var cards = _.shuffle(this.model._cards.filter(function(c) {
+            return c.owner == Owner.ME && c.state == CardState.HAND;
+        }));
+        for (var i = 0; i < cards.length; i++) {
+            var card = cards[i];
+            if (this.myController.canPlayCard(card.id)) {
+                this.myController.playCard(card.id);
+
+                l = this.model._log.length;
+                this._gameAction('card', card.id, undefined, check);
+
                 return;
             }
         }
-        doRequest(config.host + 'game_action?token=' + id.email + '&gameid=' + gameid + '&action=finish', function(response) {
-            setTimeout(again, 2000);
-        });
-        console.log(response);
-    });
-}
+        cards = _.shuffle(this.model._cards.filter(function(c) {
+            return c.owner == Owner.ME && c.state == CardState.TABLE;
+        }));
+        for (var i = 0; i < cards.length; i++) {
+            var card1 = cards[i];
+            if (!this.myController.canAttack(card1.id))
+                continue;
 
-function matchmaking(id) {
-    function onload() {
-        var status = this.status;
-        var response = this.response;
-        if (status != 200)
-            process.exit(1);
-        response = JSON.parse(response);
+            if (_.random(0, 100) > 60) {
+                this.myController.attackPlayer(card1.id);
 
-        if (!response.gameid) {
-            setTimeout(function() {
-                matchmaking(id);
-            }, 2000);
-            return;
+                l = this.model._log.length;
+                this._gameAction('attack_player', card1.id, undefined, check);
+                return;
+            }
+
+            c2 = _.shuffle(this.model._cards.filter(function(c) {
+                return c.owner != Owner.ME && c.state == CardState.TABLE;
+            }));
+
+            for (var k = 0; k < c2.length; k++) {
+                var card2 = c2[k];
+                if (this.myController.canBeAttacked(card2.id)) {
+                    this.myController.attack(card1.id, card2.id);
+
+                    l = this.model._log.length;
+                    this._gameAction('attack', card1.id, card2.id, check);
+
+                    return;
+                }
+            }
         }
-        play(id, response.gameid);
+        this._gameAction('finish');
+    },
+
+    _turnChanged: function() {
+        if (this.model.turn != Owner.ME)
+            return;
+
+        this._doMove();
+    },
+
+    _initGame: function() {
+        this.model.on('changed::state', this._gameStateChanged.bind(this));
+        this._gameStateChanged();
+
+        this.model.on('changed::turn', this._turnChanged.bind(this));
+        this._turnChanged();
+
+var self= this;
+this.myController.me.on('changed::mana', function() {
+    console.trace('CHANGED: ' + self.myController.me.mana);
+} );
+    },
+
+    _gameAction: function(action, id1, id2, cb) {
+        var uri = config.host + 'v1/game_action/' + this._token + '/' + this._gameid + '/' + action + '/?';
+
+        if (id1 !== undefined) {
+            uri += 'id1=' + id1 + '&';
+        }
+        if (id2 !== undefined) {
+            uri += 'id2=' + id2;
+        }
+        doRequest(uri, cb);
     }
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', config.host + 'matchmaking?token=' + id.email + "&bot=" + id.confirmation);
-    xhr.onload = onload;
-    xhr.send();
-}
+};
 
 for (var i = 0; i < config.bot_ids.length; i++) {
     var id = config.bot_ids[i];
 
-    matchmaking(id);
+    var ai = new AI(id);
+
+    ai.matchmaking();
 }

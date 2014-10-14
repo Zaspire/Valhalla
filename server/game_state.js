@@ -224,7 +224,7 @@ exports.gameAction = function(req, res) {
         };
 
         var r = state.serialize();
-console.log(require('deep-diff')(doc, r));
+//console.log(require('deep-diff')(doc, r));
 
         r.initial = doc.initial;
         delete r._id;
@@ -234,6 +234,7 @@ console.log(require('deep-diff')(doc, r));
         res.send('{}');
     }, function(e) {
         console.log(e);
+throw e;
         res.status(400).end();
     });
 };
