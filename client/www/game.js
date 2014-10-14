@@ -673,27 +673,20 @@ GameStateView.prototype = {
         assert(this.model.state != GameState.IN_PROGRESS);
 
         this._all.removeChildren();
-        var bg = new Path.Rectangle(new Rectangle(new Point(1, 1), new Size(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1)));
-        bg.fillColor="#ffffff";
-        bg.strokeColor="#808080";
-        bg.strokeWidth = 1;
-        this._all.addChild(bg);
 
-        var txt = new PointText(new Point(0,70));
+        var bg;
 
+        //FIXME: Draw
         if (this.model.state == GameState.WIN)
-            txt.content = 'WIN';
+            bg = new Raster('win');
         else
-            txt.content = 'LOSE';
-        txt.characterStyle= {
-            font:"Courier",
-            fontSize:30,
-            fillColor:"#000000"
-        }
-        txt.paragraphStyle = {
-            justification:"left"
-        };
-        this._all.addChild(txt);
+            bg = new Raster('lose');
+        bg.pivot = bg.bounds.topLeft;
+        bg.position.x = 0;
+        bg.position.y = 0;
+        bg.scale(Math.min(SCREEN_WIDTH / bg.bounds.width, SCREEN_HEIGHT / bg.bounds.height))
+
+        this._all.addChild(bg);
         this._all.onMouseDown = function() {
             window.location = "mainmenu.html";
         }

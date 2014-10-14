@@ -234,7 +234,6 @@ exports.gameAction = function(req, res) {
         res.send('{}');
     }, function(e) {
         console.log(e);
-throw e;
         res.status(400).end();
     });
 };

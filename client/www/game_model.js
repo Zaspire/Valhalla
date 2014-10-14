@@ -140,15 +140,8 @@ GameStateModel.prototype = {
         self.me = self._createPlayer(data.initial.my.mana, data.initial.my.maxMana, data.initial.my.health, Owner.ME);
         self.opponent = self._createPlayer(data.initial.opponent.mana, data.initial.opponent.maxMana, data.initial.opponent.health, Owner.OPPONENT);
 
-        this.me.on('changed::health', function() {
-            //FIXME:
-            if (self.me.health <= 0 && self.opponent.health <= 0)
-                self.state = GameState.WIN;
-            if (self.me.health <= 0)
-                self.state = GameState.LOSE;
-            if (self.opponent.health <= 0)
-                self.state = GameState.WIN;
-        });
+        this.me.on('changed::health', this._onHealthChanged.bind(this));
+        this.opponent.on('changed::health', this._onHealthChanged.bind(this));
         self.players = [self.me, self.opponent];
 
         self._initial = data.initial;
@@ -187,6 +180,15 @@ GameStateModel.prototype = {
         setInterval(function() {
             self._requestGameState(self._updateState.bind(self));
         }, 1000);
+    },
+
+    _onHealthChanged: function() {
+        if (this.me.health <= 0 && this.opponent.health <= 0)
+            this.state = GameState.WIN;
+        if (this.me.health <= 0)
+            this.state = GameState.LOSE;
+        if (this.opponent.health <= 0)
+            this.state = GameState.WIN;
     },
 
     setMyController: function(controller) {
@@ -240,14 +242,7 @@ GameStateModel.prototype = {
         if (!runningUnderNode)
             assert(_.isEqual(data.initial, this._initial));
 
-        //FIXME:
-        if (data.log.length <  this._log.length) {
-            console.log(data.log);
-            console.log(this._log)
-        }
-
-//        assert(data.log.length >= this._log.length);
-        for (var i = 0; i < this._log.length; i++) {
+        for (var i = 0; i < Math.min(data.log.length, this._log.length); i++) {
             if (!this._compareLogEntries(data.log[i], this._log[i])) {
                 console.warn('different log');
                 console.warn(data.log[i])
