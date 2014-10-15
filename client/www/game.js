@@ -58,6 +58,7 @@ CardView.prototype = {
         this._addDamage();
         this._addHealth();
         this._addCost();
+        this._addShield();
         this._addHeroImage();
 
         this._updatePosition();
@@ -295,7 +296,7 @@ CardView.prototype = {
         if (this.card.state == CardState.TABLE) {
             var point = this.parent.globalToLocal(event.point);
 
-            if (this.view.opponentHealth.contains(point)) {
+            if (this.view.opponentHealth.contains(point) && myController.canAttackOpponent()) {
                 gameAction('attack_player', this.card.id);
                 myController.attackPlayer(this.card.id);
                 this._updatePosition();
@@ -310,7 +311,7 @@ CardView.prototype = {
                     continue;
                 if (other.card.owner == this.card.owner)
                     continue;
-                if (other.group.contains(point)) {
+                if (other.group.contains(point) && myController.canBeAttacked(other.card.id)) {
                     gameAction('attack', this.card.id, other.card.id);
                     myController.attack(this.card.id, other.card.id);
                     this._updatePosition();
@@ -386,7 +387,6 @@ CardView.prototype = {
         function updateText() {
             dTxt.content = self.card.damage;
             dTxt.visible = self.card.damage !== undefined;
-            paper.view.update();
         }
         updateText();
         this.card.on('changed::damage', updateText);
@@ -438,10 +438,31 @@ CardView.prototype = {
         function updateText() {
             cTxt.content = self.card.cost;
             cTxt.visible = self.card.cost !== undefined;
-            paper.view.update();
         }
         updateText();
         this.card.on('changed::cost', updateText);
+
+        this.group.addChild(cTxt);
+    },
+    _addShield: function() {
+        var cTxt = new PointText(new Point(40,144));
+        cTxt.characterStyle= {
+            font:"Courier",
+            fontSize:80,
+            fillColor:"#000000"
+        }
+        cTxt.paragraphStyle = {
+            justification:"left"
+        };
+
+        var self = this;
+        function updateText() {
+            cTxt.content = "SHIELD";
+            cTxt.visible = self.card.shield;
+            cTxt.bringToFront();
+        }
+        updateText();
+        this.card.on('changed::shield', updateText);
 
         this.group.addChild(cTxt);
     }

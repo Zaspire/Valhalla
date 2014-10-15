@@ -98,7 +98,7 @@ AI.prototype = {
             if (!this.myController.canAttack(card1.id))
                 continue;
 
-            if (_.random(0, 100) > 60) {
+            if (_.random(0, 100) > 60 && this.myController.canAttackOpponent()) {
                 this.myController.attackPlayer(card1.id);
 
                 l = this.model._log.length;

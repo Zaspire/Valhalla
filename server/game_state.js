@@ -8,6 +8,7 @@ var EventEmitter2 = require('events').EventEmitter;
 var common = require('./common');
 var pdb = pmongo(common.config.mongo);
 
+var heroes = require('./heroes').heroes;
 var GameStateController = require('../ai/game_model').GameStateController;
 var Owner = require('../ai/game_model').Owner;
 var CardState = require('../ai/game_model').CardState;
@@ -81,12 +82,15 @@ function StateModel(doc, email) {
 StateModel.prototype = {
     __proto__: EventEmitter2.prototype,
     _createCard: function(owner, type, attacksLeft, state, id, damage, health, cost) {
+        var shield = false;
+        shield = !!heroes[type].shield;
         return {
             __proto__: EventEmitter2.prototype,
             owner: owner,
             type: type,
             damage: damage,
             health: health,
+            shield: shield,
             cost: cost,
             id: id,
             attacksLeft: attacksLeft,

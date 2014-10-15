@@ -3,7 +3,8 @@ var CastType = {
     BATTLE_CRY: "Battle Cry"
 };
 var AbilityType = {
-    DAMAGE_TO_ALL: "deal 1 damage to ALL"
+    DAMAGE_TO_ALL: "deal 1 damage to ALL",
+    SHIELD: "shield" // FIXME: Better description
 };
 var heroes = {
     h1: {
@@ -48,6 +49,7 @@ var heroes = {
         damage: 6,
         health: 6,
         cost: 6,
+        shield: true,
         img: "6.png"
     },
     h7: {
@@ -62,6 +64,7 @@ var heroes = {
         damage: 8,
         health: 8,
         cost: 8,
+        shield: true,
         img: "8.png"
     },
     h9: {

@@ -2,6 +2,8 @@ var runningUnderNode = typeof exports !== 'undefined';
 
 if (runningUnderNode) {
     EventEmitter2 = require('events').EventEmitter;
+
+    heroes = require('./heroes').heroes;
 }
 
 function assert(a) {
@@ -87,11 +89,15 @@ GameStateModel.prototype = {
     },
 
     _createCard: function(owner, type, attacksLeft, state, id, damage, health, cost) {
+        var shield = false;
+        if (type in heroes)
+            shield = !!heroes[type].shield;
         var card = new GObject({ owner: owner,
                                  type: type,
                                  damage: damage,
                                  health: health,
                                  cost: cost,
+                                 shield: shield,
                                  id: id,
                                  attacksLeft: attacksLeft,
                                  state: state });
@@ -300,6 +306,11 @@ GameStateController.prototype = {
     _initCard: function(desc, card) {
         var props = ['type', 'attacksLeft', 'id', 'damage', 'health', 'cost'];
 
+        var shield = false;
+        if (desc['type'] in heroes)
+            shield = !!heroes[desc['type']].shield;
+        card.shield = shield;
+
         for (var i = 0; i < props.length; i++) {
             var prop = props[i];
             card[prop] = desc[prop];
@@ -338,6 +349,14 @@ GameStateController.prototype = {
         this.model._cards = this.model._cards.filter(isAlive);
     },
 
+    _opponentHasShield: function() {
+        var self = this;
+        var shields = this.model._cards.filter(function (c) {
+            return c.owner != self.owner && c.state == CardState.TABLE && c.health > 0 && c.shield;
+        });
+        return shields.length;
+    },
+
     canAttack: function(id1) {
         var card = this._myCard(id1);
 
@@ -347,8 +366,18 @@ GameStateController.prototype = {
         return true;
     },
 
+    canAttackOpponent: function() {
+        if (this._opponentHasShield())
+            return false;
+
+        return true;
+    },
+
     canBeAttacked: function(id2) {
         var card = this._opponentCard(id2);
+
+        if (!card.shield && this._opponentHasShield())
+            return false;
 
         if (card.state != CardState.TABLE)
             return false;
@@ -366,7 +395,7 @@ GameStateController.prototype = {
     },
 
     attackPlayer: function(id1) {
-        if (!this.canAttack(id1))
+        if (!this.canAttack(id1) || !this.canAttackOpponent())
             throw new Error('invalid action');
 
         var card = this._myCard(id1);
