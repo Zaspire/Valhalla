@@ -341,7 +341,7 @@ GameStateController.prototype = {
     canAttack: function(id1) {
         var card = this._myCard(id1);
 
-        if (card.state != CardState.TABLE || card.attacksLeft <= 0)
+        if (card.state != CardState.TABLE || card.attacksLeft <= 0 || this.model.turn != this.owner)
             return false;
 
         return true;
@@ -359,7 +359,7 @@ GameStateController.prototype = {
     canPlayCard: function(id1) {
         var card = this._myCard(id1);
 
-        if (card.state == CardState.TABLE || card.cost > this.me.mana)
+        if (card.state == CardState.TABLE || card.cost > this.me.mana || this.model.turn != this.owner)
             return false;
 
         return true;
@@ -376,7 +376,6 @@ GameStateController.prototype = {
 
         this.opponent.health -= card.damage;
 
-//        this.actionsCount++;
         this._log(ATTACK_PLAYER, id1);
     },
 
@@ -395,7 +394,6 @@ GameStateController.prototype = {
 
         this._removeDeadCards();
 
-  //      this.actionsCount++;
         this._log(ATTACK, id1, id2);
     },
 
@@ -424,7 +422,6 @@ GameStateController.prototype = {
         card.attacksLeft = 0;
         this.me.mana -= card.cost;
 
-//        this.actionsCount++;
         this._log(PLAY_CARD, id1, card);
     },
 
@@ -452,7 +449,6 @@ GameStateController.prototype = {
             this._initCard(a2, card);
         }
 
-//        this.actionsCount++;
         this._log(END_TURN, null, card);
 
         this.opponent.maxMana = Math.min(10, this.opponent.maxMana + 1);

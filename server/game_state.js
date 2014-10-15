@@ -3,21 +3,26 @@ var _ = require('underscore');
 
 var mongodb = require('mongodb');
 var pmongo = require('promised-mongo');
+var EventEmitter2 = require('events').EventEmitter;
 
 var common = require('./common');
 var pdb = pmongo(common.config.mongo);
+
+var GameStateController = require('../ai/game_model').GameStateController;
+var Owner = require('../ai/game_model').Owner;
+var CardState = require('../ai/game_model').CardState;
+var GameState = require('../ai/game_model').GameState;
 
 var ATTACK_PLAYER = 'attack_player';
 var END_TURN = 'finish';
 var PLAY_CARD = 'card';
 var ATTACK = 'attack';
 
-function GameState(doc, email) {
-    assert(doc.players.indexOf(email) != -1);
-    assert(doc.turn == email);
+function StateModel(doc, email) {
+    EventEmitter2.call(this);
 
     this._id = doc._id;
-    this.turn = email;
+    this._log = doc.log;
 
     this.email = email;
 
@@ -25,170 +30,123 @@ function GameState(doc, email) {
     this.opponentEmail.splice(this.opponentEmail.indexOf(email), 1);
     this.opponentEmail = this.opponentEmail[0];
 
-    this.myHealth = doc[common.base64_encode(email)].health;
-    this.opponentHealth = doc[common.base64_encode(this.opponentEmail)].health;
+    var me = doc[common.base64_encode(email)];
+    var opponent = doc[common.base64_encode(this.opponentEmail)];
 
-    this.myMana = doc[common.base64_encode(email)].mana;
-    this.opponentMana = doc[common.base64_encode(this.opponentEmail)].mana;
+    this.turn = (doc.turn == email) ? Owner.ME: Owner.OPPONENT;
 
-    this.myMaxMana = doc[common.base64_encode(email)].maxMana;
-    this.opponentMaxMana = doc[common.base64_encode(this.opponentEmail)].maxMana;
+    this.me = {
+        mana: me.mana,
+        maxMana: me.maxMana,
+        health: me.health,
+        owner: Owner.ME
+    };
 
-    this.myCards = doc[common.base64_encode(email)].hand;
-    this.opponentCards = doc[common.base64_encode(this.opponentEmail)].hand;
+    this.opponent = {
+        mana: opponent.mana,
+        maxMana: opponent.maxMana,
+        health: opponent.health,
+        owner: Owner.OPPONENT
+    };
 
-    this.myDeck = doc[common.base64_encode(email)].deck;
-    this.opponentDeck = doc[common.base64_encode(this.opponentEmail)].deck;
+    this.players = [this.me, this.opponent];
 
-    this.actionsCount = doc.actionsCount;
+    this._cards = [];
 
-    this.log = doc.log;
+    for (var i = 0; i < me.hand.length; i++) {
+        var card = me.hand[i];
+        var state = card.onTable ? CardState.TABLE: CardState.HAND;
+        var c = this._createCard(Owner.ME, card.type, card.attacksLeft, state, card.id, card.damage, card.health, card.cost);
+        this._cards.push(c);
+    }
+    for (var i = 0; i < me.deck.length; i++) {
+        var card = me.deck[i];
+        var c = this._createCard(Owner.ME, card.type, card.attacksLeft, CardState.DECK, card.id, card.damage, card.health, card.cost);
+        this._cards.push(c);
+    }
+
+    for (var i = 0; i < opponent.deck.length; i++) {
+        var card = opponent.deck[i];
+        var c = this._createCard(Owner.OPPONENT, card.type, card.attacksLeft, CardState.DECK, card.id, card.damage, card.health, card.cost);
+        this._cards.push(c);
+    }
+    for (var i = 0; i < opponent.hand.length; i++) {
+        var card = opponent.hand[i];
+        var state = card.onTable ? CardState.TABLE: CardState.HAND;
+        var c = this._createCard(Owner.OPPONENT, card.type, card.attacksLeft, state, card.id, card.damage, card.health, card.cost);
+        this._cards.push(c);
+    }
 }
 
-GameState.prototype = {
-    isFinished: function() {
-        return this.myHealth <= 0 || this.opponentHealth <= 0;
+StateModel.prototype = {
+    __proto__: EventEmitter2.prototype,
+    _createCard: function(owner, type, attacksLeft, state, id, damage, health, cost) {
+        return {
+            __proto__: EventEmitter2.prototype,
+            owner: owner,
+            type: type,
+            damage: damage,
+            health: health,
+            cost: cost,
+            id: id,
+            attacksLeft: attacksLeft,
+            state: state
+        };
     },
 
-    _log: function(action, p1, p2) {
-        this.log.push({ email: this.email, action: action, params: [ p1, p2 ] });
-    },
-
-    _myCard: function(id) {
-        for (var i = 0; i < this.myCards.length; i++) {
-            if (this.myCards[i].id == id)
-                return this.myCards[i];
-        }
-        throw new Error('incorrect card id');
-    },
-
-    _opponentCard: function(id) {
-        for (var i = 0; i < this.opponentCards.length; i++) {
-            if (this.opponentCards[i].id == id)
-                return this.opponentCards[i];
-        }
-        throw new Error('incorrect card id');
-    },
-
-    _removeDeadCards: function() {
-        function isAlive(card) {
-            return card.health > 0;
-        }
-        this.opponentCards = this.opponentCards.filter(isAlive);
-        this.myCards = this.myCards.filter(isAlive);
-    },
-
-    canAttack: function(id1) {
-        var card = this._myCard(id1);
-
-        if (!card.onTable || card.attacksLeft <= 0)
-            return false;
-
-        return true;
-    },
-
-    canBeAttacked: function(id2) {
-        var card = this._opponentCard(id2);
-
-        if (!card.onTable)
-            return false;
-
-        return true;
-    },
-
-    canPlayCard: function(id1) {
-        var card = this._myCard(id1);
-
-        if (card.onTable || card.cost > this.myMana)
-            return false;
-
-        return true;
-    },
-
-    attackPlayer: function(id1) {
-        if (!this.canAttack(id1))
-            throw new Error('invalid action');
-
-        var card = this._myCard(id1);
-        card.attacksLeft--;
-        this.opponentHealth -= card.damage;
-
-        this.actionsCount++;
-        this._log(ATTACK_PLAYER, id1);
-    },
-
-    attack: function(id1, id2) {
-        if (!this.canAttack(id1) || !this.canBeAttacked(id2))
-            throw new Error('invalid action');
-
-        var card1 = this._myCard(id1), card2 = this._opponentCard(id2);
-
-        card1.attacksLeft--;
-
-        card2.health -= card1.damage;
-        card1.health -= card2.damage;
-
-        this._removeDeadCards();
-
-        this.actionsCount++;
-        this._log(ATTACK, id1, id2);
-    },
-
-    playCard: function(id1) {
-        if (!this.canPlayCard(id1))
-            throw new Error('invalid action');
-
-        var card = this._myCard(id1);
-        card.onTable = true;
-        card.attacksLeft = 0;
-        this.myMana -= card.cost;
-
-        this.actionsCount++;
-        this._log(PLAY_CARD, id1, card);
-    },
-
-    endTurn: function() {
-        this.turn = this.opponentEmail;
-        this.opponentMaxMana = Math.min(10, this.opponentMaxMana + 1);
-        this.opponentMana = this.opponentMaxMana;
-
-        for (var i = 0; i < this.opponentCards.length; i++) {
-            this.opponentCards[i].attacksLeft = 1;
-        }
-
-        // FIXME:
-        assert(this.opponentDeck.length);
-
-        var card = this.opponentDeck.shift();
-        card.attacksLeft = 0;
-        this.opponentCards.push(card);
-
-        this.actionsCount++;
-        this._log(END_TURN, null, card);
+    _serializeCard: function(card) {
+        var doc = {
+            type: card.type,
+            id: card.id,
+            damage: card.damage,
+            health: card.health,
+            cost: card.cost,
+            attacksLeft: card.attacksLeft
+        };
+        if (card.state == CardState.TABLE)
+            doc.onTable = true;
+        return doc;
     },
 
     serialize: function() {
         var doc = {
             _id: this._id,
-            turn: this.turn,
+            turn: this.turn == Owner.ME? this.email: this.opponentEmail,
             players: [ this.email, this.opponentEmail ],
-            log: this.log
+            log: this._log,
+            actionsCount: this._log.length
         };
 
-        doc[common.base64_encode(this.email)] = { hand: this.myCards,
-                                                  deck: this.myDeck,
-                                                  health: this.myHealth,
-                                                  mana: this.myMana,
-                                                  maxMana: this.myMaxMana};
-        doc[common.base64_encode(this.opponentEmail)] = { hand: this.opponentCards,
-                                                          deck: this.opponentDeck,
-                                                          health: this.opponentHealth,
-                                                          mana:this.opponentMana,
-                                                          maxMana: this.opponentMaxMana};
+        var ce1 = common.base64_encode(this.email);
+        var ce2 = common.base64_encode(this.opponentEmail);
+
+        doc[ce1] = { health: this.me.health,
+                     mana: this.me.mana,
+                     maxMana: this.me.maxMana };
+        doc[ce1].deck = this._cards.filter(function(c) {
+            return c.state == CardState.DECK && c.owner == Owner.ME;
+        }).map(this._serializeCard);
+        doc[ce1].hand = this._cards.filter(function(c) {
+            return c.state != CardState.DECK && c.owner == Owner.ME;
+        }).map(this._serializeCard);
+
+        doc[ce2] = { health: this.opponent.health,
+                     mana:this.opponent.mana,
+                     maxMana: this.opponent.maxMana };
+        doc[ce2].deck = this._cards.filter(function(c) {
+            return c.state == CardState.DECK && c.owner == Owner.OPPONENT;
+        }).map(this._serializeCard);
+        doc[ce2].hand = this._cards.filter(function(c) {
+            return c.state != CardState.DECK && c.owner == Owner.OPPONENT;
+        }).map(this._serializeCard);
 
         return doc;
     }
 };
+
+GameStateController.prototype._log = function(action, p1, p2) {
+    this.model._log.push({ email: this.model.email, action: action, params: [ p1, p2 ] });
+}
 
 exports.gameAction = function(req, res) {
     var email = req.email;
@@ -201,31 +159,31 @@ exports.gameAction = function(req, res) {
         if (!doc)
             throw new Error('incorrect gameid');
 
-        var state = new GameState(doc, email);
+        var model = new StateModel(doc, email);
+        var controller = new GameStateController(model, Owner.ME);
+        model.emit('ready');
 
-        if (state.isFinished())
+        if (controller.isFinished())
             throw new Error('game finshed');
 
         switch (action) {
         case ATTACK_PLAYER:
-            state.attackPlayer(id1);
+            controller.attackPlayer(id1);
             break;
         case END_TURN:
-            state.endTurn();
+            controller.endTurn();
             break;
         case PLAY_CARD:
-            state.playCard(id1);
+            controller.playCard(id1);
             break;
         case ATTACK:
-            state.attack(id1, id2);
+            controller.attack(id1, id2);
             break;
         default:
             throw new Error('unknown action');
         };
 
-        var r = state.serialize();
-//console.log(require('deep-diff')(doc, r));
-
+        var r = model.serialize();
         r.initial = doc.initial;
         delete r._id;
         return pdb.collection('games').findAndModifyEx({ query: { _id: doc._id, actionsCount: doc.actionsCount },
@@ -234,6 +192,7 @@ exports.gameAction = function(req, res) {
         res.send('{}');
     }, function(e) {
         console.log(e);
+throw e;
         res.status(400).end();
     });
 };
