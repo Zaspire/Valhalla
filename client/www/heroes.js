@@ -6,8 +6,14 @@ var AbilityType = {
     DAMAGE_TO_ALL: "deal 1 damage to ALL",
     SHIELD: "shield" // FIXME: Better description
 };
+var CardType = {
+    UNKNOWN: 0,
+    SPELL: 1,
+    HERO: 2
+};
 var heroes = {
     h1: {
+        cardType: CardType.HERO,
         abilities: [{ castType: CastType.ON_DEATH, abilityType: AbilityType.DAMAGE_TO_ALL}],
         name: "Butcher",
         damage: 3,
@@ -16,6 +22,7 @@ var heroes = {
         img: "1.png"
     },
     h2: {
+        cardType: CardType.HERO,
         abilities: [{ castType: CastType.BATTLE_CRY, abilityType: AbilityType.DAMAGE_TO_ALL}],
         name: "Pyromancer",
         damage: 5,
@@ -24,6 +31,7 @@ var heroes = {
         img: "2.png"
     },
     h3: {
+        cardType: CardType.HERO,
         name: "Untitled Hero 4",
         damage: 3,
         health: 3,
@@ -31,6 +39,7 @@ var heroes = {
         img: "3.png"
     },
     h4: {
+        cardType: CardType.HERO,
         name: "Untitled Hero 3",
         damage: 4,
         health: 4,
@@ -38,6 +47,7 @@ var heroes = {
         img: "4.png"
     },
     h5: {
+        cardType: CardType.HERO,
         name: "Untitled Hero 5",
         damage: 5,
         health: 5,
@@ -45,6 +55,7 @@ var heroes = {
         img: "5.png"
     },
     h6: {
+        cardType: CardType.HERO,
         name: "Untitled Hero 6",
         damage: 6,
         health: 6,
@@ -53,6 +64,7 @@ var heroes = {
         img: "6.png"
     },
     h7: {
+        cardType: CardType.HERO,
         name: "Untitled Hero 7",
         damage: 7,
         health: 7,
@@ -60,6 +72,7 @@ var heroes = {
         img: "7.png"
     },
     h8: {
+        cardType: CardType.HERO,
         name: "Untitled Hero 8",
         damage: 8,
         health: 8,
@@ -68,6 +81,7 @@ var heroes = {
         img: "8.png"
     },
     h9: {
+        cardType: CardType.HERO,
         name: "Untitled Hero 9",
         damage: 9,
         health: 9,
@@ -75,6 +89,7 @@ var heroes = {
         img: "9.png"
     },
     h10: {
+        cardType: CardType.HERO,
         name: "Untitled Hero 10",
         damage: 10,
         health: 10,
@@ -82,6 +97,7 @@ var heroes = {
         img: "10.png"
     },
     h11: {
+        cardType: CardType.HERO,
         name: "Untitled Hero 11",
         damage: 11,
         health: 11,
@@ -89,6 +105,7 @@ var heroes = {
         img: "11.png"
     },
     h12: {
+        cardType: CardType.HERO,
         name: "Untitled Hero 12",
         damage: 12,
         health: 12,
@@ -96,6 +113,7 @@ var heroes = {
         img: "12.png"
     },
     h13: {
+        cardType: CardType.HERO,
         name: "Untitled Hero 13",
         damage: 13,
         health: 13,
@@ -103,6 +121,7 @@ var heroes = {
         img: "13.png"
     },
     h14: {
+        cardType: CardType.HERO,
         name: "Untitled Hero 14",
         damage: 14,
         health: 14,
@@ -111,10 +130,19 @@ var heroes = {
     },
 
     creep1: {
+        cardType: CardType.HERO,
         name: "Weak Creep",
         damage: 1,
         health: 1,
         cost: 1,
+    },
+
+    chainArmor: {
+        cardType: CardType.SPELL,
+        name: "Chain Armor",
+        cost: 3,
+        cast: function(card) {
+        }
     }
 };
 
@@ -122,4 +150,5 @@ if (typeof exports !== 'undefined') {
     exports.heroes = heroes;
     exports.AbilityType = AbilityType;
     exports.CastType = CastType;
+    exports.CardType = CardType;
 }

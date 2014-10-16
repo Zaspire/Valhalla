@@ -4,6 +4,7 @@ if (runningUnderNode) {
     EventEmitter2 = require('events').EventEmitter;
 
     heroes = require('./heroes').heroes;
+    CardType = require('./heroes').CardType;
 }
 
 function assert(a) {
@@ -90,8 +91,15 @@ GameStateModel.prototype = {
 
     _createCard: function(owner, type, attacksLeft, state, id, damage, health, cost) {
         var shield = false;
-        if (type in heroes)
+        var cardType = CardType.UNKNOWN;
+        if (type in heroes) {
             shield = !!heroes[type].shield;
+            cardType = heroes[type].cardType;
+        }
+        if (cardType != CardType.HERO) {
+            health = undefined;
+            damage = undefined;
+        }
         var card = new GObject({ owner: owner,
                                  type: type,
                                  damage: damage,
@@ -99,6 +107,7 @@ GameStateModel.prototype = {
                                  cost: cost,
                                  shield: shield,
                                  id: id,
+                                 cardType: cardType,
                                  attacksLeft: attacksLeft,
                                  state: state });
 
@@ -306,14 +315,16 @@ GameStateController.prototype = {
     _initCard: function(desc, card) {
         var props = ['type', 'attacksLeft', 'id', 'damage', 'health', 'cost'];
 
-        var shield = false;
-        if (desc['type'] in heroes)
-            shield = !!heroes[desc['type']].shield;
-        card.shield = shield;
+        card.shield = !!heroes[desc['type']].shield;
+        card.cardType = heroes[desc['type']].cardType;
 
         for (var i = 0; i < props.length; i++) {
             var prop = props[i];
             card[prop] = desc[prop];
+        }
+        if (card.cardType != CardType.HERO) {
+            card.health = undefined;
+            card.damage = undefined;
         }
     },
 
@@ -343,7 +354,7 @@ GameStateController.prototype = {
 
     _removeDeadCards: function() {
         function isAlive(card) {
-            return card.health > 0 || card.health === undefined;
+            return card.health > 0 || card.state != CardState.TABLE;
         }
         this.model.emit('reposition');
         this.model._cards = this.model._cards.filter(isAlive);
@@ -388,7 +399,18 @@ GameStateController.prototype = {
     canPlayCard: function(id1) {
         var card = this._myCard(id1);
 
-        if (card.state == CardState.TABLE || card.cost > this.me.mana || this.model.turn != this.owner)
+        if (card.state != CardState.HAND || card.cost > this.me.mana
+            || this.model.turn != this.owner || card.cardType != CardType.HERO)
+            return false;
+
+        return true;
+    },
+
+    canPlaySpell: function(id1) {
+        var card = this._myCard(id1);
+
+        if (card.state != CardState.HAND || card.cost > this.me.mana
+            || this.model.turn != this.owner || card.cardType != CardType.SPELL)
             return false;
 
         return true;

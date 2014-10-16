@@ -154,14 +154,21 @@ CardView.prototype = {
         if (this.model.turn != this.card.owner)
             value = false;
 
+        if (this.card.owner != Owner.ME)
+            value = false;
+
         if (this.card.state == CardState.DECK)
             value = false;
 
-        if (this.card.state == CardState.HAND && this.model.me.mana < this.card.cost)
+        try {
+            if (value && !(myController.canPlayCard(this.card.id)
+                           || myController.canAttack(this.card.id)
+                           || myController.canPlaySpell(this.card.id))) {
+                value = false;
+            }
+        } catch (e) {
             value = false;
-
-        if (this.card.state == CardState.TABLE && this.card.attacksLeft <= 0)
-            value = false;
+        }
 
         this.highlite = value;
     },
@@ -410,7 +417,7 @@ CardView.prototype = {
             hTxt.content = self.card.health;
             hTxt.visible = self.card.health !== undefined;
 
-            if (self.card.health !== undefined) {
+            if (self.card.health !== undefined && self.card.cardType == CardType.HERO) {
                 if (self.card.health <= 0) {
                     self._animateDeath();
                   //  self.group.remove();

@@ -84,6 +84,7 @@ StateModel.prototype = {
     _createCard: function(owner, type, attacksLeft, state, id, damage, health, cost) {
         var shield = false;
         shield = !!heroes[type].shield;
+        cardType = heroes[type].cardType;
         return {
             __proto__: EventEmitter2.prototype,
             owner: owner,
@@ -92,6 +93,7 @@ StateModel.prototype = {
             health: health,
             shield: shield,
             cost: cost,
+            cardType: cardType,
             id: id,
             attacksLeft: attacksLeft,
             state: state
