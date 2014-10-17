@@ -458,7 +458,7 @@ GameStateController.prototype = {
 
         var card1 = this._myCard(id1), card2 = this._myCard(id2);
 
-        heroes[card1.type].cast(card2);
+        heroes[card1.type].cast(card2, this.model._cards);
 
         if (!runningUnderNode)
             card1.health = 0;
@@ -466,6 +466,7 @@ GameStateController.prototype = {
         this.me.mana -= card1.cost;
         this.model._cards.splice(this.model._cards.indexOf(card1), 1);
 
+        this._removeDeadCards();
         this._log(PLAY_SPELL, card1, card2.id);
     },
 

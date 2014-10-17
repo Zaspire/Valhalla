@@ -11,6 +11,11 @@ var CardType = {
     SPELL: 1,
     HERO: 2
 };
+
+
+//FIXME:
+var TABLE = 3;
+
 var heroes = {
     h1: {
         cardType: CardType.HERO,
@@ -28,7 +33,16 @@ var heroes = {
         damage: 5,
         health: 3,
         cost: 4,
-        img: "2.png"
+        img: "2.png",
+        cast: function(card, cards) {
+            for (var i = 0; i < cards.length; i++) {
+                if (card.owner == cards[i].owner)
+                    continue;
+                if (cards[i].state === TABLE) {
+                    cards[i].health--;
+                }
+            }
+        }
     },
     h3: {
         cardType: CardType.HERO,
@@ -144,6 +158,14 @@ var heroes = {
         cast: function(card) {
             card.health += 2;
             card.damage += 1;
+        }
+    },
+    ultimate: {
+        cardType: CardType.SPELL,
+        name: "Ultimate",
+        cost: 2,
+        cast: function(card, cards) {
+            heroes[card.type].cast(card, cards);
         }
     }
 };
