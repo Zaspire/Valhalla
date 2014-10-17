@@ -58,6 +58,7 @@ var ATTACK_PLAYER = 'attack_player';
 var END_TURN = 'finish';
 var PLAY_CARD = 'card';
 var ATTACK = 'attack';
+var PLAY_SPELL = 'spell';
 
 function GameStateModel(host, token, gameid) {
     EventEmitter2.call(this);
@@ -228,6 +229,9 @@ GameStateModel.prototype = {
         case PLAY_CARD:
             controller.playCard(e.params[0], e.params[1]);
             break;
+        case PLAY_SPELL:
+            controller.playSpell(e.params[0].id, e.params[1], e.params[0]);
+            break;
         case END_TURN:
             controller.endTurn(null, e.params[1]);
             break;
@@ -320,6 +324,8 @@ GameStateController.prototype = {
 
         for (var i = 0; i < props.length; i++) {
             var prop = props[i];
+            if (desc[prop] === null)
+                continue;
             card[prop] = desc[prop];
         }
         if (card.cardType != CardType.HERO) {
@@ -430,6 +436,39 @@ GameStateController.prototype = {
         this._log(ATTACK_PLAYER, id1);
     },
 
+    playSpell: function(id1, id2, _card) {
+        var self = this;
+        try {
+            this._myCard(id1);
+        } catch (e) {
+            if (_card) {
+                var deck = this.model._cards.filter(function(c) {
+                    return c.owner == self.owner && c.state == CardState.HAND;
+                });
+                assert(deck.length);
+                var c = deck[0];
+
+                this._initCard(_card, c);
+            } else
+                throw e;
+        }
+
+        if (!this.canPlaySpell(id1))
+            throw new Error('invalid action');
+
+        var card1 = this._myCard(id1), card2 = this._myCard(id2);
+
+        heroes[card1.type].cast(card2);
+
+        if (!runningUnderNode)
+            card1.health = 0;
+
+        this.me.mana -= card1.cost;
+        this.model._cards.splice(this.model._cards.indexOf(card1), 1);
+
+        this._log(PLAY_SPELL, card1, card2.id);
+    },
+
     attack: function(id1, id2) {
         if (!this.canAttack(id1) || !this.canBeAttacked(id2))
             throw new Error('invalid action');
@@ -451,7 +490,7 @@ GameStateController.prototype = {
     playCard: function(id1, _card) {
         var self = this;
         try {
-            var card = this._myCard(id1);
+            this._myCard(id1);
         } catch (e) {
             if (_card) {
                 var deck = this.model._cards.filter(function(c) {

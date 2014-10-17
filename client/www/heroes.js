@@ -142,6 +142,8 @@ var heroes = {
         name: "Chain Armor",
         cost: 3,
         cast: function(card) {
+            card.health += 2;
+            card.damage += 1;
         }
     }
 };

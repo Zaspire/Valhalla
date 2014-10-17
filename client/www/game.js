@@ -289,20 +289,39 @@ CardView.prototype = {
         }
         if (!this.highlite)
             return;
+        var point = this.parent.globalToLocal(event.point);
 
         if (this.card.state == CardState.HAND) {
-            if (this.group.position.y >= SCREEN_HEIGHT - this.group.bounds.height) {
+            if (this.card.cardType == CardType.HERO) {
+                if (this.group.position.y >= SCREEN_HEIGHT - this.group.bounds.height) {
+                    this._updatePosition();
+                    return;
+                }
+
+                myController.playCard(this.card.id);
+                gameAction('card', this.card.id);
+                return;
+            } else {
+                for (var i = 0; i < this.view.cards.length; i++) {
+                    var other = this.view.cards[i]
+                    if (this == other)
+                        continue;
+                    if (other.card.state != CardState.TABLE)
+                        continue;
+                    if (other.card.owner != this.card.owner)
+                        continue;
+                    if (other.group.contains(point)) {
+                        gameAction('spell', this.card.id, other.card.id);
+                        myController.playSpell(this.card.id, other.card.id);
+                        this._updatePosition();
+                        return;
+                    }
+                }
                 this._updatePosition();
                 return;
             }
-
-            myController.playCard(this.card.id);
-            gameAction('card', this.card.id);
-            return;
         }
         if (this.card.state == CardState.TABLE) {
-            var point = this.parent.globalToLocal(event.point);
-
             if (this.view.opponentHealth.contains(point) && myController.canAttackOpponent()) {
                 gameAction('attack_player', this.card.id);
                 myController.attackPlayer(this.card.id);
@@ -417,7 +436,7 @@ CardView.prototype = {
             hTxt.content = self.card.health;
             hTxt.visible = self.card.health !== undefined;
 
-            if (self.card.health !== undefined && self.card.cardType == CardType.HERO) {
+            if (self.card.health !== undefined) {
                 if (self.card.health <= 0) {
                     self._animateDeath();
                   //  self.group.remove();

@@ -18,6 +18,7 @@ var ATTACK_PLAYER = 'attack_player';
 var END_TURN = 'finish';
 var PLAY_CARD = 'card';
 var ATTACK = 'attack';
+var PLAY_SPELL = 'spell';
 
 function StateModel(doc, email) {
     EventEmitter2.call(this);
@@ -181,6 +182,9 @@ exports.gameAction = function(req, res) {
             break;
         case PLAY_CARD:
             controller.playCard(id1);
+            break;
+        case PLAY_SPELL:
+            controller.playSpell(id1, id2);
             break;
         case ATTACK:
             controller.attack(id1, id2);
