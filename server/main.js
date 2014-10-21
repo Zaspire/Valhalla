@@ -23,65 +23,6 @@ app.get('/ok', function(req, res){
     res.send('ok');
 });
 
-app.get('/game_state', function(req, res) {
-    var token = req.query.token;
-    var gameid = req.query.gameid;
-    //FIXME: validate token && gameid
-    if (!token || !gameid) {
-        res.status(400).end();
-        return;
-    }
-    var email = common.decrypt(token);
-    db.collection('games').findOne({ _id: new mongodb.ObjectID(gameid) }, function(err, doc) {
-        if (err || !doc) {
-            res.status(400).end();
-            return;
-        }
-        assert(doc.players.indexOf(email) != -1);
-
-        var opponentEmail = common.clone(doc.players);
-        opponentEmail.splice(opponentEmail.indexOf(email), 1);
-        opponentEmail = opponentEmail[0];
-
-        var s = "WIP";
-        if (doc[common.base64_encode(opponentEmail)].health <= 0)
-            s = "WIN";
-        if (doc[common.base64_encode(email)].health <= 0)
-            s = "LOSE";
-        if (s != "WIP") {
-            db.collection('matchmaking').remove({ gameid: new mongodb.ObjectID(gameid) }, { w: 0 });
-        }
-        var myCards = doc[common.base64_encode(email)].hand;
-        var opponentCards = doc[common.base64_encode(opponentEmail)].hand;
-
-        var state = { myTurn: doc.turn == email,
-                      state: s,
-                      mana: doc[common.base64_encode(email)].mana,
-                      opponentCardsCount: opponentCards.filter(function(o) {return !o.onTable}).length,
-                      cardsOnTable: [],
-                      playerHand: [],
-                      health: doc[common.base64_encode(email)].health,
-                      opponentHealth: doc[common.base64_encode(opponentEmail)].health };
-        state.playerHand = myCards.filter(function(o) {
-            return !o.onTable;
-        }).map(function(o) {
-            var r = common.clone(o);
-            r.mine = true;
-            return r;
-        });
-        state.cardsOnTable = state.cardsOnTable.concat(myCards.filter(function(o) {
-            return o.onTable;
-        }).map(function(o) {
-            var r = common.clone(o);
-            r.mine = true;
-            return r;
-        }), opponentCards.filter(function(o) {
-            return o.onTable;
-        }));
-        res.send(JSON.stringify(state));
-    });
-});
-
 app.param('token', function(req, res, next, id) {
     req.email = common.decrypt(req.params.token);
     next();
