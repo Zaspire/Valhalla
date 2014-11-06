@@ -29,7 +29,7 @@ var heroes = {
     h2: {
         cardType: CardType.HERO,
         abilities: [{ castType: CastType.BATTLE_CRY, abilityType: AbilityType.DAMAGE_TO_ALL}],
-        name: "Pyromancer",
+        name: "Slayer",
         damage: 5,
         health: 3,
         cost: 4,
@@ -46,7 +46,7 @@ var heroes = {
     },
     h3: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 4",
+        name: "Medusa",
         damage: 3,
         health: 3,
         cost: 3,
@@ -54,7 +54,7 @@ var heroes = {
     },
     h4: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 3",
+        name: "The Ent",
         damage: 4,
         health: 4,
         cost: 4,
@@ -62,7 +62,7 @@ var heroes = {
     },
     h5: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 5",
+        name: "Dark Angel",
         damage: 5,
         health: 5,
         cost: 5,
@@ -70,7 +70,7 @@ var heroes = {
     },
     h6: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 6",
+        name: "Bloody Axe",
         damage: 6,
         health: 6,
         cost: 6,
@@ -79,7 +79,7 @@ var heroes = {
     },
     h7: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 7",
+        name: "Frozen Virgin",
         damage: 7,
         health: 7,
         cost: 7,
@@ -87,7 +87,7 @@ var heroes = {
     },
     h8: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 8",
+        name: "Stone Giant",
         damage: 8,
         health: 8,
         cost: 8,
@@ -96,7 +96,7 @@ var heroes = {
     },
     h9: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 9",
+        name: "Druid",
         damage: 9,
         health: 9,
         cost: 9,
@@ -104,7 +104,7 @@ var heroes = {
     },
     h10: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 10",
+        name: "The Sea Dragon",
         damage: 10,
         health: 10,
         cost: 10,
@@ -112,7 +112,7 @@ var heroes = {
     },
     h11: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 11",
+        name: "Untiled Hero 11",
         damage: 11,
         health: 11,
         cost: 10,
@@ -120,7 +120,7 @@ var heroes = {
     },
     h12: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 12",
+        name: "The Mad King",
         damage: 12,
         health: 12,
         cost: 10,
@@ -128,7 +128,7 @@ var heroes = {
     },
     h13: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 13",
+        name: "The Troll",
         damage: 13,
         health: 13,
         cost: 10,
