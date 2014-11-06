@@ -1,0 +1,6 @@
+ai/node_modules/
+client/hooks/
+client/platforms/
+client/plugins/
+node_modules/
+server/node_modules/
