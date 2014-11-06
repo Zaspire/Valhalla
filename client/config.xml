@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="org.axolemma.valhalla" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>Valhalla</name>
+<widget id="co.drunken.valhalla" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Valhalla: Fallen Heroes</name>
     <description>
         codename Valhalla
     </description>
-    <author email="ermilov.maxim@gmail.com">
-        Maxim Ermilov
+    <author email="support@drunken.co">
+        Drunken Co.
     </author>
     <content src="index.html" />
     <icon src="icon.png" />
