@@ -112,7 +112,7 @@ var heroes = {
     },
     h11: {
         cardType: CardType.HERO,
-        name: "Untiled Hero 11",
+        name: "Zeus Untitled Hero 14",
         damage: 11,
         health: 11,
         cost: 10,
@@ -136,7 +136,7 @@ var heroes = {
     },
     h14: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 14",
+        name: "prophet Untitled Hero 14",
         damage: 14,
         health: 14,
         cost: 10,
@@ -144,7 +144,7 @@ var heroes = {
     },
     h15: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 15",
+        name: "rikimaru Untitled Hero 15",
         damage: 14,
         health: 14,
         cost: 10,
@@ -152,7 +152,7 @@ var heroes = {
     },
     h16: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 16",
+        name: "traxex Untitled Hero 16",
         damage: 14,
         health: 14,
         cost: 10,
@@ -160,7 +160,7 @@ var heroes = {
     },
     h17: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 17",
+        name: "omniknight Untitled Hero 17",
         damage: 14,
         health: 14,
         cost: 10,
@@ -168,7 +168,7 @@ var heroes = {
     },
     h18: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 18",
+        name: "nerub Untitled Hero 18",
         damage: 14,
         health: 14,
         cost: 10,
@@ -176,7 +176,7 @@ var heroes = {
     },
     h19: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 19",
+        name: "Enchantress Untitled Hero 19",
         damage: 14,
         health: 14,
         cost: 10,
@@ -184,7 +184,7 @@ var heroes = {
     },
     h20: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 20",
+        name: "Tauren Chieftain Untitled Hero 20",
         damage: 14,
         health: 14,
         cost: 10,
@@ -192,7 +192,7 @@ var heroes = {
     },
     h21: {
         cardType: CardType.HERO,
-        name: "Untitled Hero 21",
+        name: "sniper Hero 21",
         damage: 14,
         health: 14,
         cost: 10,
