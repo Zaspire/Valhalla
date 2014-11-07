@@ -56,6 +56,10 @@ function starterCards() {
         'h15': 2,
         'h16': 2,
         'h17': 2,
+        'h18': 2,
+        'h19': 2,
+        'h20': 2,
+        'h21': 2,
         'creep1': 5,*/
     };
     var res = [];
