@@ -44,16 +44,10 @@ CardView.prototype = {
         group.matrix = m;
         group.applyMatrix = false;
 
-        var bg = new Raster('fg');
-        this._bg = bg;
-        bg.pivot = bg.bounds.topLeft;
-        bg.position.x = 0;
-        bg.position.y = 0;
-        group.addChild(bg);
-
         this._x = 0;
         this._y = 0;
 
+        this._addBG();
         this._addHighlite();
         this._addDamage();
         this._addHealth();
@@ -81,6 +75,25 @@ CardView.prototype = {
             this.model.me.on('changed::mana', this._updateHighlite.bind(this));
             this._updateHighlite();
         }
+    },
+
+    _addBG: function() {
+        var bg = new Raster('bs');
+        this._bg = bg;
+        bg.pivot = bg.bounds.topLeft;
+        bg.position.x = 0;
+        bg.position.y = 0;
+        this.group.addChild(bg);
+
+        var self = this;
+        function update() {
+            var source = 'bs';
+            if (self.card.state == CardState.TABLE || self.card.state == CardState.HAND && self.card.owner == Owner.ME)
+                source = 'fg';
+            bg.source = source;
+        }
+        this.card.on('changed::state', update);
+        update();
     },
 
     _animateAttackPlayer: function() {
@@ -509,11 +522,13 @@ function GameStateView(model) {
     this._all.applyMatrix = false;
     this._all.matrix.scale(view.bounds.width / SCREEN_WIDTH, view.bounds.height / SCREEN_HEIGHT);
 
-    var bg = new Path.Rectangle(new Rectangle(new Point(1, 1), new Size(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1)));
-    bg.fillColor="#ffffff";
-    bg.strokeColor="#808080";
-    bg.strokeWidth = 1;
+    var bg = new Raster('bg');
+    bg.pivot = bg.bounds.topLeft;
+    bg.position.x = 0;
+    bg.position.y = 0;
+    bg.scale(SCREEN_WIDTH / bg.bounds.width, SCREEN_HEIGHT / bg.bounds.height);
     this._all.addChild(bg);
+
     var midLine = new Path.Line(new Point(0, SCREEN_HEIGHT / 2), new Point(SCREEN_WIDTH, SCREEN_HEIGHT / 2));
     midLine.strokeColor = 'red';
     this._all.addChild(midLine);
