@@ -4,7 +4,6 @@ var CastType = {
 };
 var AbilityType = {
     DAMAGE_TO_ALL: "deal 1 damage to ALL",
-    SHIELD: "shield" // FIXME: Better description
 };
 var CardType = {
     UNKNOWN: 0,
@@ -19,7 +18,6 @@ var TABLE = 3;
 var heroes = {
     h1: {
         cardType: CardType.HERO,
-        abilities: [{ castType: CastType.ON_DEATH, abilityType: AbilityType.DAMAGE_TO_ALL}],
         name: "Butcher",
         damage: 3,
         health: 5,
@@ -28,7 +26,6 @@ var heroes = {
     },
     h2: {
         cardType: CardType.HERO,
-        abilities: [{ castType: CastType.BATTLE_CRY, abilityType: AbilityType.DAMAGE_TO_ALL}],
         name: "Slayer",
         damage: 5,
         health: 3,
