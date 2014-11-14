@@ -215,12 +215,10 @@ CardView.prototype = {
         group.addChild(bg);
 
         var heroName = heroes[this.card.type].name;
-        var ability = "";
-        if (heroes[this.card.type].abilities) {
-            var z = heroes[this.card.type].abilities[0];
-            ability = z.castType + ': ' + z.abilityType;
+        var ulti = "";
+        if (heroes[this.card.type].cast) {
+            ulti = heroes[this.card.type].ultimateDescription;
         }
-        var ulti = "Collest ulti ever";
         var txt = new PointText(new Point(920,60));
         txt.content = heroName;
         txt.characterStyle= {
@@ -233,17 +231,6 @@ CardView.prototype = {
         };
         group.addChild(txt);
 
-        txt = new PointText(new Point(920,200));
-        txt.content = ability;
-        txt.characterStyle= {
-            font:"Courier",
-            fontSize:30,
-            fillColor:"#dddddd"
-        }
-        txt.paragraphStyle = {
-            justification:"center"
-        };
-        group.addChild(txt);
         txt = new PointText(new Point(920,250));
         txt.content = ulti;
         txt.characterStyle= {
@@ -628,7 +615,7 @@ GameStateView.prototype = {
 
         this.model.opponent.on('changed::health', function() {
             healthTxt.content = '\u2764' + self.model.opponent.health;
-//            paper.view.update();
+            paper.view.update();
         });
         healthTxt.characterStyle= {
             font: "Courier",
@@ -641,7 +628,7 @@ GameStateView.prototype = {
         txt.content = '\u2B1F' + this.model.opponent.mana;
         this.model.me.on('changed::mana', function() {
             txt.content = '\u2B1F' + self.model.opponent.mana;
-//            paper.view.update();
+            paper.view.update();
         });
         txt.characterStyle= {
             font: "Courier",
@@ -673,7 +660,7 @@ GameStateView.prototype = {
 
         this.model.me.on('changed::health', function() {
             healthTxt.content = '\u2764' + self.model.me.health;
-//            paper.view.update();
+            paper.view.update();
         });
         healthTxt.characterStyle= {
             font: "Courier",
@@ -686,7 +673,7 @@ GameStateView.prototype = {
         txt.content = '\u2B1F' + this.model.me.mana;
         this.model.me.on('changed::mana', function() {
             txt.content = '\u2B1F' + self.model.me.mana;
-//            paper.view.update();
+            paper.view.update();
         });
         txt.characterStyle= {
             font: "Courier",

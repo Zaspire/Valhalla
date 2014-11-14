@@ -39,7 +39,8 @@ var heroes = {
                     cards[i].health--;
                 }
             }
-        }
+        },
+        ultimateDescription: "Deal 1 damage to enemy minions"
     },
     h3: {
         cardType: CardType.HERO,
@@ -89,7 +90,11 @@ var heroes = {
         health: 5,
         cost: 3,
         shield: true,
-        img: "8.png"
+        img: "8.png",
+        cast: function(card, cards) {
+            card.damage *= 3;
+        },
+        ultimateDescription: "Gain 3x damage"
     },
     h9: {
         cardType: CardType.HERO,
@@ -113,7 +118,17 @@ var heroes = {
         damage: 3,
         health: 6,
         cost: 4,
-        img: "11.png"
+        img: "11.png",
+        cast: function(card, cards) {
+            for (var i = 0; i < cards.length; i++) {
+                if (card.owner == cards[i].owner)
+                    continue;
+                if (cards[i].state === TABLE) {
+                    cards[i].health -= 2;
+                }
+            }
+        },
+        ultimateDescription: "Deal 2 damage to enemy minions"
     },
     h12: {
         cardType: CardType.HERO,
@@ -137,7 +152,21 @@ var heroes = {
         damage: 3,
         health: 2,
         cost: 2,
-        img: "14.png"
+        img: "14.png",
+        cast: function(card, cards) {
+            var bonus = 0;
+            for (var i = 0; i < cards.length; i++) {
+                if (card.owner == cards[i].owner)
+                    continue;
+                if (cards[i].state === TABLE) {
+                    cards[i].health -= 2;
+                    bonus += 2;
+                }
+            }
+            card.health += bonus;
+        },
+        ultimateDescription: "Steal 2 health from all enemy minions"
+
     },
     h15: {
         cardType: CardType.HERO,
@@ -177,7 +206,17 @@ var heroes = {
         damage: 6,
         health: 4,
         cost: 6,
-        img: "19.png"
+        img: "19.png",
+        cast: function(card, cards) {
+            for (var i = 0; i < cards.length; i++) {
+                if (card.owner != cards[i].owner)
+                    continue;
+                if (cards[i].state === TABLE) {
+                    cards[i].health--;
+                }
+            }
+        },
+        ultimateDescription: "Give 3 health to friendly minions"
     },
     h20: {
         cardType: CardType.HERO,

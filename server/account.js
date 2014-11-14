@@ -38,13 +38,11 @@ function getUserInfo(token) {
 function starterCards() {
     var type2count = {
         'h1': 2,
-        'h2': 10,
+        'h2': 2,
         'h3': 2,
         'h4': 2,
         'h5': 2,
-        'chainArmor': 2,
-        'ultimate': 10
-/*        'h6': 2,
+        'h6': 2,
         'h7': 2,
         'h8': 2,
         'h9': 2,
@@ -60,7 +58,9 @@ function starterCards() {
         'h19': 2,
         'h20': 2,
         'h21': 2,
-        'creep1': 5,*/
+        'chainArmor': 2,
+        'ultimate': 5
+//        'creep1': 5,
     };
     var res = [];
     for (var id in type2count) {
