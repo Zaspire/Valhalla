@@ -547,10 +547,9 @@ function GameStateView(model) {
 
 GameStateView.prototype = {
     _init: function() {
-        this._addOpponentHealth();
-        this._addHealth();
-        this._addMana();
         this._addNextTurnButton();
+        this._addOpponentHealth();
+        this._addHealthAndMana();
     },
 
     blockAnimation: function() {
@@ -611,99 +610,103 @@ GameStateView.prototype = {
     },
 
     _addOpponentHealth: function() {
+        var group = new Group();
+        group.pivot = group.bounds.topLeft;
+        group.position = [1000, 5]
+        this.myHealth = group;
+
+        var border = new Raster('hm');
+        border.pivot = border.bounds.topLeft;
+        border.position.x = 0;
+        border.position.y = 0;
+        group.addChild(border);
+
         var self = this;
-        var opponentHealth = new Path.Circle(new Point(1000, 100), 50);
-        opponentHealth.fillColor = "#cc00cc";
-        opponentHealth.strokeColor = "#808080";
-        opponentHealth.strokeWidth = 1;
-        this._all.addChild(opponentHealth);
 
-        this.opponentHealth = opponentHealth;
+        var healthTxt = new PointText(new Point(80,104));
+        healthTxt.content = '\u2764' + this.model.opponent.health;
 
-        var txt = new PointText(new Point(1000,70));
-
-        txt.content = '\u2764' + this.model.opponent.health;
         this.model.opponent.on('changed::health', function() {
-            txt.content = '\u2764' + self.model.opponent.health;
-            paper.view.update();
+            healthTxt.content = '\u2764' + self.model.opponent.health;
+//            paper.view.update();
+        });
+        healthTxt.characterStyle= {
+            font: "Courier",
+            fontSize: 22,
+            fillColor: "#000000"
+        }
+        group.addChild(healthTxt);
+
+        var txt = new PointText(new Point(80,35));
+        txt.content = '\u2B1F' + this.model.opponent.mana;
+        this.model.me.on('changed::mana', function() {
+            txt.content = '\u2B1F' + self.model.opponent.mana;
+//            paper.view.update();
         });
         txt.characterStyle= {
-            font:"Courier",
-            fontSize:14,
-            fillColor:"#000000"
+            font: "Courier",
+            fontSize: 22,
+            fillColor: "#000000"
         }
-        txt.paragraphStyle = {
-            justification:"left"
-        };
-        this._all.addChild(txt);
+        group.addChild(txt);
+
+        this._all.addChild(group);
+
+        this.opponentHealth = group;
     },
 
-    _addHealth: function() {
-        var self = this;
-        var selfHealth = new Path.Circle(new Point(1000, 700), 50);
-        selfHealth.fillColor="#cc00cc";
-        selfHealth.strokeColor="#808080";
-        selfHealth.strokeWidth = 1;
-        this._all.addChild(selfHealth);
+    _addHealthAndMana: function() {
+        var group = new Group();
+        group.pivot = group.bounds.topLeft;
+        this.myHealth = group;
 
-        this.myHealth = selfHealth;
-        var txt = new PointText(new Point(1000,700));
-        txt.content = '\u2764' + this.model.me.health;
+        var border = new Raster('hm');
+        border.pivot = border.bounds.topLeft;
+        border.position.x = 0;
+        border.position.y = 0;
+        group.addChild(border);
+
+        var self = this;
+
+        var healthTxt = new PointText(new Point(80,104));
+        healthTxt.content = '\u2764' + this.model.me.health;
+
         this.model.me.on('changed::health', function() {
-            txt.content = '\u2764' + self.model.me.health;
-            paper.view.update();
+            healthTxt.content = '\u2764' + self.model.me.health;
+//            paper.view.update();
         });
-        txt.characterStyle= {
-            font:"Courier",
-            fontSize:14,
-            fillColor:"#000000"
+        healthTxt.characterStyle= {
+            font: "Courier",
+            fontSize: 22,
+            fillColor: "#000000"
         }
-        txt.paragraphStyle = {
-            justification:"left"
-        };
-        this._all.addChild(txt);
-    },
+        group.addChild(healthTxt);
 
-    _addMana: function() {
-        var self = this;
-        var txt = new PointText(new Point(900,700));
+        var txt = new PointText(new Point(80,35));
         txt.content = '\u2B1F' + this.model.me.mana;
         this.model.me.on('changed::mana', function() {
             txt.content = '\u2B1F' + self.model.me.mana;
-            paper.view.update();
+//            paper.view.update();
         });
         txt.characterStyle= {
-            font:"Courier",
-            fontSize:14,
-            fillColor:"#000000"
+            font: "Courier",
+            fontSize: 22,
+            fillColor: "#000000"
         }
-        txt.paragraphStyle = {
-            justification:"left"
-        };
-        this._all.addChild(txt);
+        group.addChild(txt);
+
+        group.position = [1000, SCREEN_HEIGHT - group.bounds.height];
+        this._all.addChild(group);
     },
 
     _addNextTurnButton: function() {
         var group = new Group();
-        group.position = [1100, 10]
+        group.position = [1050, 290];
 
-        var border = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(100, 50)));
-        border.fillColor="green";
-        border.strokeColor="#808080";
-        border.strokeWidth = 1;
-        border.pivot = group.bounds.topLeft;
-
-        var dTxt = new PointText(new Point(0, 30));
-        dTxt.pivot = dTxt.bounds.topLeft;
-        dTxt.content = 'End Turn';
-        dTxt.characterStyle= {
-            font:"Courier",
-            fontSize:22,
-            fillColor:"#000000"
-        }
-        dTxt.paragraphStyle = {
-            justification:"left"
-        };
+        var border = new Raster('end_turn');
+        border.pivot = border.bounds.topLeft;
+        border.position.x = 0;
+        border.position.y = 0;
 
         group.onMouseUp = function(event) {
             //FIXME:
@@ -711,10 +714,7 @@ GameStateView.prototype = {
         }
 
         group.addChild(border);
-        group.addChild(dTxt);
         this._all.addChild(group);
-
-        dTxt.bringToFront();
 
         group.visible = this.model.turn == Owner.ME;
 
