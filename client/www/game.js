@@ -471,26 +471,20 @@ CardView.prototype = {
         this.group.addChild(cTxt);
     },
     _addShield: function() {
-        var cTxt = new PointText(new Point(40,144));
-        cTxt.characterStyle= {
-            font:"Courier",
-            fontSize:80,
-            fillColor:"#000000"
-        }
-        cTxt.paragraphStyle = {
-            justification:"left"
-        };
+        var bg = new Raster('shield');
+        bg.pivot = bg.bounds.topLeft;
+        bg.position.x = 280;
+        bg.position.y = 10;
 
         var self = this;
-        function updateText() {
-            cTxt.content = "SHIELD";
-            cTxt.visible = self.card.shield;
-            cTxt.bringToFront();
+        function update() {
+            bg.visible = self.card.shield;
+            bg.bringToFront();
         }
-        updateText();
-        this.card.on('changed::shield', updateText);
+        update();
+        this.card.on('changed::shield', update);
 
-        this.group.addChild(cTxt);
+        this.group.addChild(bg);
     }
 };
 

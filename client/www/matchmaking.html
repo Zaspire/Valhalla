@@ -9,8 +9,37 @@
         <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
         <script type="text/javascript" src="common.js"></script>
         <title>MatchMaking UI</title>
+        <style type="text/css" media="screen">
+        img.bg {
+            min-height: 100%;
+            width: 100%;
+            height: auto;
+
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        img.rotate {
+            -webkit-animation: Spin 15s linear infinite;
+        }
+        @-webkit-keyframes Spin {
+            0% { -webkit-transform: translate(-50%,-50%) rotate(0deg); }
+            100% { -webkit-transform: translate(-50%,-50%) rotate(360deg); }
+        }
+
+        #hourglass {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: auto;
+            height: 100%;
+        }
+        </style>
     </head>
     <body>
+      <img src="assets/glass_bg.png" class="bg"></img>
+      <img src="assets/hourglass.png" id="hourglass" class="rotate"></img>
+
       <h1 id="header">waiting opponent...</h1>
       <script type="text/javascript">
         var params = {};
@@ -36,4 +65,3 @@
       </script>
     </body>
 </html>
-

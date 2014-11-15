@@ -56,6 +56,7 @@ var heroes = {
         damage: 4,
         health: 4,
         cost: 4,
+        shield: true,
         img: "4.png"
     },
     h5: {
@@ -224,7 +225,8 @@ var heroes = {
         damage: 6,
         health: 9,
         cost: 6,
-        img: "20.png"
+        img: "20.png",
+        shield: true
     },
     h21: {
         cardType: CardType.HERO,
