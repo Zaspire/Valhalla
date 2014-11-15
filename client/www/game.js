@@ -40,7 +40,7 @@ CardView.prototype = {
         // FIXME: remove all listeners on destroy
         var group = new Group();
         this.group = group;
-        var m = new paper.Matrix(0.25, 0, 0, 0.25, 0, 0);
+        var m = new paper.Matrix(0.35, 0, 0, 0.35, 0, 0);
         group.matrix = m;
         group.applyMatrix = false;
 
