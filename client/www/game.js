@@ -219,7 +219,7 @@ CardView.prototype = {
         if (heroes[this.card.type].cast) {
             ulti = heroes[this.card.type].ultimateDescription;
         }
-        var txt = new PointText(new Point(920,60));
+        var txt = new PointText(new Point(920, 60));
         txt.content = heroName;
         txt.characterStyle= {
             font:"Courier",
@@ -231,7 +231,9 @@ CardView.prototype = {
         };
         group.addChild(txt);
 
-        txt = new PointText(new Point(920,250));
+        txt = new PointText(new Point(920, 250));
+        if (ulti)
+            ulti = 'Ultimate: ' + ulti;
         txt.content = ulti;
         txt.characterStyle= {
             font:"Courier",
@@ -242,6 +244,22 @@ CardView.prototype = {
             justification:"center"
         };
         group.addChild(txt);
+
+        for (var i = 0, y = 290; heroes[this.card.type].description && i < heroes[this.card.type].description.length; i++, y+=40) {
+            var d = heroes[this.card.type].description[i];
+
+            txt = new PointText(new Point(920, y));
+            txt.content = d;
+            txt.characterStyle= {
+                font:"Courier",
+                fontSize:30,
+                fillColor:"#dddddd"
+            }
+            txt.paragraphStyle = {
+                justification:"center"
+            };
+            group.addChild(txt);
+        }
 
         this.group.bringToFront();
 
