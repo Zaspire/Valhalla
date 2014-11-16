@@ -30,21 +30,25 @@
             100% { opacity: 0; }
         }
         </style>
+        <script type="text/javascript" src="cordova.js"></script>
     </head>
 <body>
-  <img src="assets/menu1.jpg" class="bg" usemap="#clickmap"></img>
-  <img src="assets/menu2.jpg" class="bg pulse" usemap="#clickmap"></img>
+    <img src="assets/menu1.jpg" class="bg" usemap="#clickmap"></img>
+    <img src="assets/menu2.jpg" class="bg pulse" usemap="#clickmap"></img>
 
-  <map name="clickmap">
-      <area shape="rect" coords="674,0,1330,340" href="matchmaking.html">
-      <area shape="rect" coords="636,844,1236,1072" href="mycards.html">
-  </map>
+    <map name="clickmap">
+        <area shape="rect" coords="674,0,1330,340" href="matchmaking.html">
+        <area shape="rect" coords="636,844,1236,1072" href="mycards.html">
+    </map>
 
-  <script>
-      $(document).ready(function(e) {
-          $('img[usemap]').rwdImageMaps();
-      });
-  </script>
+    <script>
+        $(document).ready(function(e) {
+            $('img[usemap]').rwdImageMaps();
+        });
+        document.addEventListener('deviceready', function() {
+            analytics.startTrackerWithId('UA-56813809-1');
+            analytics.trackView('Matchmaking');
+        }, false);
+    </script>
 </body>
 </html>
-

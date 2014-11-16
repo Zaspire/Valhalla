@@ -12,11 +12,16 @@
     <access origin="*" />
     <preference name="Fullscreen" value="true" />
     <preference name="orientation" value="landscape" />
+    <feature name="Google Universal Analytics Plugin">
+        <param name="id" value="com.danielcwilson.plugins.googleanalytics" />
+        <param name="url" value="https://github.com/danwilson/google-analytics-plugin.git" />
+    </feature>
     <feature name="Google Play Services for Android">
         <param name="id" value="com.google.playservices" />
     </feature>
     <feature name="Insomnia (prevent screen sleep)">
         <param name="id" value="nl.x-services.plugins.insomnia" />
+        <param name="url" value="https://github.com/EddyVerbruggen/Insomnia-PhoneGap-Plugin.git" />
     </feature>
     <feature name="InAppBrowser">
         <param name="id" value="org.apache.cordova.inappbrowser" />
@@ -32,11 +37,5 @@
     </feature>
     <feature name="Chrome Apps Identity API">
         <param name="id" value="org.chromium.identity" />
-    </feature>
-    <feature name="Chrome App Runtime">
-        <param name="id" value="org.chromium.runtime" />
-    </feature>
-    <feature name="Chrome Apps Storage API">
-        <param name="id" value="org.chromium.storage" />
     </feature>
 </widget>
