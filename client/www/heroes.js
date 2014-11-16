@@ -22,7 +22,16 @@ var heroes = {
         damage: 1,
         health: 5,
         cost: 3,
-        img: "1.png"
+        img: "1.png",
+        cast: function(card) {
+            card.attack = String(function(card1, card2) {
+                card1.attack = undefined;
+                var d = Math.min(4, card2.health);
+                card2.health -= d;
+                card1.health += d;
+            });
+        },
+        ultimateDescription: "Feasts on minion flesh. Deal 4 damage"
     },
     h2: {
         cardType: CardType.HERO,

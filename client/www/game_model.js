@@ -401,7 +401,10 @@ GameStateController.prototype = {
     canAttack: function(id1) {
         var card = this._myCard(id1);
 
-        if (card.state != CardState.TABLE || card.attacksLeft <= 0 || this.model.turn != this.owner)
+        if (card.state != CardState.TABLE || this.model.turn != this.owner)
+            return false;
+
+        if (card.attacksLeft <= 0 && !card.attack)
             return false;
 
         return true;
