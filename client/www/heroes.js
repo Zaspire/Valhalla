@@ -336,7 +336,8 @@ var heroes = {
         cast: function(card) {
             card.health += 2;
             card.damage += 1;
-        }
+        },
+        ultimateDescription: "give +1damage/+2health"
     },
     ultimate: {
         cardType: CardType.SPELL,
