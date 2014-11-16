@@ -177,7 +177,16 @@ var heroes = {
         damage: 2,
         health: 2,
         cost: 4,
-        img: "13.png"
+        img: "13.png",
+        onPlay: {
+            cast: function(card) {
+                card.attacksLeft = 2;
+            }
+        },
+        description: [
+            "Charge.",
+            "Repeat attack."
+        ],
     },
     h14: {
         cardType: CardType.HERO,
@@ -231,13 +240,18 @@ var heroes = {
         damage: 2,
         health: 5,
         cost: 4,
-        img: "18.png", ///////////FIXME: battlecry
+        img: "18.png",
         cast: function(card) {
             if (card.__prevTurnHealth) {
                 card.health += card.__prevTurnHealth;
             }
         },
         ultimateDescription: "Add health from previous turn",
+        onPlay: {
+            cast: function(card) {
+                card.__prevTurnHealth = card.health;
+            }
+        },
         onNewTurn: {
             cast: function(card) {
                 card.__prevTurnHealth = card.health;
@@ -260,6 +274,15 @@ var heroes = {
                 }
             }
         },
+        onPlay: {
+            cast: function(card) {
+                card.attacksLeft = 1;
+                card.onPlay = undefined;
+            }
+        },
+        description: [
+            "Charge."
+        ],
         ultimateDescription: "Give 3 health to friendly minions"
     },
     h20: {

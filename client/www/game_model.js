@@ -99,13 +99,14 @@ GameStateModel.prototype = {
     _createCard: function(owner, type, attacksLeft, state, id, damage, health, cost) {
         var shield = false;
         var cardType = CardType.UNKNOWN;
-        var onDeath, onNewTurn, attack;
+        var onDeath, onNewTurn, attack, onPlay;
         if (type in heroes) {
             shield = !!heroes[type].shield;
             cardType = heroes[type].cardType;
             onDeath = heroes[type].onDeath;
             attack = heroes[type].attack;
             onNewTurn = heroes[type].onNewTurn;
+            onPlay = heroes[type].onPlay;
         }
         if (cardType != CardType.HERO) {
             health = undefined;
@@ -122,6 +123,7 @@ GameStateModel.prototype = {
                                  attacksLeft: attacksLeft,
                                  state: state,
 
+                                 onPlay: onPlay,
                                  onDeath: onDeath,
                                  attack: attack,
                                  onNewTurn: onNewTurn });
@@ -336,6 +338,7 @@ GameStateController.prototype = {
         card.shield = !!heroes[desc['type']].shield;
         card.cardType = heroes[desc['type']].cardType;
         card.onDeath = heroes[desc['type']].onDeath;
+        card.onPlay = heroes[desc['type']].onPlay;
         card.onNewTurn = heroes[desc['type']].onNewTurn;
         card.attack = heroes[desc['type']].attack;
 
@@ -505,8 +508,7 @@ GameStateController.prototype = {
         card1.emit('attack', card2);
 
         if (card1.attack) {
-            eval('func = ' + card1.attack);
-            func(card1, card2);
+            callHelper(card1.attack, card1, card2);
         } else {
             card1.attacksLeft--;
 
@@ -543,6 +545,9 @@ GameStateController.prototype = {
         card.state = CardState.TABLE;
         card.attacksLeft = 0;
         this.me.mana -= card.cost;
+
+        if (card.onPlay)
+            callHelper(card.onPlay.cast, card);
 
         this._log(PLAY_CARD, id1, card);
     },
