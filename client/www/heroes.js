@@ -111,7 +111,17 @@ var heroes = {
         damage: 2,
         health: 5,
         cost: 3,
-        img: "10.png"
+        img: "10.png",
+        cast: function(card, cards) {
+            card.__ultimate = true;
+        },
+        ultimateDescription: "Add 4 damage each turn.",
+        onNewTurn: {
+            cast: function(card) {
+                if (card.__ultimate)
+                    card.damage += 4;
+            }
+        }
     },
     h11: {
         cardType: CardType.HERO,
@@ -214,7 +224,18 @@ var heroes = {
         damage: 2,
         health: 5,
         cost: 4,
-        img: "18.png"
+        img: "18.png", ///////////FIXME: battlecry
+        cast: function(card) {
+            if (card.__prevTurnHealth) {
+                card.health += card.__prevTurnHealth;
+            }
+        },
+        ultimateDescription: "Add health from previous turn",
+        onNewTurn: {
+            cast: function(card) {
+                card.__prevTurnHealth = card.health;
+            }
+        }
     },
     h19: {
         cardType: CardType.HERO,

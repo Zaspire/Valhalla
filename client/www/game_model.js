@@ -98,6 +98,7 @@ GameStateModel.prototype = {
             shield = !!heroes[type].shield;
             cardType = heroes[type].cardType;
             onDeath = heroes[type].onDeath;
+            onNewTurn = heroes[type].onNewTurn;
         }
         if (cardType != CardType.HERO) {
             health = undefined;
@@ -114,7 +115,8 @@ GameStateModel.prototype = {
                                  attacksLeft: attacksLeft,
                                  state: state,
 
-                                 onDeath: onDeath });
+                                 onDeath: onDeath,
+                                 onNewTurn: onNewTurn });
 
         card.__cardUniqField = this._nextCardUniqId++;
         //emits attackPlayer, attack
@@ -326,6 +328,7 @@ GameStateController.prototype = {
         card.shield = !!heroes[desc['type']].shield;
         card.cardType = heroes[desc['type']].cardType;
         card.onDeath = heroes[desc['type']].onDeath;
+        card.onNewTurn = heroes[desc['type']].onNewTurn;
 
         for (var i = 0; i < props.length; i++) {
             var prop = props[i];
@@ -536,6 +539,8 @@ GameStateController.prototype = {
             if (card.state != CardState.TABLE || card.owner != opponent)
                 return;
             card.attacksLeft = 1;
+            if (card.onNewTurn)
+                card.onNewTurn.cast(card);
         });
 
         var deck = this.model._cards.filter(function(card) {

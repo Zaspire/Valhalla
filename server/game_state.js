@@ -99,7 +99,8 @@ StateModel.prototype = {
             attacksLeft: attacksLeft,
             state: state,
 
-            onDeath: heroes[type].onDeath
+            onDeath: heroes[type].onDeath,
+            onNewTurn: heroes[type].onNewTurn
         };
     },
 
