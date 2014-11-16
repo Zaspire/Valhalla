@@ -99,7 +99,7 @@ GameStateModel.prototype = {
     _createCard: function(owner, type, attacksLeft, state, id, damage, health, cost) {
         var shield = false;
         var cardType = CardType.UNKNOWN;
-        var onDeath, onNewTurn, attack, onPlay;
+        var onDeath, onNewTurn, attack, onPlay, onTurnEnd;
         if (type in heroes) {
             shield = !!heroes[type].shield;
             cardType = heroes[type].cardType;
@@ -107,6 +107,7 @@ GameStateModel.prototype = {
             attack = heroes[type].attack;
             onNewTurn = heroes[type].onNewTurn;
             onPlay = heroes[type].onPlay;
+            onTurnEnd = heroes[type].onTurnEnd;
         }
         if (cardType != CardType.HERO) {
             health = undefined;
@@ -126,6 +127,7 @@ GameStateModel.prototype = {
                                  onPlay: onPlay,
                                  onDeath: onDeath,
                                  attack: attack,
+                                 onTurnEnd: onTurnEnd,
                                  onNewTurn: onNewTurn });
 
         card.__cardUniqField = this._nextCardUniqId++;
@@ -338,6 +340,7 @@ GameStateController.prototype = {
         card.shield = !!heroes[desc['type']].shield;
         card.cardType = heroes[desc['type']].cardType;
         card.onDeath = heroes[desc['type']].onDeath;
+        card.onTurnEnd = heroes[desc['type']].onTurnEnd;
         card.onPlay = heroes[desc['type']].onPlay;
         card.onNewTurn = heroes[desc['type']].onNewTurn;
         card.attack = heroes[desc['type']].attack;
@@ -555,6 +558,14 @@ GameStateController.prototype = {
     endTurn: function(a1, a2) {
         var opponent = this.owner == Owner.ME ? Owner.OPPONENT: Owner.ME;
         assert(this.model.turn == this.owner);
+
+        var self = this;
+        this.model._cards.forEach(function(card, index, array) {
+            if (card.state != CardState.TABLE || card.owner != self.owner)
+                return;
+            if (card.onTurnEnd)
+                callHelper(card.onTurnEnd.cast, card);
+        });
 
         this.model._cards.forEach(function(card, index, array) {
             if (card.state != CardState.TABLE || card.owner != opponent)

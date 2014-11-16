@@ -216,7 +216,18 @@ var heroes = {
         damage: 1,
         health: 2,
         cost: 3,
-        img: "15.png"
+        img: "15.png",
+        onTurnEnd: {
+            cast: function(card) {
+                if (card.attacksLeft) {
+                    card.health++;
+                    card.damage++;
+                }
+            }
+        },
+        description: [
+            "For each idle turn gets +1,+1"
+        ],
     },
     h16: {
         cardType: CardType.HERO,
