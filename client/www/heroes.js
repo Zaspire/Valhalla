@@ -153,8 +153,6 @@ var heroes = {
                 card.damage = heroes['h12'].damage;
                 card.img = heroes['h12'].img;
                 card.shield = false;
-                console.log('cast');
-                console.log(card.health);
             }
         },
         cardType: CardType.HERO,
@@ -270,7 +268,14 @@ var heroes = {
         damage: 6,
         health: 2,
         cost: 4,
-        img: "21.png"
+        img: "21.png",
+        cast: function(card) {
+            card.attack = String(function(card1, card2) {
+                card1.attack = undefined;
+                card2.health = 0;
+            });
+        },
+        ultimateDescription: "Kill selected enemy minion"
     },
 
     creep1: {

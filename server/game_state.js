@@ -20,6 +20,62 @@ var PLAY_CARD = 'card';
 var ATTACK = 'attack';
 var PLAY_SPELL = 'spell';
 
+function generateDeck(account) {
+    var deck = [];
+    for (var i = 0; i < account.deck.length; i++) {
+        var card = account.cards.filter(function(o) {
+            return account.deck[i] == o.id;
+        });
+        assert(card.length == 1);
+        card = card[0];
+
+        deck.push(card);
+    }
+
+    assert(deck.length == common.DECK_SIZE);
+    return common.shuffle(deck);
+}
+
+exports.newGame = function(account1, account2) {
+    function createCard(doc) {
+        var o = common.clone(doc);
+
+        o.cardType = heroes[o.type].cardType;
+        if (heroes[o.type].onDeath)
+            o.onDeath = { cast: String(heroes[o.type].onDeath.cast) };
+        if (heroes[o.type].onNewTurn)
+            o.onNewTurn = { cast: String(heroes[o.type].onNewTurn.cast) };
+        if (heroes[o.type].attack)
+            o.attack = String(heroes[o.type].attack);
+        o.state = CardState.DECK;
+
+        return o;
+    }
+    var email1 = account1._id;
+    var email2 = account2._id;
+    var deck1 = generateDeck(account1).map(createCard);
+    var deck2 = generateDeck(account2).map(createCard);
+    var hand1 = [];
+    var hand2 = [];
+    for (var i = 0; i < 4; i++) {
+        var card = deck1.shift();
+        card.state = CardState.HAND;
+        hand1.push(card);
+
+        card = deck2.shift();
+        card.state = CardState.HAND;
+        hand2.push(card);
+    }
+
+    var state = { players: [email1, email2], turn: email1, actionsCount: 0, log: [] };
+    state[common.base64_encode(email1)] = {hand: hand1, deck: deck1, health: 31, mana: 1, maxMana: 1};
+    state[common.base64_encode(email2)] = {hand: hand2, deck: deck2, health: 31, mana: 1, maxMana: 1};
+
+    state.initial = common.clone(state);
+
+    return state;
+}
+
 function StateModel(doc, email) {
     EventEmitter2.call(this);
 
@@ -57,65 +113,41 @@ function StateModel(doc, email) {
 
     for (var i = 0; i < me.hand.length; i++) {
         var card = me.hand[i];
-        var state = card.onTable ? CardState.TABLE: CardState.HAND;
-        var c = this._createCard(Owner.ME, card.type, card.attacksLeft, state, card.id, card.damage, card.health, card.cost);
+        var c = this._createCard(card, Owner.ME, card.state);
         this._cards.push(c);
     }
     for (var i = 0; i < me.deck.length; i++) {
         var card = me.deck[i];
-        var c = this._createCard(Owner.ME, card.type, card.attacksLeft, CardState.DECK, card.id, card.damage, card.health, card.cost);
+        var c = this._createCard(card, Owner.ME, CardState.DECK);
         this._cards.push(c);
     }
 
     for (var i = 0; i < opponent.deck.length; i++) {
         var card = opponent.deck[i];
-        var c = this._createCard(Owner.OPPONENT, card.type, card.attacksLeft, CardState.DECK, card.id, card.damage, card.health, card.cost);
+        var c = this._createCard(card, Owner.OPPONENT, CardState.DECK);
         this._cards.push(c);
     }
     for (var i = 0; i < opponent.hand.length; i++) {
         var card = opponent.hand[i];
-        var state = card.onTable ? CardState.TABLE: CardState.HAND;
-        var c = this._createCard(Owner.OPPONENT, card.type, card.attacksLeft, state, card.id, card.damage, card.health, card.cost);
+        var c = this._createCard(card, Owner.OPPONENT, card.state);
         this._cards.push(c);
     }
 }
 
 StateModel.prototype = {
     __proto__: EventEmitter2.prototype,
-    _createCard: function(owner, type, attacksLeft, state, id, damage, health, cost) {
-        var shield = false;
-        shield = !!heroes[type].shield;
-        cardType = heroes[type].cardType;
-        return {
-            __proto__: EventEmitter2.prototype,
-            owner: owner,
-            type: type,
-            damage: damage,
-            health: health,
-            shield: shield,
-            cost: cost,
-            cardType: cardType,
-            id: id,
-            attacksLeft: attacksLeft,
-            state: state,
+    _createCard: function(card, owner, state) {
+        var o = common.clone(card);
 
-            onDeath: heroes[type].onDeath,
-            onNewTurn: heroes[type].onNewTurn
-        };
+        o.emit = function() {}
+        assert(o.state === state);
+        o.owner = owner;
+        return o;
     },
 
     _serializeCard: function(card) {
-        var doc = {
-            type: card.type,
-            id: card.id,
-            damage: card.damage,
-            health: card.health,
-            cost: card.cost,
-            attacksLeft: card.attacksLeft
-        };
-        if (card.state == CardState.TABLE)
-            doc.onTable = true;
-        return doc;
+        card.emit = undefined;
+        return card;
     },
 
     serialize: function() {

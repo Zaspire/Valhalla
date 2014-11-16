@@ -60,6 +60,12 @@ var PLAY_CARD = 'card';
 var ATTACK = 'attack';
 var PLAY_SPELL = 'spell';
 
+function callHelper(f, arg1, arg2) {
+    var func;
+    eval('func = ' + f);
+    func(arg1, arg2);
+}
+
 function GameStateModel(host, token, gameid) {
     EventEmitter2.call(this);
 
@@ -93,11 +99,12 @@ GameStateModel.prototype = {
     _createCard: function(owner, type, attacksLeft, state, id, damage, health, cost) {
         var shield = false;
         var cardType = CardType.UNKNOWN;
-        var onDeath;
+        var onDeath, onNewTurn, attack;
         if (type in heroes) {
             shield = !!heroes[type].shield;
             cardType = heroes[type].cardType;
             onDeath = heroes[type].onDeath;
+            attack = heroes[type].attack;
             onNewTurn = heroes[type].onNewTurn;
         }
         if (cardType != CardType.HERO) {
@@ -116,6 +123,7 @@ GameStateModel.prototype = {
                                  state: state,
 
                                  onDeath: onDeath,
+                                 attack: attack,
                                  onNewTurn: onNewTurn });
 
         card.__cardUniqField = this._nextCardUniqId++;
@@ -329,6 +337,7 @@ GameStateController.prototype = {
         card.cardType = heroes[desc['type']].cardType;
         card.onDeath = heroes[desc['type']].onDeath;
         card.onNewTurn = heroes[desc['type']].onNewTurn;
+        card.attack = heroes[desc['type']].attack;
 
         for (var i = 0; i < props.length; i++) {
             var prop = props[i];
@@ -375,7 +384,7 @@ GameStateController.prototype = {
             if (isAlive(card))
                 continue;
             if (card.onDeath)
-                card.onDeath.cast(card);
+                callHelper(card.onDeath.cast, card);
         }
         this.model._cards = this.model._cards.filter(isAlive);
         this.model.emit('reposition');
@@ -419,7 +428,6 @@ GameStateController.prototype = {
 
     canPlayCard: function(id1) {
         var card = this._myCard(id1);
-
         if (card.state != CardState.HAND || card.cost > this.me.mana
             || this.model.turn != this.owner || card.cardType != CardType.HERO)
             return false;
@@ -493,10 +501,15 @@ GameStateController.prototype = {
 
         card1.emit('attack', card2);
 
-        card1.attacksLeft--;
+        if (card1.attack) {
+            eval('func = ' + card1.attack);
+            func(card1, card2);
+        } else {
+            card1.attacksLeft--;
 
-        card2.health -= card1.damage;
-        card1.health -= card2.damage;
+            card2.health -= card1.damage;
+            card1.health -= card2.damage;
+        }
 
         this._removeDeadCards();
 
@@ -540,7 +553,7 @@ GameStateController.prototype = {
                 return;
             card.attacksLeft = 1;
             if (card.onNewTurn)
-                card.onNewTurn.cast(card);
+                callHelper(card.onNewTurn.cast, card);
         });
 
         var deck = this.model._cards.filter(function(card) {

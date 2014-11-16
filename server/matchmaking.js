@@ -4,6 +4,8 @@ var pmongo = require('promised-mongo');
 
 var common = require('./common');
 
+var game_state = require('./game_state');
+
 var pdb = pmongo(common.config.mongo);
 
 function generateDeck(account) {
@@ -31,20 +33,7 @@ function onNewGame(email1, email2) {
     }).then(function (doc) {
         var account2 = doc;
 
-        var deck1 = generateDeck(account1);
-        var deck2 = generateDeck(account2);
-        var hand1 = [];
-        var hand2 = [];
-        for (var i = 0; i < 4; i++) {
-            hand1.push(deck1.shift());
-            hand2.push(deck2.shift());
-        }
-
-        var state = { players: [email1, email2], turn: email1, actionsCount: 0, log: [] };
-        state[common.base64_encode(email1)] = {hand: hand1, deck: deck1, health: 31, mana: 1, maxMana: 1};
-        state[common.base64_encode(email2)] = {hand: hand2, deck: deck2, health: 31, mana: 1, maxMana: 1};
-
-        state.initial = common.clone(state);
+        var state = game_state.newGame(account1, account2);
 
         return pdb.collection('games').insert(state);
     });
