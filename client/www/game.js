@@ -438,8 +438,10 @@ CardView.prototype = {
 
             if (self.card.health !== undefined) {
                 if (self.card.health <= 0) {
+                    if (!self.card.onDeath)
                     self._animateDeath();
                   //  self.group.remove();
+                } else {
                 }
             }
         }

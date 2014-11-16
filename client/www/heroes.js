@@ -129,9 +129,24 @@ var heroes = {
                 }
             }
         },
-        ultimateDescription: "Deal 2 damage to enemy minions"
+        ultimateDescription: "Deal 2 damage to enemy minions."
     },
     h12: {
+        description: [
+            "Reborn."
+        ],
+        onDeath: {
+            cast: function(card) {
+                card.onDeath = undefined;
+                card.health = heroes['h12'].health;
+                card.type = 'h12';
+                card.damage = heroes['h12'].damage;
+                card.img = heroes['h12'].img;
+                card.shield = false;
+                console.log('cast');
+                console.log(card.health);
+            }
+        },
         cardType: CardType.HERO,
         name: "The Mad King",
         damage: 2,

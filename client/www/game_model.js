@@ -93,9 +93,11 @@ GameStateModel.prototype = {
     _createCard: function(owner, type, attacksLeft, state, id, damage, health, cost) {
         var shield = false;
         var cardType = CardType.UNKNOWN;
+        var onDeath;
         if (type in heroes) {
             shield = !!heroes[type].shield;
             cardType = heroes[type].cardType;
+            onDeath = heroes[type].onDeath;
         }
         if (cardType != CardType.HERO) {
             health = undefined;
@@ -110,7 +112,9 @@ GameStateModel.prototype = {
                                  id: id,
                                  cardType: cardType,
                                  attacksLeft: attacksLeft,
-                                 state: state });
+                                 state: state,
+
+                                 onDeath: onDeath });
 
         card.__cardUniqField = this._nextCardUniqId++;
         //emits attackPlayer, attack
@@ -321,6 +325,7 @@ GameStateController.prototype = {
 
         card.shield = !!heroes[desc['type']].shield;
         card.cardType = heroes[desc['type']].cardType;
+        card.onDeath = heroes[desc['type']].onDeath;
 
         for (var i = 0; i < props.length; i++) {
             var prop = props[i];
@@ -362,8 +367,15 @@ GameStateController.prototype = {
         function isAlive(card) {
             return card.health > 0 || card.state != CardState.TABLE;
         }
-        this.model.emit('reposition');
+        for (var i = 0; i < this.model._cards.length; i++) {
+            var card = this.model._cards[i];
+            if (isAlive(card))
+                continue;
+            if (card.onDeath)
+                card.onDeath.cast(card);
+        }
         this.model._cards = this.model._cards.filter(isAlive);
+        this.model.emit('reposition');
     },
 
     _opponentHasShield: function() {

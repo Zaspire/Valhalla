@@ -97,7 +97,9 @@ StateModel.prototype = {
             cardType: cardType,
             id: id,
             attacksLeft: attacksLeft,
-            state: state
+            state: state,
+
+            onDeath: heroes[type].onDeath
         };
     },
 
