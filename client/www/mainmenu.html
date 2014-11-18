@@ -31,6 +31,7 @@
         }
         </style>
         <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="common.js"></script>
     </head>
 <body>
     <img src="assets/menu1.jpg" class="bg" usemap="#clickmap"></img>
@@ -46,8 +47,8 @@
             $('img[usemap]').rwdImageMaps();
         });
         document.addEventListener('deviceready', function() {
-            analytics.startTrackerWithId('UA-56813809-1');
-            analytics.trackView('Matchmaking');
+            analytics.startTrackerWithId(GA_ACCOUNT);
+            analytics.trackView('mainmenu');
         }, false);
     </script>
 </body>

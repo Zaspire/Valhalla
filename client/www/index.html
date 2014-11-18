@@ -24,8 +24,6 @@
         </style>
     </head>
     <body>
-      <h1 id="header">loading...</h1>
-      <br/>
       <img src="assets/main.jpg" class="bg" usemap="#clickmap"></img>
       <map name="clickmap">
           <area shape="rect" id="pp" coords="1286,386,1500,690">
@@ -37,13 +35,11 @@
         });
 
         document.addEventListener('deviceready', function() {
-            document.getElementById('header').innerHTML = "Hello World";
             chrome.identity.getAuthToken({ 'interactive': true }, function (token, account) {
                 if (chrome.runtime.lastError) {
                     navigator.app.exitApp();
                     return;
                 }
-                document.getElementById('header').innerHTML = "Hello " + account;
                 $.ajax({ url: host + 'v1/authorize/' + token + '/' + encodeURIComponent(account) }).done(function(data) {
                     console.log("account verified");
                     console.log(data);
@@ -56,7 +52,7 @@
                 console.log(token);
                 console.log(account);
             });
-            analytics.startTrackerWithId('UA-56813809-1');
+            analytics.startTrackerWithId(GA_ACCOUNT);
             analytics.trackView('Login');
         }, false);
       </script>

@@ -35,6 +35,7 @@
             height: 100%;
         }
         </style>
+        <script type="text/javascript" src="cordova.js"></script>
     </head>
     <body>
       <img src="assets/glass_bg.png" class="bg"></img>
@@ -62,6 +63,10 @@
             });
         }
         request();
+        document.addEventListener("deviceready", function keepAwake() {
+            analytics.startTrackerWithId(GA_ACCOUNT);
+            analytics.trackView('matchmaking');
+        }, false);
       </script>
     </body>
 </html>
