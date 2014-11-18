@@ -320,6 +320,14 @@ var heroes = {
         },
         ultimateDescription: "Kill selected enemy minion"
     },
+    h21: {
+        cardType: CardType.HERO,
+        name: "Untitled hero 21",
+        damage: 6,
+        health: 2,
+        cost: 4,
+        img: "22.png",
+    },
 
     creep1: {
         cardType: CardType.HERO,
@@ -328,6 +336,13 @@ var heroes = {
         health: 1,
         cost: 1,
     },
+    bear: {
+        cardType: CardType.HERO,
+        name: "Bear",
+        damage: 3,
+        health: 7,
+        cost: 0,
+    }
 
     chainArmor: {
         cardType: CardType.SPELL,
