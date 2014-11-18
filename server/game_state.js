@@ -71,7 +71,11 @@ exports.newGame = function(account1, account2) {
         hand2.push(card);
     }
 
-    var state = { players: [email1, email2], turn: email1, actionsCount: 0, log: [] };
+    var state = { players: [email1, email2],
+                  data: { nextId: Math.floor(Math.random() * 1000000 + 1) },
+                  turn: email1,
+                  actionsCount: 0,
+                  log: [] };
     state[common.base64_encode(email1)] = {hand: hand1, deck: deck1, health: 31, mana: 1, maxMana: 1};
     state[common.base64_encode(email2)] = {hand: hand2, deck: deck2, health: 31, mana: 1, maxMana: 1};
 
@@ -87,6 +91,8 @@ function StateModel(doc, email) {
     this._log = doc.log;
 
     this.email = email;
+
+    this.data = common.clone(doc.data);
 
     this.opponentEmail = common.clone(doc.players);
     this.opponentEmail.splice(this.opponentEmail.indexOf(email), 1);
@@ -140,6 +146,7 @@ function StateModel(doc, email) {
 
 StateModel.prototype = {
     __proto__: EventEmitter2.prototype,
+
     _createCard: function(card, owner, state) {
         var o = common.clone(card);
 
@@ -147,6 +154,10 @@ StateModel.prototype = {
         assert(o.state === state);
         o.owner = owner;
         return o;
+    },
+    createCard: function(o) {
+        var card = this._createCard(o, o.owner, o.state);
+        this._cards.push(card);
     },
 
     _serializeCard: function(card) {
@@ -160,7 +171,8 @@ StateModel.prototype = {
             turn: this.turn == Owner.ME? this.email: this.opponentEmail,
             players: [ this.email, this.opponentEmail ],
             log: this._log,
-            actionsCount: this._log.length
+            actionsCount: this._log.length,
+            data: this.data
         };
 
         var ce1 = common.base64_encode(this.email);
@@ -241,6 +253,7 @@ exports.gameAction = function(req, res) {
         res.send('{}');
     }, function(e) {
         console.log(e);
+//FIXME:
 throw e;
         res.status(400).end();
     });
@@ -282,6 +295,7 @@ exports.gameState = function(req, res) {
         var result = { log: log,
                        initial: {
                            turn: doc.initial.turn == email,
+                           data: doc.initial.data,
                            my: {
                                hand: myState.hand,
                                deckSize: myState.deck.length,

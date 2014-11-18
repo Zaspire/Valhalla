@@ -112,7 +112,28 @@ var heroes = {
         damage: 5,
         health: 3,
         cost: 7,
-        img: "9.png"
+        img: "9.png",
+        onPlay: {
+            cast: function(card, model) {
+                var card = {
+                    cardType: heroes['bear'].cardType,
+                    name: heroes['bear'].name,
+                    damage: heroes['bear'].damage,
+                    health: heroes['bear'].health,
+                    cost: heroes['bear'].cost,
+                    id:  model.data.nextId++,
+                    state: CardState.TABLE,
+                    owner: card.owner,
+                    attacksLeft: 0,
+
+                    type: 'bear'
+                };
+                model.createCard(card);
+            }
+        },
+        description: [
+            "Summon bear."
+        ],
     },
     h10: {
         cardType: CardType.HERO,
@@ -320,7 +341,7 @@ var heroes = {
         },
         ultimateDescription: "Kill selected enemy minion"
     },
-    h21: {
+    h22: {
         cardType: CardType.HERO,
         name: "Untitled hero 21",
         damage: 6,
@@ -342,7 +363,8 @@ var heroes = {
         damage: 3,
         health: 7,
         cost: 0,
-    }
+        img: "1001.png"
+    },
 
     chainArmor: {
         cardType: CardType.SPELL,
@@ -352,7 +374,9 @@ var heroes = {
             card.health += 2;
             card.damage += 1;
         },
-        ultimateDescription: "give +1damage/+2health"
+        description: [
+            "Give +1damage/+2health."
+        ]
     },
     ultimate: {
         cardType: CardType.SPELL,

@@ -96,6 +96,13 @@ GameStateModel.prototype = {
         return player;
     },
 
+    createCard: function(o) {
+        assert(o.id);
+
+        var card = this._createCard(o.owner, o.type, o.attacksLeft, o.state, o.id, o.damage, o.health, o.cost);
+        this._cards.push(card);
+    },
+
     _createCard: function(owner, type, attacksLeft, state, id, damage, health, cost) {
         var shield = false;
         var cardType = CardType.UNKNOWN;
@@ -180,6 +187,8 @@ GameStateModel.prototype = {
 
         self._initial = data.initial;
         self._log = [];
+
+        this.data = JSON.parse(JSON.stringify(data.initial.data));
 
         if (data.initial.turn)
             self.turn = Owner.ME;
@@ -507,7 +516,6 @@ GameStateController.prototype = {
             throw new Error('invalid action');
 
         var card1 = this._myCard(id1), card2 = this._opponentCard(id2);
-
         card1.emit('attack', card2);
 
         if (card1.attack) {
@@ -550,7 +558,7 @@ GameStateController.prototype = {
         this.me.mana -= card.cost;
 
         if (card.onPlay)
-            callHelper(card.onPlay.cast, card);
+            callHelper(card.onPlay.cast, card, this.model);
 
         this._log(PLAY_CARD, id1, card);
     },
