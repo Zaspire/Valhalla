@@ -6,8 +6,6 @@
         <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
         <meta name="msapplication-tap-highlight" content="no" />
-        <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
-        <script type="text/javascript" src="common.js"></script>
         <title>MatchMaking UI</title>
         <style type="text/css" media="screen">
         img.bg {
@@ -35,13 +33,16 @@
             height: 100%;
         }
         </style>
+        <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
+        <script type="text/javascript" src="common.js"></script>
         <script type="text/javascript" src="cordova.js"></script>
+
+        <link rel="prefetch" href="game.html" />
     </head>
     <body>
       <img src="assets/glass_bg.png" class="bg"></img>
       <img src="assets/hourglass.png" id="hourglass" class="rotate"></img>
 
-      <h1 id="header">waiting opponent...</h1>
       <script type="text/javascript">
         var params = {};
         params.token = localStorage.getItem('token');
@@ -53,13 +54,12 @@
                     return;
                 }
                 data = JSON.parse(data);
-                $("#header").html('done');
 
                 localStorage.setItem('gameid', data.gameid);
                 window.location = 'game.html';
             }).fail(function() {
                 //FIXME:
-                $("#header").html('fail');
+                console.log('fail');
             });
         }
         request();
