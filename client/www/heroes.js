@@ -91,7 +91,29 @@ var heroes = {
         damage: 3,
         health: 6,
         cost: 4,
-        img: "7.png"
+        img: "7.png",
+        cast: function(card, cards, model) {
+            var minions = cards.filter(function(c) {
+                if (card.owner == c.owner)
+                    return false;
+                if (c.state !== TABLE)
+                    return false;
+                return true;
+            });
+
+            var chozen = [];
+            for (var i = 0; i < minions.length; i++) {
+                var b = (model.random() % 1000) / 1000;
+
+                if (b > (2 - chozen.length)/(minions.length - i))
+                    continue;
+                chozen.push(minions[i]);
+            }
+            for (var i = 0; i < chozen.length; i++) {
+                chozen[i].health -= 3;
+            }
+        },
+        ultimateDescription: "Deal 3 damage to 2 random enemy minions.",
     },
     h8: {
         cardType: CardType.HERO,
@@ -382,8 +404,8 @@ var heroes = {
         cardType: CardType.SPELL,
         name: "Ultimate",
         cost: 2,
-        cast: function(card, cards) {
-            heroes[card.type].cast(card, cards);
+        cast: function(card, cards, model) {
+            heroes[card.type].cast(card, cards, model);
         }
     }
 };

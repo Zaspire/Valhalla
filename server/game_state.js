@@ -13,6 +13,7 @@ var GameStateController = require('../ai/game_model').GameStateController;
 var Owner = require('../ai/game_model').Owner;
 var CardState = require('../ai/game_model').CardState;
 var GameState = require('../ai/game_model').GameState;
+var SillyRandom = require('../client/www/random.js');
 
 var ATTACK_PLAYER = 'attack_player';
 var END_TURN = 'finish';
@@ -72,7 +73,8 @@ exports.newGame = function(account1, account2) {
     }
 
     var state = { players: [email1, email2],
-                  data: { nextId: Math.floor(Math.random() * 1000000 + 1) },
+                  data: { nextId: Math.floor(Math.random() * 1000000 + 1),
+                          seed: Math.floor(Math.random() * 1000000000 + 1) },
                   turn: email1,
                   actionsCount: 0,
                   log: [] };
@@ -93,6 +95,7 @@ function StateModel(doc, email) {
     this.email = email;
 
     this.data = common.clone(doc.data);
+    this.random = SillyRandom.createRandomGenerator(this.data.seed);
 
     this.opponentEmail = common.clone(doc.players);
     this.opponentEmail.splice(this.opponentEmail.indexOf(email), 1);
@@ -166,6 +169,7 @@ StateModel.prototype = {
     },
 
     serialize: function() {
+        this.data.seed = this.random.state;
         var doc = {
             _id: this._id,
             turn: this.turn == Owner.ME? this.email: this.opponentEmail,

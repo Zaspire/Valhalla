@@ -189,6 +189,7 @@ GameStateModel.prototype = {
         self._log = [];
 
         this.data = JSON.parse(JSON.stringify(data.initial.data));
+        this.random = createRandomGenerator(this.data.seed);
 
         if (data.initial.turn)
             self.turn = Owner.ME;
@@ -499,7 +500,7 @@ GameStateController.prototype = {
 
         var card1 = this._myCard(id1), card2 = this._myCard(id2);
 
-        heroes[card1.type].cast(card2, this.model._cards);
+        heroes[card1.type].cast(card2, this.model._cards, this.model);
 
         if (!runningUnderNode)
             card1.health = 0;
