@@ -129,13 +129,13 @@ GameStateModel.prototype = {
                                  id: id,
                                  cardType: cardType,
                                  attacksLeft: attacksLeft,
-                                 state: state,
+                                 state: state });
 
-                                 onPlay: onPlay,
-                                 onDeath: onDeath,
-                                 attack: attack,
-                                 onTurnEnd: onTurnEnd,
-                                 onNewTurn: onNewTurn });
+        card.onPlay = onPlay;
+        card.onDeath = onDeath;
+        card.attack = attack;
+        card.onTurnEnd = onTurnEnd;
+        card.onNewTurn = onNewTurn;
 
         card.__cardUniqField = this._nextCardUniqId++;
         //emits attackPlayer, attack
@@ -580,8 +580,9 @@ GameStateController.prototype = {
             if (card.state != CardState.TABLE || card.owner != opponent)
                 return;
             card.attacksLeft = 1;
-            if (card.onNewTurn)
+            if (card.onNewTurn) {
                 callHelper(card.onNewTurn.cast, card);
+            }
         });
 
         var deck = this.model._cards.filter(function(card) {

@@ -100,20 +100,39 @@ var heroes = {
                     return false;
                 return true;
             });
-
+            minions.sort(function(c1, c2) {
+                if (c1.id < c2.id) {
+                    return -1;
+                }
+                if (c1.id > c2.id) {
+                    return 1;
+                }
+                return 0;
+            });
             var chozen = [];
             for (var i = 0; i < minions.length; i++) {
                 var b = (model.random() % 1000) / 1000;
-
                 if (b > (2 - chozen.length)/(minions.length - i))
                     continue;
                 chozen.push(minions[i]);
             }
+            function froze(c1) {
+                if (!c1._t_newTurn)
+                    c1._t_newTurn = [];
+                c1._t_newTurn.push(c1.onNewTurn);
+                c1.onNewTurn = {
+                    cast: String(function(card) {
+                        card.attacksLeft = 0;
+                        card.onNewTurn = card._t_newTurn.pop();
+                    })
+                };
+            }
             for (var i = 0; i < chozen.length; i++) {
                 chozen[i].health -= 3;
+                froze(chozen[i]);
             }
         },
-        ultimateDescription: "Deal 3 damage to 2 random enemy minions.",
+        ultimateDescription: "Deal 3 damage to 2 random enemy minions and freeze them.",
     },
     h8: {
         cardType: CardType.HERO,
