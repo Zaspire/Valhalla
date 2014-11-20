@@ -54,6 +54,7 @@ CardView.prototype = {
         this._addCost();
         this._addShield();
         this._addHeroImage();
+        this._addVisualState();
 
         this._updatePosition();
         this.card.on('changed::state', this._updatePosition.bind(this));
@@ -75,6 +76,26 @@ CardView.prototype = {
             this.model.me.on('changed::mana', this._updateHighlite.bind(this));
             this._updateHighlite();
         }
+    },
+
+    _addVisualState: function() {
+        var fg;
+
+        var self = this;
+        function update() {
+            if (fg)
+                fg.remove();
+            console.log(self.card.visualState);
+            if (self.card.visualState) {
+                fg = new Raster(self.card.visualState);
+                fg.pivot = fg.bounds.topLeft;
+                fg.position.x = 0;
+                fg.position.y = 0;
+                self.group.addChild(fg);
+            }
+        }
+        this.card.on('changed::visualState', update);
+        update();
     },
 
     _addBG: function() {

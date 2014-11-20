@@ -129,7 +129,8 @@ GameStateModel.prototype = {
                                  id: id,
                                  cardType: cardType,
                                  attacksLeft: attacksLeft,
-                                 state: state });
+                                 state: state,
+                                 visualState: '' });
 
         card.onPlay = onPlay;
         card.onDeath = onDeath;

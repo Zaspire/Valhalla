@@ -120,9 +120,13 @@ var heroes = {
                 if (!c1._t_newTurn)
                     c1._t_newTurn = [];
                 c1._t_newTurn.push(c1.onNewTurn);
+
+                //FIXME: restore previous state
+                c1.visualState = 'frozen';
                 c1.onNewTurn = {
                     cast: String(function(card) {
                         card.attacksLeft = 0;
+                        card.visualState = '';
                         card.onNewTurn = card._t_newTurn.pop();
                     })
                 };
