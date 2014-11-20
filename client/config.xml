@@ -12,6 +12,11 @@
     <access origin="*" />
     <preference name="Fullscreen" value="true" />
     <preference name="orientation" value="landscape" />
+    <preference name="SplashScreenDelay" value="10000" />
+    <preference name="AutoHideSplashScreen" value="false" />
+    <preference name="SplashScreen" value="screen" />
+    <splash src="splash.png" />
+
     <feature name="Google Universal Analytics Plugin">
         <param name="id" value="com.danielcwilson.plugins.googleanalytics" />
         <param name="url" value="https://github.com/danwilson/google-analytics-plugin.git" />
@@ -25,6 +30,9 @@
     </feature>
     <feature name="InAppBrowser">
         <param name="id" value="org.apache.cordova.inappbrowser" />
+    </feature>
+    <feature name="Splashscreen">
+        <param name="id" value="org.apache.cordova.splashscreen" />
     </feature>
     <feature name="Chrome Apps Common Utils">
         <param name="id" value="org.chromium.common" />
