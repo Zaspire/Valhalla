@@ -216,7 +216,7 @@ CardView.prototype = {
 
         var heroName = heroes[this.card.type].name;
         var ulti = "";
-        if (heroes[this.card.type].cast) {
+        if (heroes[this.card.type].ultimateDescription) {
             ulti = heroes[this.card.type].ultimateDescription;
         }
         var txt = new PointText(new Point(920, 60));

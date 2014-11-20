@@ -404,6 +404,7 @@ var heroes = {
         cardType: CardType.SPELL,
         name: "Ultimate",
         cost: 2,
+        img: "2001.png",
         cast: function(card, cards, model) {
             heroes[card.type].cast(card, cards, model);
         }
