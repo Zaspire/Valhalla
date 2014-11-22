@@ -60,7 +60,7 @@ function starterCards() {
         'h21': 1,
         'chainArmor': 0,
         'ultimate': 5
-        'creep1': 5,
+        'creep1': 5
     };
     var res = [];
     for (var id in type2count) {
