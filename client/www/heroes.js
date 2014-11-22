@@ -309,7 +309,35 @@ var heroes = {
         damage: 3,
         health: 5,
         cost: 3,
-        img: "17.png"
+        img: "17.png",
+        canAttackCard: {
+            cast: function(card1, card2, orig) {
+                if (card2.owner == card1.owner)
+                    return true;
+                return orig;
+            }
+        },
+        cast: function(card, cards) {
+            card.__ultimate = true;
+        },
+        attack: String(function(card1, card2) {
+            card1.attacksLeft--;
+            if (card2.owner == card1.owner) {
+                if (card1.__ultimate) {
+                    card2.shield = true;
+                    card1.__ultimate = false;
+                    return;
+                }
+                card2.health += 2;
+                return;
+            }
+            card2.health -= card1.damage;
+            card1.health -= card2.damage;
+        }),
+        description: [
+            "Can heal friendly minion instead on attack."
+        ],
+        ultimateDescription: "Give friendly minion shield."
     },
     h18: {
         cardType: CardType.HERO,

@@ -48,6 +48,8 @@ exports.newGame = function(account1, account2) {
             o.onNewTurn = { cast: String(heroes[o.type].onNewTurn.cast) };
         if (heroes[o.type].onTurnEnd)
             o.onTurnEnd = { cast: String(heroes[o.type].onTurnEnd.cast) };
+        if (heroes[o.type].canAttackCard)
+            o.canAttackCard = { cast: String(heroes[o.type].canAttackCard.cast) };
         if (heroes[o.type].attack)
             o.attack = String(heroes[o.type].attack);
         if (heroes[o.type].onPlay)

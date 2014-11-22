@@ -60,10 +60,10 @@ var PLAY_CARD = 'card';
 var ATTACK = 'attack';
 var PLAY_SPELL = 'spell';
 
-function callHelper(f, arg1, arg2) {
+function callHelper(f, arg1, arg2, arg3) {
     var func;
     eval('func = ' + f);
-    func(arg1, arg2);
+    return func(arg1, arg2, arg3);
 }
 
 function GameStateModel(host, token, gameid) {
@@ -106,7 +106,7 @@ GameStateModel.prototype = {
     _createCard: function(owner, type, attacksLeft, state, id, damage, health, cost) {
         var shield = false;
         var cardType = CardType.UNKNOWN;
-        var onDeath, onNewTurn, attack, onPlay, onTurnEnd;
+        var onDeath, onNewTurn, attack, onPlay, onTurnEnd, canAttackCard;
         if (type in heroes) {
             shield = !!heroes[type].shield;
             cardType = heroes[type].cardType;
@@ -115,6 +115,7 @@ GameStateModel.prototype = {
             onNewTurn = heroes[type].onNewTurn;
             onPlay = heroes[type].onPlay;
             onTurnEnd = heroes[type].onTurnEnd;
+            canAttackCard = heroes[type].canAttackCard;
         }
         if (cardType != CardType.HERO) {
             health = undefined;
@@ -137,6 +138,7 @@ GameStateModel.prototype = {
         card.attack = attack;
         card.onTurnEnd = onTurnEnd;
         card.onNewTurn = onNewTurn;
+        card.canAttackCard = canAttackCard;
 
         card.__cardUniqField = this._nextCardUniqId++;
         //emits attackPlayer, attack
@@ -351,6 +353,7 @@ GameStateController.prototype = {
         card.shield = !!heroes[desc['type']].shield;
         card.cardType = heroes[desc['type']].cardType;
         card.onDeath = heroes[desc['type']].onDeath;
+        card.canAttackCard = heroes[desc['type']].canAttackCard;
         card.onTurnEnd = heroes[desc['type']].onTurnEnd;
         card.onPlay = heroes[desc['type']].onPlay;
         card.onNewTurn = heroes[desc['type']].onNewTurn;
@@ -368,25 +371,28 @@ GameStateController.prototype = {
         }
     },
 
-    _myCard: function(id) {
+    _card: function(id) {
         var r = this.model._cards.filter(function (c) {return c.id == id;});
 
         if (!r)
             throw new Error('incorrect card id');
         assert(r.length == 1);
         r = r[0];
+
+        return r;
+    },
+
+    _myCard: function(id) {
+        var r = this._card(id);
+
         assert(r.owner == this.owner);
 
         return r;
     },
 
     _opponentCard: function(id) {
-        var r = this.model._cards.filter(function (c) {return c.id == id;});
+        var r = this._card(id);
 
-        if (!r)
-            throw new Error('incorrect card id');
-        assert(r.length == 1);
-        r = r[0];
         assert(r.owner != this.owner);
 
         return r;
@@ -421,10 +427,19 @@ GameStateController.prototype = {
         if (card.state != CardState.TABLE || this.model.turn != this.owner)
             return false;
 
-        if (card.attacksLeft <= 0 && !card.attack)
+        if (card.attacksLeft <= 0)
             return false;
 
         return true;
+    },
+
+    canAttackCard: function(id1, id2) {
+        var card1 = this._myCard(id1);
+        if (card1.canAttackCard) {
+            var card2 = this._card(id2);
+            return callHelper(card1.canAttackCard.cast, card1, card2, this.canBeAttacked(id2));
+        } else
+            return this.canBeAttacked(id2);
     },
 
     canAttackOpponent: function() {
@@ -435,7 +450,9 @@ GameStateController.prototype = {
     },
 
     canBeAttacked: function(id2) {
-        var card = this._opponentCard(id2);
+        try {
+            var card = this._opponentCard(id2);
+        } catch (e) {return false;}
 
         if (!card.shield && this._opponentHasShield())
             return false;
@@ -514,10 +531,10 @@ GameStateController.prototype = {
     },
 
     attack: function(id1, id2) {
-        if (!this.canAttack(id1) || !this.canBeAttacked(id2))
+        if (!this.canAttack(id1) || !this.canAttackCard(id1, id2))
             throw new Error('invalid action');
 
-        var card1 = this._myCard(id1), card2 = this._opponentCard(id2);
+        var card1 = this._myCard(id1), card2 = this._card(id2);
         card1.emit('attack', card2);
 
         if (card1.attack) {

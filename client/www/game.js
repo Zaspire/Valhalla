@@ -85,7 +85,6 @@ CardView.prototype = {
         function update() {
             if (fg)
                 fg.remove();
-            console.log(self.card.visualState);
             if (self.card.visualState) {
                 fg = new Raster(self.card.visualState);
                 fg.pivot = fg.bounds.topLeft;
@@ -374,9 +373,9 @@ CardView.prototype = {
                     continue;
                 if (other.card.state != CardState.TABLE)
                     continue;
-                if (other.card.owner == this.card.owner)
+                if (!other.group.contains(point))
                     continue;
-                if (other.group.contains(point) && myController.canBeAttacked(other.card.id)) {
+                if (myController.canAttackCard(this.card.id, other.card.id)) {
                     gameAction('attack', this.card.id, other.card.id);
                     myController.attack(this.card.id, other.card.id);
                     this._updatePosition();
