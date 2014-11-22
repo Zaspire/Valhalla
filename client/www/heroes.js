@@ -429,6 +429,7 @@ var heroes = {
         damage: 1,
         health: 1,
         cost: 1,
+        img: "1000.png"
     },
     bear: {
         cardType: CardType.HERO,
