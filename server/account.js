@@ -37,7 +37,7 @@ function getUserInfo(token) {
 
 function starterCards() {
     var type2count = {
-        'h1': 2,
+        'h1': 12,
         'h2': 2,
         'h3': 2,
         'h4': 2,
@@ -53,7 +53,7 @@ function starterCards() {
         'h14': 2,
         'h15': 2,
         'h16': 2,*/
-        'h17': 12,
+        'h17': 2,
 /*        'h18': 2,
         'h19': 2,
         'h20': 2,

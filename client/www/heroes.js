@@ -31,6 +31,40 @@ var heroes = {
                 card1.health += d;
             });
         },
+        onTurnEnd: {
+            cast: function(card, cards, model) {
+                var minions = cards.filter(function(c) {
+                    if (card.owner == c.owner)
+                        return false;
+                    if (c.state !== CardState.TABLE)
+                        return false;
+                    return true;
+                });
+                minions.sort(function(c1, c2) {
+                    if (c1.id < c2.id) {
+                        return -1;
+                    }
+                    if (c1.id > c2.id) {
+                        return 1;
+                    }
+                    return 0;
+                });
+                var chozen = [];
+                for (var i = 0; i < minions.length; i++) {
+                    var b = (model.random() % 1000) / 1000;
+                    if (b > (3 - chozen.length)/(minions.length - i))
+                        continue;
+                    chozen.push(minions[i]);
+                }
+                for (var i = 0; i < chozen.length; i++) {
+                    chozen[i].health--;
+                }
+                card.health--;
+            }
+        },
+        description: [
+            "At the end of each turn deal 1 damage to self and 3 random enemy minions"
+        ],
         ultimateDescription: "Feasts on minion flesh. Deal 4 damage"
     },
     h2: {

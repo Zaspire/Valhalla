@@ -591,7 +591,7 @@ GameStateController.prototype = {
             if (card.state != CardState.TABLE || card.owner != self.owner)
                 return;
             if (card.onTurnEnd)
-                callHelper(card.onTurnEnd.cast, card);
+                callHelper(card.onTurnEnd.cast, card, self.model._cards, self.model);
         });
 
         this.model._cards.forEach(function(card, index, array) {
@@ -602,6 +602,7 @@ GameStateController.prototype = {
                 callHelper(card.onNewTurn.cast, card);
             }
         });
+        this._removeDeadCards();
 
         var deck = this.model._cards.filter(function(card) {
             return card.owner == opponent && card.state == CardState.DECK;
