@@ -2,10 +2,10 @@
 <html>
     <head>
         <meta charset="utf-8" />
+        <title>MatchMaking</title>
         <meta name="format-detection" content="telephone=no" />
         <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
-        <title>MatchMaking UI</title>
         <style type="text/css" media="screen">
         a {
             -webkit-tap-highlight-color: rgba(0,0,0,0);
@@ -35,8 +35,8 @@
             height: 100%;
         }
         </style>
-        <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
         <script type="text/javascript" src="common.js"></script>
+        <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
         <script type="text/javascript" src="cordova.js"></script>
 
         <link rel="prefetch" href="game.html" />
@@ -65,10 +65,6 @@
             });
         }
         request();
-        document.addEventListener("deviceready", function keepAwake() {
-            analytics.startTrackerWithId(GA_ACCOUNT);
-            analytics.trackView('matchmaking');
-        }, false);
       </script>
     </body>
 </html>

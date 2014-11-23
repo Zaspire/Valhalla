@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <title>MainMenu</title>
+        <script type="text/javascript" src="common.js"></script>
         <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
         <script type="text/javascript" src="third_party/jquery.rwdImageMaps.js"></script>
         <style type="text/css" media="screen">
@@ -34,7 +35,6 @@
         }
         </style>
         <script type="text/javascript" src="cordova.js"></script>
-        <script type="text/javascript" src="common.js"></script>
 
         <link rel="prefetch" href="matchmaking.html" />
     </head>
@@ -51,10 +51,6 @@
         $(document).ready(function(e) {
             $('img[usemap]').rwdImageMaps();
         });
-        document.addEventListener('deviceready', function() {
-            analytics.startTrackerWithId(GA_ACCOUNT);
-            analytics.trackView('mainmenu');
-        }, false);
     </script>
 </body>
 </html>

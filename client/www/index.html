@@ -3,13 +3,13 @@
     <head>
         <meta charset="utf-8" />
         <meta name="format-detection" content="telephone=no" />
+        <title>Login</title>
         <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <script type="text/javascript" src="common.js"></script>
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
         <script type="text/javascript" src="third_party/jquery.rwdImageMaps.js"></script>
-        <script type="text/javascript" src="common.js"></script>
-        <title>Login</title>
         <style type="text/css" media="screen">
         img.bg {
             min-height: 100%;
@@ -59,9 +59,6 @@
         }
 
         document.addEventListener('deviceready', function() {
-            analytics.startTrackerWithId(GA_ACCOUNT);
-            analytics.trackView('Login');
-
             setTimeout(function() {
                 navigator.splashscreen.hide();
                 login();
