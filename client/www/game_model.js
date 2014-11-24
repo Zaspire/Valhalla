@@ -599,7 +599,7 @@ GameStateController.prototype = {
                 return;
             card.attacksLeft = 1;
             if (card.onNewTurn) {
-                callHelper(card.onNewTurn.cast, card);
+                callHelper(card.onNewTurn.cast, card, self.model);
             }
         });
         this._removeDeadCards();

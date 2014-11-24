@@ -386,14 +386,32 @@ var heroes = {
             }
         },
         ultimateDescription: "Add health from previous turn",
+        description: [
+            "Born spider each turn."
+        ],
         onPlay: {
             cast: function(card) {
                 card.__prevTurnHealth = card.health;
             }
         },
         onNewTurn: {
-            cast: function(card) {
+            cast: function(card, model) {
                 card.__prevTurnHealth = card.health;
+
+                var card = {
+                    cardType: heroes['spider'].cardType,
+                    name: heroes['spider'].name,
+                    damage: heroes['spider'].damage,
+                    health: heroes['spider'].health,
+                    cost: heroes['spider'].cost,
+                    id:  model.data.nextId++,
+                    state: CardState.TABLE,
+                    owner: card.owner,
+                    attacksLeft: 0,
+
+                    type: 'spider'
+                };
+                model.createCard(card);
             }
         }
     },
@@ -472,6 +490,14 @@ var heroes = {
         health: 7,
         cost: 0,
         img: "1001.png"
+    },
+    spider: {
+        cardType: CardType.HERO,
+        name: "Spider",
+        damage: 1,
+        health: 1,
+        cost: 0,
+        img: "1003.png"
     },
 
     chainArmor: {
