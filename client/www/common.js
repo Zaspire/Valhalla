@@ -29,3 +29,35 @@ var SCREEN_HEIGHT = 768;
         reportErrors();
     });
 })();
+
+function NetworkRequestQueue() {
+    this._queue = [];
+}
+NetworkRequestQueue.prototype = {
+    ajax: function(url, data, success) {
+        this._queue.push({url: url, data: data, success: success});
+        this.process();
+    },
+    process: function() {
+        if (this._queue.length != 1)
+            return;
+        this._process();
+    },
+    _process: function() {
+        if (this._queue.length <= 0)
+            return;
+        var d = this._queue[0];
+        var self = this;
+        $.ajax({ url: d.url, data: d.data }).done(function(data) {
+            self._queue.shift();
+            if (d.success)
+                d.success(data);
+            self._process.apply(self);
+        }).fail(function() {
+            console.log('network fail');
+            self._queue.shift();
+        });
+    }
+};
+
+var _network = new NetworkRequestQueue();

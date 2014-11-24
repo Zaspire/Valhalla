@@ -41,17 +41,15 @@
         function login() {
             chrome.identity.getAuthToken({ 'interactive': true }, function (token, account) {
                 if (chrome.runtime.lastError) {
+                //FIXME:
                     navigator.app.exitApp();
                     return;
                 }
-                $.ajax({ url: host + 'v1/authorize/' + token + '/' + encodeURIComponent(account) }).done(function(data) {
+                _network.ajax(host + 'v1/authorize/' + token + '/' + encodeURIComponent(account), undefined, function(data) {
                     console.log("account verified");
                     console.log(data);
                     localStorage.setItem('token', data);
                     $("#pp").attr("href", "mainmenu.html");
-                }).fail(function() {
-                    navigator.app.exitApp();
-                    return;
                 });
                 console.log(token);
                 console.log(account);

@@ -50,7 +50,7 @@
         params.token = localStorage.getItem('token');
 
         function request() {
-            $.ajax({ url: host + 'v1/matchmaking/' + params.token }).done(function(data) {
+            _network.ajax(host + 'v1/matchmaking/' + params.token, undefined, function(data) {
                 if (data == '{}') {
                     setTimeout(request, 1000);
                     return;
@@ -59,9 +59,6 @@
 
                 localStorage.setItem('gameid', data.gameid);
                 window.location = 'game.html';
-            }).fail(function() {
-                //FIXME:
-                console.log('fail');
             });
         }
         request();

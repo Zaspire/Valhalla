@@ -170,9 +170,7 @@ GameStateModel.prototype = {
             }
             doRequest(uri, cb);
         } else {
-            $.ajax({ url: uri }).done(cb).fail(function() {
-                //FIXME
-            });
+            _network.ajax(uri, undefined, cb);
         }
     },
 

@@ -74,21 +74,17 @@ function draw(cards) {
 function save(cards) {
     var deck = cards.filter(function(o){return o.selected;}).map(function(o) {return o.id;});
 
-    $.ajax({ url: host + 'v1/my_cards/' + params.token + '/set', data: { deck: deck } }).done(function(data) {
+    _network.ajax(host + 'v1/my_cards/' + params.token + '/set', { deck: deck }, function(data) {
         console.log(data);
         getCards();
-    }).fail(function() {
-        //FIXME:
     });
 }
 
 function getCards() {
 
-    $.ajax({ url: host + 'v1/my_cards/' + params.token }).done(function(data) {
+    _network.ajax(host + 'v1/my_cards/' + params.token, undefined, function(data) {
         console.log(data);
         draw(JSON.parse(data));
-    }).fail(function() {
-        //FIXME:
     });
 }
 

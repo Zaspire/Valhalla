@@ -793,8 +793,5 @@ function gameAction(action, id1, id2) {
         data.id1 = id1;
     if (id2 !== undefined)
         data.id2 = id2;
-    $.ajax({ url: uri, data: data }).done(function(data) {
-    }).fail(function() {
-        // FIXME:
-    });
+    _network.ajax(uri, data, null);
 }
