@@ -60,6 +60,17 @@ exports.newGame = function(account1, account2) {
     }
     var email1 = account1._id;
     var email2 = account2._id;
+    function getNameFromAccount(account) {
+        if (!account.info)
+            return 'Claire'; //FIXME: Bot
+        if (account.info.nickname)
+            return account.info.nickname;
+        if (account.info.name && account.info.name.givenName)
+            return account.info.name.givenName;
+        if (account.info.displayName)
+            return account.info.displayName;
+        return '_';
+    }
     var deck1 = generateDeck(account1).map(createCard);
     var deck2 = generateDeck(account2).map(createCard);
     var hand1 = [];
@@ -80,8 +91,12 @@ exports.newGame = function(account1, account2) {
                   turn: email1,
                   actionsCount: 0,
                   log: [] };
-    state[common.base64_encode(email1)] = {hand: hand1, deck: deck1, health: 31, mana: 1, maxMana: 1};
-    state[common.base64_encode(email2)] = {hand: hand2, deck: deck2, health: 31, mana: 1, maxMana: 1};
+    state[common.base64_encode(email1)] = {hand: hand1, deck: deck1,
+                                           name: getNameFromAccount(account1),
+                                           health: 31, mana: 1, maxMana: 1};
+    state[common.base64_encode(email2)] = {hand: hand2, deck: deck2,
+                                           name: getNameFromAccount(account2),
+                                           health: 31, mana: 1, maxMana: 1};
 
     state.initial = common.clone(state);
 
@@ -307,14 +322,16 @@ exports.gameState = function(req, res) {
                                deckSize: myState.deck.length,
                                health: myState.health,
                                mana: myState.mana,
-                               maxMana: myState.maxMana
+                               maxMana: myState.maxMana,
+                               name: myState.name
                            },
                            opponent: {
                                handSize: opponentState.hand.length,
                                deckSize: opponentState.deck.length,
                                health: opponentState.health,
                                mana: opponentState.mana,
-                               maxMana: opponentState.maxMana
+                               maxMana: opponentState.maxMana,
+                               name: opponentState.name
                            }
                        }};
         return result;

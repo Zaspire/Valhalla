@@ -570,7 +570,7 @@ GameStateView.prototype = {
     _init: function() {
         this._addNextTurnButton();
         this._addOpponentHealth();
-        this._addHealthAndMana();
+        this._addPlayerInfo();
     },
 
     blockAnimation: function() {
@@ -631,6 +631,7 @@ GameStateView.prototype = {
     },
 
     _addOpponentHealth: function() {
+        //FIXME: deduplicate _addPlayerInfo
         var group = new Group();
         group.pivot = group.bounds.topLeft;
         group.position = [1000, 5]
@@ -660,7 +661,7 @@ GameStateView.prototype = {
 
         var txt = new PointText(new Point(80,35));
         txt.content = '\u2B1F' + this.model.opponent.mana;
-        this.model.me.on('changed::mana', function() {
+        this.model.opponent.on('changed::mana', function() {
             txt.content = '\u2B1F' + self.model.opponent.mana;
             paper.view.update();
         });
@@ -671,12 +672,25 @@ GameStateView.prototype = {
         }
         group.addChild(txt);
 
+        var nameTxt = new PointText(new Point(97, 70));
+        nameTxt.content = this.model.opponent.name.length > 12 ? this.model.opponent.name.substr(0, 10) + '...' : this.model.opponent.name;
+        nameTxt.characterStyle= {
+            font: "Courier",
+            fontSize: 22,
+            fillColor: "#ffffff"
+        }
+        nameTxt.paragraphStyle = {
+            justification:"center"
+        };
+        group.addChild(nameTxt);
+
+
         this._all.addChild(group);
 
         this.opponentHealth = group;
     },
 
-    _addHealthAndMana: function() {
+    _addPlayerInfo: function() {
         var group = new Group();
         group.pivot = group.bounds.topLeft;
         this.myHealth = group;
@@ -715,6 +729,18 @@ GameStateView.prototype = {
             fillColor: "#000000"
         }
         group.addChild(txt);
+
+        var nameTxt = new PointText(new Point(97, 70));
+        nameTxt.content = this.model.me.name.length > 12 ? this.model.me.name.substr(0, 10) + '...' : this.model.me.name;
+        nameTxt.characterStyle= {
+            font: "Courier",
+            fontSize: 22,
+            fillColor: "#ffffff"
+        }
+        nameTxt.paragraphStyle = {
+            justification:"center"
+        };
+        group.addChild(nameTxt);
 
         group.position = [1000, SCREEN_HEIGHT - group.bounds.height];
         this._all.addChild(group);

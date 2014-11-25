@@ -85,12 +85,13 @@ function GameStateModel(host, token, gameid) {
 
 GameStateModel.prototype = {
     __proto__: EventEmitter2.prototype,
-    _createPlayer: function(mana, maxMana, health, owner) {
+    _createPlayer: function(mana, maxMana, health, owner, name) {
         var player =  new GObject({ mana: mana,
                                     maxMana: maxMana,
                                     health: health });
 
         player.owner = owner;
+        player.name = name;
 
         player.setMaxListeners(35);
         return player;
@@ -179,8 +180,8 @@ GameStateModel.prototype = {
         self._cards = [];
 
         var data = JSON.parse(data);
-        self.me = self._createPlayer(data.initial.my.mana, data.initial.my.maxMana, data.initial.my.health, Owner.ME);
-        self.opponent = self._createPlayer(data.initial.opponent.mana, data.initial.opponent.maxMana, data.initial.opponent.health, Owner.OPPONENT);
+        self.me = self._createPlayer(data.initial.my.mana, data.initial.my.maxMana, data.initial.my.health, Owner.ME, data.initial.my.name);
+        self.opponent = self._createPlayer(data.initial.opponent.mana, data.initial.opponent.maxMana, data.initial.opponent.health, Owner.OPPONENT, data.initial.opponent.name);
 
         this.me.on('changed::health', this._onHealthChanged.bind(this));
         this.opponent.on('changed::health', this._onHealthChanged.bind(this));
