@@ -6,7 +6,7 @@ body {
     margin: 0px !important;
 }
 
-img.bg {
+.bg {
     min-height: 100%;
     width: 100%;
     height: auto;
@@ -14,4 +14,42 @@ img.bg {
     position: fixed;
     top: 0;
     left: 0;
+}
+
+img.dialog_bg {
+    min-height: 100%;
+    width: 100%;
+    height: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.dialog_text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 50px;
+    transform: translate(-50%, -50%);
+}
+
+.dialog_text_container {
+    font-family:"Comic Sans MS", cursive, sans-serif;
+    position: absolute;
+    top: 25%;
+    left: 40%;
+    width: 40%;
+    height: 50%;
+}
+
+div.hidden {
+    visibility: hidden;
+}
+@-webkit-keyframes DialogShow {
+    0%   { transform: translate(0, -100% ); }
+    100% { transform: translate(0, 0 ); }
+}
+.dialog_show {
+    -webkit-animation: DialogShow 2s;
+
 }

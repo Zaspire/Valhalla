@@ -30,6 +30,34 @@ var SCREEN_HEIGHT = 768;
     });
 })();
 
+function showDialog(msg, cb) {
+    var dialog = document.createElement('div');
+    dialog.className = 'bg hidden';
+
+    var img = document.createElement('img');
+    img.className = 'dialog_bg';
+    img.src = 'assets/dialog.png';
+    dialog.appendChild(img);
+
+    var container = document.createElement('div');
+    container.className = 'dialog_text_container';
+    dialog.appendChild(container);
+
+    var text = document.createElement('div');
+    text.className = 'dialog_text';
+    text.appendChild(document.createTextNode(msg));
+    container.appendChild(text);
+
+    dialog.onclick = function() {
+        document.body.removeChild(dialog);
+        if (cb)
+            cb();
+    }
+
+    dialog.className = 'bg dialog_show';
+    document.body.appendChild(dialog);
+}
+
 function NetworkRequestQueue() {
     this._queue = [];
 }
@@ -54,8 +82,9 @@ NetworkRequestQueue.prototype = {
                 d.success(data);
             self._process.apply(self);
         }).fail(function() {
-            console.log('network fail');
-            self._queue.shift();
+            showDialog('Network problem', function() {
+                navigator.app.exitApp();
+            });
         });
     }
 };
