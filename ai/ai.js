@@ -14,6 +14,7 @@ var common = require('../server/common');
 var bots = require('./bots').bots;
 
 var TIMEOUT = 10000;
+var TIMEOUT_BETWEEN_MOVES = 3000;
 
 function doRequest(url, cb) {
 console.log(url);
@@ -78,7 +79,9 @@ AI.prototype = {
                 setTimeout(check, TIMEOUT);
                 return;
             }
-            this._doMove();
+            setTimeout((function () {
+                this._doMove();
+            }).bind(this), TIMEOUT_BETWEEN_MOVES);
         }).bind(this);
 
         var cards = _.shuffle(this.model._cards.filter(function(c) {
