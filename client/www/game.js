@@ -635,7 +635,6 @@ GameStateView.prototype = {
         var group = new Group();
         group.pivot = group.bounds.topLeft;
         group.position = [1000, 5]
-        this.myHealth = group;
 
         var border = new Raster('hm');
         border.pivot = border.bounds.topLeft;
