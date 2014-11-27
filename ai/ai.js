@@ -10,6 +10,10 @@ var GameStateController = require('./game_model').GameStateController;
 var Owner = require('./game_model').Owner;
 var CardState = require('./game_model').CardState;
 var GameState = require('./game_model').GameState;
+var common = require('../server/common');
+var bots = require('./bots').bots;
+
+var TIMEOUT = 10000;
 
 function doRequest(url, cb) {
 console.log(url);
@@ -24,9 +28,9 @@ console.log(url);
     xhr.send();
 }
 
-function AI(id) {
-    this._token = id.email;
-    this._tokenConfirmation = id.confirmation;
+function AI(email) {
+    this._token = common.crypt(email);
+    this._tokenConfirmation = common.crypt('BOT:' + email);
 }
 
 AI.prototype = {
@@ -39,7 +43,7 @@ AI.prototype = {
                 self.play(data.gameid);
                 return;
             }
-            setTimeout(self.matchmaking.bind(self), 2000);
+            setTimeout(self.matchmaking.bind(self), TIMEOUT);
         });
     },
 
@@ -71,7 +75,7 @@ AI.prototype = {
         var check = (function() {
             console.log(l, this.model._log.length);
             if (l > this.model._log.length) {
-                setTimeout(check, 1400);
+                setTimeout(check, TIMEOUT);
                 return;
             }
             this._doMove();
@@ -159,10 +163,8 @@ AI.prototype = {
     }
 };
 
-for (var i = 0; i < config.bot_ids.length; i++) {
-    var id = config.bot_ids[i];
-
-    var ai = new AI(id);
+for (var i = 0; i < bots.length; i++) {
+    var ai = new AI(bots[i].email);
 
     ai.matchmaking();
 }

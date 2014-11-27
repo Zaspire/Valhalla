@@ -77,7 +77,7 @@ exports.addBotAccount = function(name, id) {
     pdb.collection('cards').insert(starterCards()).then(function(cards) {
         var cards = cards.map(function (o) {o.id = String(o._id); delete o._id; return o;});
         var deck = cards.slice(-common.DECK_SIZE).map(function(o) {return o.id});
-        doc = { _id: id, info: null, win: 0, loss: 0,
+        doc = { _id: id, info: { nickname: name }, win: 0, loss: 0,
                 cards: cards, deck: deck };
         return pdb.collection('accounts').save(doc);
     }).done(function() {}, function (e) {

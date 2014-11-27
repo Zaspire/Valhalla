@@ -1,0 +1,17 @@
+exports.bots = [
+    {name: 'Claire Bennet', email: 'example@gmail.com'},
+    {name: 'Elle Bishop', email: 'bot2@drunken.co'},
+    {name: 'Monica Dawson', email: 'bot3@drunken.co'},
+    {name: 'Maya Herrera', email: 'bot4@drunken.co'},
+    {name: 'Angela Petrelli', email: 'bot5@drunken.co'},
+    {name: 'Niki Sanders', email: 'bot6@drunken.co'},
+    {name: 'Tracy Strauss', email: 'bot7@drunken.co'},
+    {name: 'Ando Masahashi', email: 'bot8@drunken.co'},
+    {name: 'Isaac Mendez', email: 'bot9@drunken.co'},
+    {name: 'Hiro Nakamura', email: 'bot10@drunken.co'},
+    {name: 'Matt Parkman', email: 'bot11@drunken.co'},
+    {name: 'Peter Petrelli', email: 'bot12@drunken.co'},
+    {name: 'Mohinder Suresh', email: 'bot13@drunken.co'},
+    {name: 'Nathan Petrelli', email: 'bot14@drunken.co'},
+    {name: 'Samuel Sullivan', email: 'bot15@drunken.co'},
+];
