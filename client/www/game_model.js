@@ -191,7 +191,10 @@ GameStateModel.prototype = {
         self._log = [];
 
         this.data = JSON.parse(JSON.stringify(data.initial.data));
-        this.random = createRandomGenerator(this.data.seed);
+        if (runningUnderNode)
+            this.random = require('./random').createRandomGenerator(this.data.seed);
+        else
+            this.random = createRandomGenerator(this.data.seed);
 
         if (data.initial.turn)
             self.turn = Owner.ME;

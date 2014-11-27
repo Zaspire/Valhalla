@@ -55,13 +55,19 @@ exports.matchmaking = function(req, res) {
         if (doc) {
             return { gameid: doc.gameid };
         }
-        return matchmaking.findAndModifyEx({query: { opponent: { $exists: false } },
+        var query = { opponent: { $exists: false } };
+        if (bot) {
+            query.time = { $lt: new Date(new Date() - 30000) };
+        }
+        return matchmaking.findAndModifyEx({query: query,
                                             update: {$set: {opponent: email}}}).then(function (doc) {
             assert(doc.result !== undefined);
             doc = doc.result;
 
             if (!doc) {
-                return matchmaking.insert({ _id: email });
+                if (bot)
+                    return {};
+                return matchmaking.insert({ _id: email, time: new Date() });
             }
 
             return onNewGame(doc._id, email).then(function(obj) {

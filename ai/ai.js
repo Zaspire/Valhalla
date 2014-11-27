@@ -26,12 +26,13 @@ console.log(url);
 
 function AI(id) {
     this._token = id.email;
+    this._tokenConfirmation = id.confirmation;
 }
 
 AI.prototype = {
     matchmaking: function() {
         var self = this;
-        var uri = config.host + 'v1/matchmaking/' + this._token;
+        var uri = config.host + 'v1/matchmaking/' + this._token + '/?bot=' + this._tokenConfirmation;
         doRequest(uri, function(data) {
             data = JSON.parse(data);
             if (data.gameid) {
@@ -139,10 +140,10 @@ AI.prototype = {
         this.model.on('changed::turn', this._turnChanged.bind(this));
         this._turnChanged();
 
-var self= this;
-this.myController.me.on('changed::mana', function() {
-    console.trace('CHANGED: ' + self.myController.me.mana);
-} );
+        var self= this;
+        this.myController.me.on('changed::mana', function() {
+            console.trace('CHANGED: ' + self.myController.me.mana);
+        } );
     },
 
     _gameAction: function(action, id1, id2, cb) {
