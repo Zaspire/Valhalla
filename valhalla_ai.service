@@ -1,0 +1,12 @@
+[Service]
+ExecStart=/usr/bin/node /srv/www/Valhalla.git/ai/ai.js
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=Valhalla
+User=nobody
+Group=nobody
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
