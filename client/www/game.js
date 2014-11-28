@@ -193,6 +193,7 @@ CardView.prototype = {
         if (this.card.state == CardState.DECK)
             value = false;
 
+        //FIXME: remove try statement
         try {
             if (value && !(myController.canPlayCard(this.card.id)
                            || myController.canAttack(this.card.id)
@@ -201,8 +202,8 @@ CardView.prototype = {
             }
         } catch (e) {
             value = false;
+            console.log(e);
         }
-
         this.highlite = value;
     },
 

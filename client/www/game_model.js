@@ -196,9 +196,6 @@ GameStateModel.prototype = {
         else
             this.random = createRandomGenerator(this.data.seed);
 
-        if (data.initial.turn)
-            self.turn = Owner.ME;
-
         for (var i = 0; i < data.initial.my.hand.length; i++) {
             var card = data.initial.my.hand[i];
             var c = self._createCard(Owner.ME, card.type, 0, CardState.HAND, card.id, card.damage, card.health, card.cost);
@@ -219,6 +216,9 @@ GameStateModel.prototype = {
         }
 
         self.emit('ready');
+
+        if (data.initial.turn)
+            self.turn = Owner.ME;
 
         for (var i = 0; i < data.log.length; i++) {
             self._handleAction(data.log[i]);
