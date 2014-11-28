@@ -20,6 +20,7 @@ function doRequest(url, cb) {
 console.log(url);
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url);
+    xhr.setRequestHeader('valhalla-client', '1');
     xhr.onload = function() {
         //FIXME:
         assert(this.status == 200);
