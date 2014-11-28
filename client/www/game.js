@@ -41,6 +41,7 @@ CardView.prototype = {
         var group = new Group();
         this.group = group;
         var m = new paper.Matrix(0.35, 0, 0, 0.35, 0, 0);
+//        var m = new paper.Matrix(0.3917, 0, 0, 0.3917, 0, 0);
         group.matrix = m;
         group.applyMatrix = false;
 
@@ -400,15 +401,19 @@ CardView.prototype = {
             newX = 20 * (index + 1) + index * cardView.bounds.width;
             if (card.owner == Owner.ME) {
                 newY = SCREEN_HEIGHT - cardView.bounds.height;
+              //  newY = SCREEN_HEIGHT - cardView.bounds.height - 18;
             } else {
                 newY = 5;
+              //  newY = 44 - cardView.bounds.height;
             }
         } else if (card.state == CardState.TABLE) {
             newX = 20 * (index + 1) + index * cardView.bounds.width;
             if (card.owner == Owner.ME) {
                 newY = SCREEN_HEIGHT / 2 + 20;
+                //newY = 304 + 15;
             } else {
                 newY = SCREEN_HEIGHT / 2 - 20 - cardView.bounds.height;
+                //newY = 304 - 15 - cardView.bounds.height;
             }
         } else {
             newX = SCREEN_WIDTH - cardView.bounds.width;
@@ -551,10 +556,6 @@ function GameStateView(model) {
     bg.scale(SCREEN_WIDTH / bg.bounds.width, SCREEN_HEIGHT / bg.bounds.height);
     this._all.addChild(bg);
 
-    var midLine = new Path.Line(new Point(0, SCREEN_HEIGHT / 2), new Point(SCREEN_WIDTH, SCREEN_HEIGHT / 2));
-    midLine.strokeColor = 'red';
-    this._all.addChild(midLine);
-
     this.model.on('ready', this._init.bind(this));
     this.model.on('onNewCard', this._onNewCard.bind(this));
     this.model.on('oldMovesDone', (function() {
@@ -635,7 +636,6 @@ GameStateView.prototype = {
         //FIXME: deduplicate _addPlayerInfo
         var group = new Group();
         group.pivot = group.bounds.topLeft;
-        group.position = [1000, 5]
 
         var border = new Raster('hm');
         border.pivot = border.bounds.topLeft;
@@ -684,7 +684,11 @@ GameStateView.prototype = {
         };
         group.addChild(nameTxt);
 
+        var m = new paper.Matrix(145 / group.bounds.height, 0, 0, 145 / group.bounds.height, 0, 0);
+        group.matrix = m;
+        group.applyMatrix = false;
 
+        group.position = [1000, 5]
         this._all.addChild(group);
 
         this.opponentHealth = group;
@@ -693,6 +697,7 @@ GameStateView.prototype = {
     _addPlayerInfo: function() {
         var group = new Group();
         group.pivot = group.bounds.topLeft;
+
         this.myHealth = group;
 
         var border = new Raster('hm');
@@ -742,26 +747,36 @@ GameStateView.prototype = {
         };
         group.addChild(nameTxt);
 
+        var m = new paper.Matrix(145 / group.bounds.height, 0, 0, 145 / group.bounds.height, 0, 0);
+        group.matrix = m;
+        group.applyMatrix = false;
+
         group.position = [1000, SCREEN_HEIGHT - group.bounds.height];
         this._all.addChild(group);
     },
 
     _addNextTurnButton: function() {
         var group = new Group();
-        group.position = [1050, 290];
 
         var border = new Raster('end_turn');
         border.pivot = border.bounds.topLeft;
         border.position.x = 0;
         border.position.y = 0;
+        group.addChild(border);
+
+        var m = new paper.Matrix(219 / group.bounds.height, 0, 0, 219 / group.bounds.height, 0, 0);
+        group.matrix = m;
+        group.applyMatrix = false;
+
+        group.position = [1050, SCREEN_HEIGHT / 2];
+
+        this._all.addChild(group);
 
         group.onMouseUp = function(event) {
             //FIXME:
             gameAction('finish');
+            group.visible = false;
         }
-
-        group.addChild(border);
-        this._all.addChild(group);
 
         group.visible = this.model.turn == Owner.ME;
 
