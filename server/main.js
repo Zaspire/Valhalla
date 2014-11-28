@@ -12,10 +12,13 @@ var mongo = require('mongodb').MongoClient;
 var account = require('./account');
 var common = require('./common');
 
-var db;
 var app = express();
+
+var MIN_CLIENT_VERSION = 1;
+
 app.use(cors());
 app.disable('x-powered-by');
+
 var accessLogStream = fs.createWriteStream(__dirname + '/access.log', {flags: 'a'})
 app.use(morgan('dev', {stream: accessLogStream}));
 
@@ -33,6 +36,14 @@ app.param('gameid', function(req, res, next, id) {
     next();
 });
 
+app.use(function (req, res, next) {
+    if (Number(req.headers['valhalla-client']) >= MIN_CLIENT_VERSION) {
+        next();
+        return;
+    }
+    res.status(412).end();
+})
+
 app.get('/v1/matchmaking/:token', require('./matchmaking').matchmaking);
 app.get('/v1/game_action/:token/:gameid/:action/', require('./game_state').gameAction);
 app.get('/v1/game_state/:token/:gameid', require('./game_state').gameState);
@@ -41,10 +52,9 @@ app.get('/v1/authorize/:gtoken/:email', account.authorize);
 app.get('/v1/my_cards/:token', account.myCards);
 app.get('/v1/my_cards/:token/set', account.setDeck);
 
-mongo.connect(common.config.mongo, function(err, _db) {
+mongo.connect(common.config.mongo, function(err, db) {
     if(err) throw err;
 
-    db = _db;
     var server = app.listen(common.config.server_port, function() {
         console.log('Listening on port %d', server.address().port);
     });
