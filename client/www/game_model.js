@@ -160,14 +160,16 @@ GameStateModel.prototype = {
 
         if (runningUnderNode) {
             function doRequest(url, cb) {
-                require('http').get(url, function(res) {
+                var options = require('url').parse(url);
+                options.headers = { 'valhalla-client': '1' };
+                require('http').request(options, function(res) {
                     res.setEncoding('utf8');
                     res.on('data', function (chunk) {
                         cb(chunk);
                     });
                 }).on('error', function(e) {
                     console.log("Got error: " + e.message);
-                });
+                }).end();
             }
             doRequest(uri, cb);
         } else {
