@@ -566,6 +566,10 @@ function GameStateView(model) {
         if (this.state != GameState.IN_PROGRESS)
             this._endScreen();
     }).bind(this));
+
+    this._requestExp((function(d) {
+        this.exp = JSON.parse(d);
+    }).bind(this));
 }
 
 GameStateView.prototype = {
@@ -573,6 +577,11 @@ GameStateView.prototype = {
         this._addNextTurnButton();
         this._addOpponentHealth();
         this._addPlayerInfo();
+    },
+
+    _requestExp: function(cb) {
+        var uri = this.model._host + 'v1/info/' + this.model._token;
+        _network.ajax(uri, undefined, cb);
     },
 
     blockAnimation: function() {
@@ -795,26 +804,48 @@ GameStateView.prototype = {
 
     _endScreen: function() {
         assert(this.model.state != GameState.IN_PROGRESS);
+        setTimeout((function() {
+        this._requestExp((function(exp) {
+            exp = JSON.parse(exp);
+            this._all.removeChildren();
 
-        this._all.removeChildren();
+            $('#myCanvas').addClass('hidden');
+            var bg = '#lose';
+            if (this.model.state == GameState.WIN)
+                bg = '#win';
+            $(bg).addClass('bg').removeClass('hidden');
+            $('#glass_bg').addClass('bg').removeClass('hidden').css({ "z-index": -1 });
 
-        var bg;
+            var textNode = $('<div/>').text('LVL:' + this.exp.lvl);
+            textNode.css({ position: 'fixed', top: '10%', left: '10%',
+                           "z-index": '1', "font-family": '"Comic Sans MS", cursive, sans-serif',
+                           "font-size": '50px', color: 'white' });
+            $('body').append(textNode);
 
-        //FIXME: Draw
-        if (this.model.state == GameState.WIN)
-            bg = new Raster('win');
-        else
-            bg = new Raster('lose');
-        bg.pivot = bg.bounds.topLeft;
-        bg.position.x = 0;
-        bg.position.y = 0;
-        bg.scale(Math.min(SCREEN_WIDTH / bg.bounds.width, SCREEN_HEIGHT / bg.bounds.height))
+            var e = $('<progress/>');
+            e.css({ position: 'fixed', top: '90%', left: '30%',
+                    width: '40%', "z-index": '1',
+                    background: 'white', padding: '2px' });
+            $('body').append(e);
 
-        this._all.addChild(bg);
-        this._all.onMouseDown = function() {
-            window.location = "mainmenu.html";
-        }
-        paper.view.update();
+            e.attr('max', this.exp.nextLvlExp).attr('value', this.exp.exp);
+            var animate = (function () {
+                Tweener.addTween(e[0], { time: 2, value: exp.exp });
+            }).bind(this);
+            if (exp.exp > this.exp.nextLvlExp)
+                Tweener.addTween(e[0], { time: 2, value: this.exp.nextLvlExp,
+                                         onComplete: function() {
+                                             e[0].max = exp.nextLvlExp;
+                                             textNode.text('LVL:' + exp.lvl);
+                                             animate();
+                                         } });
+            else
+                animate();
+            document.body.onclick = function() {
+                window.location = "mainmenu.html";
+            }
+        }).bind(this));
+        }).bind(this), 500);
     }
 };
 

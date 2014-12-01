@@ -21,6 +21,8 @@ var PLAY_CARD = 'card';
 var ATTACK = 'attack';
 var PLAY_SPELL = 'spell';
 
+var EXP_PER_WIN = 5, EXP_PER_LOSS = 1;
+
 function generateDeck(account) {
     var deck = [];
     for (var i = 0; i < account.deck.length; i++) {
@@ -234,11 +236,12 @@ exports.gameAction = function(req, res) {
     var id1 = req.query.id1;
     var id2 = req.query.id2;
 
+    var model;
     pdb.collection('games').findOne({ _id: new mongodb.ObjectID(gameid) }).then(function (doc) {
         if (!doc)
             throw new Error('incorrect gameid');
 
-        var model = new StateModel(doc, email);
+        model = new StateModel(doc, email);
         var controller = new GameStateController(model, Owner.ME);
         model.emit('ready');
 
@@ -272,6 +275,23 @@ exports.gameAction = function(req, res) {
                                                   update: { $set: r }});
     }).done(function() {
         res.send('{}');
+        if (model.me.health <= 0 || model.opponent.health <= 0) {
+            var looser, winer;
+            if (model.me.health > 0) {
+                loser = model.opponentEmail;
+                winer = email;
+            } else {
+                winer = model.opponentEmail;
+                loser = email;
+            }
+            pdb.collection('accounts').findAndModify({ query: {_id: loser},
+                                                       update: { $inc: { loss: 1, exp: EXP_PER_LOSS } } }).then(function () {
+                return pdb.collection('accounts').findAndModify({ query: {_id: winer},
+                                                                  update: { $inc: { win: 1, exp: EXP_PER_WIN } } });
+            }).done(function() {}, function (e) {
+                console.log(e);
+            });
+        }
     }, function(e) {
         console.log(e);
         res.status(400).end();

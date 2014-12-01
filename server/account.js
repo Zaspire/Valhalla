@@ -78,6 +78,7 @@ exports.addBotAccount = function(name, id) {
         var cards = cards.map(function (o) {o.id = String(o._id); delete o._id; return o;});
         var deck = cards.slice(-common.DECK_SIZE).map(function(o) {return o.id});
         doc = { _id: id, info: { nickname: name }, win: 0, loss: 0,
+                coins: 0, exp: 0, lvl: 1,
                 cards: cards, deck: deck };
         return pdb.collection('accounts').save(doc);
     }).done(function() {}, function (e) {
@@ -104,7 +105,9 @@ exports.authorize = function(req, res) {
             return pdb.collection('cards').insert(starterCards()).then(function(cards) {
                 var cards = cards.map(function (o) {o.id = String(o._id); delete o._id; return o;});
                 var deck = cards.slice(-common.DECK_SIZE).map(function(o) {return o.id});
-                doc = { _id: email, info: info, win: 0, loss: 0,
+                doc = { _id: email, info: info,
+                        win: 0, loss: 0,
+                        coins: 0, exp: 0, lvl: 1,
                         cards: cards, deck: deck };
                 return pdb.collection('accounts').save(doc);
             });
@@ -160,6 +163,28 @@ exports.setDeck = function(req, res) {
 
     }).done(function() {
         res.send('{}');
+    }, function(e) {
+        console.log(e);
+        res.status(400).end();
+    });
+}
+
+//FIXME:
+var EXP_PER_WIN = 5;
+
+exports.getAccountInfo = function(req, res) {
+    var email = req.email;
+    pdb.collection('accounts').findOne({ _id: email }).then(function(doc) {
+        if (!doc)
+            throw new Error('account does not exist');
+        return doc.exp;
+    }).done(function(exp) {
+        var r = {
+            exp: exp,
+            lvl: Math.floor((-1 + Math.sqrt(1 + 4 * exp / EXP_PER_WIN)) / 2 + 1)
+        };
+        r.nextLvlExp = r.lvl * (r.lvl + 1) * EXP_PER_WIN;
+        res.send(JSON.stringify(r));
     }, function(e) {
         console.log(e);
         res.status(400).end();

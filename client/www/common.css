@@ -42,8 +42,8 @@ img.dialog_bg {
     height: 50%;
 }
 
-div.hidden {
-    visibility: hidden;
+.hidden {
+    display: none !important;
 }
 @-webkit-keyframes DialogShow {
     0%   { transform: translate(0, -100% ); }

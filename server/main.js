@@ -49,6 +49,7 @@ app.get('/v1/game_action/:token/:gameid/:action/', require('./game_state').gameA
 app.get('/v1/game_state/:token/:gameid', require('./game_state').gameState);
 
 app.get('/v1/authorize/:gtoken/:email', account.authorize);
+app.get('/v1/info/:token', account.getAccountInfo);
 app.get('/v1/my_cards/:token', account.myCards);
 app.get('/v1/my_cards/:token/set', account.setDeck);
 
