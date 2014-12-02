@@ -1,20 +1,4 @@
-paper.settings.applyMatrix = false;
-
-////// HACK to make dnd work on phone
-function onMouseDown(event) {
-}
-
-function onMouseDrag(event) {
-}
-
-function onMouseUp(event) {
-}
-//////
-
-////// HACK to make animation work
-var onFrame = new Function();
-//////
-
+paper.install(window);
 
 var params = {};
 params.token = localStorage.getItem('token');
@@ -545,9 +529,10 @@ function GameStateView(model) {
 
     this._all = new Group();
     this._all.pivot = this._all.bounds.topLeft;
-    this._all.position = [0,0];
+    this._all.position.x = 0;
+    this._all.position.y = 0;
     this._all.applyMatrix = false;
-    this._all.matrix.scale(view.bounds.width / SCREEN_WIDTH, view.bounds.height / SCREEN_HEIGHT);
+    this._all.matrix.scale(paper.view.bounds.width / SCREEN_WIDTH, paper.view.bounds.height / SCREEN_HEIGHT);
 
     var bg = new Raster('bg');
     bg.pivot = bg.bounds.topLeft;
@@ -797,7 +782,7 @@ GameStateView.prototype = {
 
     _onNewCard: function(card) {
         var self = this;
-        var cardView = new CardView(this.model, card, this._all, view);
+        var cardView = new CardView(this.model, card, this._all, this);
 
         this.cards.push(cardView);
     },
@@ -849,14 +834,6 @@ GameStateView.prototype = {
     }
 };
 
-var model = new GameStateModel(host, params.token, params.gameid);
-var myController = new GameStateController(model, Owner.ME);
-var opponentController = new GameStateController(model, Owner.OPPONENT);
-model.setOpponentController(opponentController);
-model.setMyController(myController);
-
-var view = new GameStateView(model);
-
 function gameAction(action, id1, id2) {
     var uri = host + 'v1/game_action/' + params.token + '/' + params.gameid + '/' + action + '/';
 
@@ -867,3 +844,28 @@ function gameAction(action, id1, id2) {
         data.id2 = id2;
     _network.ajax(uri, data, null);
 }
+
+var model, myController, opponentController;
+window.addEventListener("load", function() {
+    var canvas = document.getElementById('myCanvas');
+    paper.setup(canvas);
+    paper.settings.applyMatrix = false;
+
+    model = new GameStateModel(host, params.token, params.gameid);
+    myController = new GameStateController(model, Owner.ME);
+    opponentController = new GameStateController(model, Owner.OPPONENT);
+    model.setOpponentController(opponentController);
+    model.setMyController(myController);
+
+    var view = new GameStateView(model);
+
+    ////// HACK to make animation work
+    paper.view.onFrame = new Function();
+    //////
+
+    ////// HACK to make dnd work on phone
+    paper.view.onMouseDown = new Function();
+    paper.view.onMouseDrag = new Function();
+    paper.view.onMouseUp = new Function();
+    //////
+});
