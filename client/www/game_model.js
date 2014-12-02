@@ -40,7 +40,8 @@ GObject.prototype.__proto__ = EventEmitter2.prototype;
 var CardState = {
     DECK: 1,
     HAND: 2,
-    TABLE: 3
+    TABLE: 3,
+    DEAD: 99
 };
 
 var GameState = {
@@ -412,6 +413,8 @@ GameStateController.prototype = {
                 continue;
             if (card.onDeath)
                 callHelper(card.onDeath.cast, card);
+            if (!isAlive(card))
+                card.state = CardState.DEAD;
         }
         this.model._cards = this.model._cards.filter(isAlive);
         this.model.emit('reposition');

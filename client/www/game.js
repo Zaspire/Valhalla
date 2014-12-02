@@ -41,7 +41,7 @@ CardView.prototype = {
         this._addVisualState();
 
         this._updatePosition();
-        this.card.on('changed::state', this._updatePosition.bind(this));
+        this.card.on('changed::state', this._onStateChanged.bind(this));
         this.model.on('reposition', this._updatePosition.bind(this));
 
         this.card.on('attackPlayer', this._animateAttackPlayer.bind(this));
@@ -56,10 +56,19 @@ CardView.prototype = {
         if (this.card.owner == Owner.ME) {
             this.model.on('changed::turn', this._updateHighlite.bind(this));
             this.card.on('changed::attacksLeft', this._updateHighlite.bind(this));
-            this.card.on('changed::state', this._updateHighlite.bind(this));
             this.model.me.on('changed::mana', this._updateHighlite.bind(this));
             this._updateHighlite();
         }
+    },
+
+    _onStateChanged: function() {
+        if (this.card.state == CardState.DEAD) {
+            this._animateDeath();
+            return;
+        }
+        this._updatePosition();
+        if (this.card.owner == Owner.ME)
+            this._updatePosition();
     },
 
     _addVisualState: function() {
@@ -92,7 +101,7 @@ CardView.prototype = {
         var self = this;
         function update() {
             var source = 'bs';
-            if (self.card.state == CardState.TABLE || self.card.state == CardState.HAND && self.card.owner == Owner.ME)
+            if (self.card.state == CardState.DEAD || self.card.state == CardState.TABLE || self.card.state == CardState.HAND && self.card.owner == Owner.ME)
                 source = 'fg';
             bg.source = source;
         }
@@ -136,7 +145,10 @@ CardView.prototype = {
 
     _animateDeath: function() {
         this.view.addAnimationBarrier();
-        this.view.queueAnimation(this.group, { opacity: 0, time: 1, transition: "easeInCubic" });
+        var self = this;
+        this.view.queueAnimation(this.group, { opacity: 0, time: 1, transition: "easeInCubic" }, function() {
+            self.group.remove();
+        });
         this.view.addAnimationBarrier();
     },
 
@@ -459,15 +471,6 @@ CardView.prototype = {
         function updateText() {
             hTxt.content = self.card.health;
             hTxt.visible = self.card.health !== undefined;
-
-            if (self.card.health !== undefined) {
-                if (self.card.health <= 0) {
-                    if (!self.card.onDeath)
-                        self._animateDeath();
-                  //  self.group.remove();
-                } else {
-                }
-            }
         }
         updateText();
         this.card.on('changed::health', updateText);
@@ -578,9 +581,9 @@ GameStateView.prototype = {
         this._queue.push(null);
     },
 
-    queueAnimation: function(obj, params) {
+    queueAnimation: function(obj, params, onComplete) {
         assert(!('onComplete' in params));
-        this._queue.push({obj: obj, params: params});
+        this._queue.push({ obj: obj, params: params, onComplete: onComplete});
 
         this._startNextAnimation();
     },
@@ -601,11 +604,14 @@ GameStateView.prototype = {
             return;
         }
         var params = this._queue[0].params;
+        var onComplete = this._queue[0].onComplete;
         if (this._animationDisabled)
             params.time = 0;
 
         this._activeAnimations++;
         params.onComplete = function () {
+            if (onComplete)
+                onComplete();
             self._activeAnimations--;
             self._startNextAnimation();
         }
