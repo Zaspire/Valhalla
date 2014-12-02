@@ -24,8 +24,7 @@ CardView.prototype = {
         // FIXME: remove all listeners on destroy
         var group = new Group();
         this.group = group;
-        var m = new paper.Matrix(0.35, 0, 0, 0.35, 0, 0);
-//        var m = new paper.Matrix(0.3917, 0, 0, 0.3917, 0, 0);
+        var m = new paper.Matrix(0.3917, 0, 0, 0.3917, 0, 0);
         group.matrix = m;
         group.applyMatrix = false;
 
@@ -380,24 +379,21 @@ CardView.prototype = {
 
         var newX, newY;
 
-        cardView.pivot = this.parent.bounds.topLeft;
+        cardView.pivot = paper.view.bounds.topLeft;
         if (card.state == CardState.HAND) {
             newX = 20 * (index + 1) + index * cardView.bounds.width;
             if (card.owner == Owner.ME) {
                 newY = SCREEN_HEIGHT - cardView.bounds.height;
               //  newY = SCREEN_HEIGHT - cardView.bounds.height - 18;
             } else {
-                newY = 5;
-              //  newY = 44 - cardView.bounds.height;
+                newY =  44 - cardView.bounds.height;
             }
         } else if (card.state == CardState.TABLE) {
             newX = 20 * (index + 1) + index * cardView.bounds.width;
             if (card.owner == Owner.ME) {
-                newY = SCREEN_HEIGHT / 2 + 20;
-                //newY = 304 + 15;
+                newY = 304 + 15;
             } else {
-                newY = SCREEN_HEIGHT / 2 - 20 - cardView.bounds.height;
-                //newY = 304 - 15 - cardView.bounds.height;
+                newY = 304 - 15 - cardView.bounds.height;
             }
         } else {
             newX = SCREEN_WIDTH - cardView.bounds.width;
@@ -528,7 +524,7 @@ function GameStateView(model) {
     this._activeAnimations = 0;
 
     this._all = new Group();
-    this._all.pivot = this._all.bounds.topLeft;
+    this._all.pivot = paper.view.bounds.topLeft;
     this._all.position.x = 0;
     this._all.position.y = 0;
     this._all.applyMatrix = false;
@@ -682,7 +678,7 @@ GameStateView.prototype = {
         group.matrix = m;
         group.applyMatrix = false;
 
-        group.position = [1000, 5]
+        group.position = [SCREEN_WIDTH - group.bounds.width, 0]
         this._all.addChild(group);
 
         this.opponentHealth = group;
@@ -745,7 +741,7 @@ GameStateView.prototype = {
         group.matrix = m;
         group.applyMatrix = false;
 
-        group.position = [1000, SCREEN_HEIGHT - group.bounds.height];
+        group.position = [SCREEN_WIDTH - group.bounds.width, SCREEN_HEIGHT - group.bounds.height];
         this._all.addChild(group);
     },
 
