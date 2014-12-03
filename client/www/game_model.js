@@ -527,8 +527,7 @@ GameStateController.prototype = {
 
         heroes[card1.type].cast(card2, this.model._cards, this.model);
 
-        if (!runningUnderNode)
-            card1.health = 0;
+        card1.state = CardState.DEAD;
 
         this.me.mana -= card1.cost;
         this.model._cards.splice(this.model._cards.indexOf(card1), 1);
