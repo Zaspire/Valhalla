@@ -22,7 +22,7 @@ var heroes = {
         damage: 1,
         health: 5,
         cost: 3,
-        img: "1.png",
+        img: "1.webp",
         cast: function(card) {
             card.attack = String(function(card1, card2) {
                 card1.attack = undefined;
@@ -73,7 +73,7 @@ var heroes = {
         damage: 5,
         health: 4,
         cost: 4,
-        img: "2.png",
+        img: "2.webp",
         cast: function(card, cards) {
             for (var i = 0; i < cards.length; i++) {
                 if (card.owner == cards[i].owner)
@@ -91,7 +91,7 @@ var heroes = {
         damage: 2,
         health: 5,
         cost: 3,
-        img: "3.png"
+        img: "3.webp"
     },
     h4: {
         cardType: CardType.HERO,
@@ -100,7 +100,7 @@ var heroes = {
         health: 4,
         cost: 4,
         shield: true,
-        img: "4.png"
+        img: "4.webp"
     },
     h5: {
         cardType: CardType.HERO,
@@ -108,7 +108,7 @@ var heroes = {
         damage: 2,
         health: 3,
         cost: 2,
-        img: "5.png"
+        img: "5.webp"
     },
     h6: {
         cardType: CardType.HERO,
@@ -117,7 +117,7 @@ var heroes = {
         health: 4,
         cost: 2,
         shield: true,
-        img: "6.png"
+        img: "6.webp"
     },
     h7: {
         cardType: CardType.HERO,
@@ -125,7 +125,7 @@ var heroes = {
         damage: 3,
         health: 6,
         cost: 4,
-        img: "7.png",
+        img: "7.webp",
         cast: function(card, cards, model) {
             var minions = cards.filter(function(c) {
                 if (card.owner == c.owner)
@@ -179,7 +179,7 @@ var heroes = {
         health: 5,
         cost: 3,
         shield: true,
-        img: "8.png",
+        img: "8.webp",
         cast: function(card, cards) {
             card.damage *= 3;
         },
@@ -191,7 +191,7 @@ var heroes = {
         damage: 5,
         health: 3,
         cost: 7,
-        img: "9.png",
+        img: "9.webp",
         onPlay: {
             cast: function(card, model) {
                 var card = {
@@ -220,7 +220,7 @@ var heroes = {
         damage: 2,
         health: 5,
         cost: 3,
-        img: "10.png",
+        img: "10.webp",
         cast: function(card, cards) {
             card.__ultimate = true;
         },
@@ -238,7 +238,7 @@ var heroes = {
         damage: 3,
         health: 6,
         cost: 4,
-        img: "11.png",
+        img: "11.webp",
         cast: function(card, cards) {
             for (var i = 0; i < cards.length; i++) {
                 if (card.owner == cards[i].owner)
@@ -269,7 +269,7 @@ var heroes = {
         damage: 2,
         health: 6,
         cost: 5,
-        img: "12.png"
+        img: "12.webp"
     },
     h13: {
         cardType: CardType.HERO,
@@ -277,7 +277,7 @@ var heroes = {
         damage: 2,
         health: 2,
         cost: 4,
-        img: "13.png",
+        img: "13.webp",
         onPlay: {
             cast: function(card) {
                 card.attacksLeft = 2;
@@ -294,7 +294,7 @@ var heroes = {
         damage: 3,
         health: 2,
         cost: 2,
-        img: "14.png",
+        img: "14.webp",
         cast: function(card, cards) {
             var bonus = 0;
             for (var i = 0; i < cards.length; i++) {
@@ -316,7 +316,7 @@ var heroes = {
         damage: 1,
         health: 2,
         cost: 3,
-        img: "15.png",
+        img: "15.webp",
         onTurnEnd: {
             cast: function(card) {
                 if (card.attacksLeft) {
@@ -335,7 +335,7 @@ var heroes = {
         damage: 8,
         health: 5,
         cost: 7,
-        img: "16.png"
+        img: "16.webp"
     },
     h17: {
         cardType: CardType.HERO,
@@ -343,7 +343,7 @@ var heroes = {
         damage: 3,
         health: 5,
         cost: 3,
-        img: "17.png",
+        img: "17.webp",
         canAttackCard: {
             cast: function(card1, card2, orig) {
                 if (card2.owner == card1.owner)
@@ -379,7 +379,7 @@ var heroes = {
         damage: 2,
         health: 5,
         cost: 4,
-        img: "18.png",
+        img: "18.webp",
         cast: function(card) {
             if (card.__prevTurnHealth) {
                 card.health += card.__prevTurnHealth;
@@ -421,7 +421,7 @@ var heroes = {
         damage: 6,
         health: 4,
         cost: 6,
-        img: "19.png",
+        img: "19.webp",
         cast: function(card, cards) {
             for (var i = 0; i < cards.length; i++) {
                 if (card.owner != cards[i].owner)
@@ -448,7 +448,7 @@ var heroes = {
         damage: 6,
         health: 9,
         cost: 6,
-        img: "20.png",
+        img: "20.webp",
         shield: true
     },
     h21: {
@@ -457,7 +457,7 @@ var heroes = {
         damage: 6,
         health: 2,
         cost: 4,
-        img: "21.png",
+        img: "21.webp",
         cast: function(card) {
             card.attack = String(function(card1, card2) {
                 card1.attack = undefined;
@@ -472,7 +472,7 @@ var heroes = {
         damage: 6,
         health: 2,
         cost: 4,
-        img: "22.png",
+        img: "22.webp",
     },
 
     creep1: {
@@ -481,7 +481,7 @@ var heroes = {
         damage: 1,
         health: 1,
         cost: 1,
-        img: "1000.png"
+        img: "1000.webp"
     },
     bear: {
         cardType: CardType.HERO,
@@ -489,7 +489,7 @@ var heroes = {
         damage: 3,
         health: 7,
         cost: 0,
-        img: "1001.png"
+        img: "1001.webp"
     },
     spider: {
         cardType: CardType.HERO,
@@ -497,7 +497,7 @@ var heroes = {
         damage: 1,
         health: 1,
         cost: 0,
-        img: "1003.png"
+        img: "1003.webp"
     },
 
     chainArmor: {
@@ -516,7 +516,7 @@ var heroes = {
         cardType: CardType.SPELL,
         name: "Ultimate",
         cost: 2,
-        img: "2001.png",
+        img: "2001.webp",
         cast: function(card, cards, model) {
             heroes[card.type].cast(card, cards, model);
         }
