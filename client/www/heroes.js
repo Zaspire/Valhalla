@@ -474,6 +474,38 @@ var heroes = {
         cost: 4,
         img: "22.webp",
     },
+    h23: {
+        cardType: CardType.HERO,
+        name: "Andromeda",
+        damage: 1,
+        health: 6,
+        cost: 3,
+        img: "23.png",
+    },
+    h24: {
+        cardType: CardType.HERO,
+        name: "Untitled hero 24",
+        damage: 6,
+        health: 2,
+        cost: 4,
+        img: "24.png",
+    },
+    h25: {
+        cardType: CardType.HERO,
+        name: "Untitled hero 25",
+        damage: 6,
+        health: 2,
+        cost: 4,
+        img: "25.png",
+    },
+    h26: {
+        cardType: CardType.HERO,
+        name: "Untitled hero 26",
+        damage: 6,
+        health: 2,
+        cost: 4,
+        img: "26.png",
+    },
 
     creep1: {
         cardType: CardType.HERO,

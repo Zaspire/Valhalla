@@ -37,7 +37,7 @@ function showDialog(msg, cb) {
 
     var img = document.createElement('img');
     img.className = 'dialog_bg';
-    img.src = 'assets/dialog.png';
+    img.src = 'assets/dialog.webp';
     dialog.appendChild(img);
 
     var container = document.createElement('div');
