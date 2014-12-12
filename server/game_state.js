@@ -17,6 +17,7 @@ var SillyRandom = require('../client/www/random.js');
 
 var ATTACK_PLAYER = 'attack_player';
 var END_TURN = 'finish';
+var DRAW_CARD = 'draw_card';
 var PLAY_CARD = 'card';
 var ATTACK = 'attack';
 var PLAY_SPELL = 'spell';
@@ -112,6 +113,7 @@ function StateModel(doc, email) {
     this._log = doc.log;
 
     this.email = email;
+    this.server = true;
 
     this.data = common.clone(doc.data);
     this.random = SillyRandom.createRandomGenerator(this.data.seed);
@@ -177,6 +179,19 @@ StateModel.prototype = {
         o.owner = owner;
         return o;
     },
+    setMyController: function(controller) {
+        this._myController = controller;
+    },
+    setOpponentController: function(controller) {
+        this._opponentController = controller;
+    },
+    getController: function(owner) {
+        if (owner == this._myController.owner)
+            return this._myController;
+        if (owner == this._opponentController.owner)
+            return this._opponentController;
+        assert(false);
+    },
     createCard: function(o) {
         var card = this._createCard(o, o.owner, o.state);
         this._cards.push(card);
@@ -226,7 +241,12 @@ StateModel.prototype = {
 };
 
 GameStateController.prototype._log = function(action, p1, p2) {
-    this.model._log.push({ email: this.model.email, action: action, params: [ p1, p2 ] });
+    var email = this.model.email;
+    if (action == DRAW_CARD) {
+        if (p1.owner != Owner.ME)
+            email = this.model.opponentEmail
+    }
+    this.model._log.push({ email: email, action: action, params: [ p1, p2 ] });
 }
 
 exports.gameAction = function(req, res) {
@@ -243,6 +263,10 @@ exports.gameAction = function(req, res) {
 
         model = new StateModel(doc, email);
         var controller = new GameStateController(model, Owner.ME);
+        var opponentController = new GameStateController(model, Owner.OPPONENT);
+
+        model.setMyController(controller);
+        model.setOpponentController(opponentController);
         model.emit('ready');
 
         if (controller.isFinished())
@@ -327,6 +351,8 @@ exports.gameState = function(req, res) {
             if (e.email == email)
                 r.me = true;
             if (r.action === END_TURN && r.me)
+                r.params = [null, null];
+            if (r.action === DRAW_CARD && !r.me)
                 r.params = [null, null];
             return r;
         });

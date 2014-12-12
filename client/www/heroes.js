@@ -283,6 +283,11 @@ var heroes = {
                 card.attacksLeft = 2;
             }
         },
+        onNewTurn: {
+            cast: function(card) {
+                card.attacksLeft = 2;
+            }
+        },
         description: [
             "Charge.",
             "Repeat attack."
@@ -481,6 +486,15 @@ var heroes = {
         health: 6,
         cost: 3,
         img: "23.png",
+        onNewTurn: {
+            cast: function(card, model) {
+                var controller = model.getController(card.owner);
+                controller.drawCard();
+            }
+        },
+        description: [
+            "Draw additional card on each turn."
+        ]
     },
     h24: {
         cardType: CardType.HERO,

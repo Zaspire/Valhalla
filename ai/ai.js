@@ -75,7 +75,6 @@ AI.prototype = {
 
         var l;
         var check = (function() {
-            console.log(l, this.model._log.length);
             if (l > this.model._log.length) {
                 setTimeout(check, TIMEOUT);
                 return;
