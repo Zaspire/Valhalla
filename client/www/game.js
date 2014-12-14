@@ -808,7 +808,7 @@ GameStateView.prototype = {
 
     _endScreen: function() {
         assert(this.model.state != GameState.IN_PROGRESS);
-        setTimeout((function() {
+        this.queueAction(true, (function() {
         this._requestExp((function(exp) {
             exp = JSON.parse(exp);
             this._all.removeChildren();
@@ -849,7 +849,7 @@ GameStateView.prototype = {
                 window.location = "mainmenu.html";
             }
         }).bind(this));
-        }).bind(this), 500);
+        }).bind(this));
     }
 };
 
