@@ -157,12 +157,20 @@ CardView.prototype = {
                     resolve();
                     return;
                 }
-                var params = { opacity: 0, time: 1, transition: "easeInCubic",
+
+                var death = new Raster('death');
+                death.pivot = death.bounds.topLeft;
+                death.position.x = 0;
+                death.position.y = 0;
+                death.opacity = 0;
+                self.group.addChild(death);
+
+                var params = { opacity: 1, time: 2, transition: "linear",
                                onComplete: function() {
                                    resolve();
                                    self.group.remove();
                                } };
-                Tweener.addTween(self.group, params);
+                Tweener.addTween(death, params);
             });
         });
     },
