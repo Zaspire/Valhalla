@@ -40,9 +40,9 @@ CardView.prototype = {
         this._addHeroImage();
         this._addVisualState();
 
-        this._updatePosition();
+        this._queuePositionUpdate();
         this.card.on('changed::state', this._onStateChanged.bind(this));
-        this.model.on('reposition', this._updatePosition.bind(this));
+        this.model.on('reposition', this._queuePositionUpdate.bind(this));
 
         this.card.on('attackPlayer', this._animateAttackPlayer.bind(this));
         this.card.on('attack', this._animateAttackCard.bind(this));
@@ -66,9 +66,7 @@ CardView.prototype = {
             this._animateDeath();
             return;
         }
-        this._updatePosition();
-        if (this.card.owner == Owner.ME)
-            this._updatePosition();
+        this._queuePositionUpdate();
     },
 
     _addVisualState: function() {
@@ -113,52 +111,83 @@ CardView.prototype = {
         if (this.card.owner == Owner.ME)
             return;
 
-        this.view.addAnimationBarrier();
-//FIXME:
-        this.group.bringToFront();
+        var self = this;
+        this.view.queueAction(true, function () {
+            return new Promise(function (resolve, reject) {
+                self.group.bringToFront();
 
-        var p = this.view.myHealth.bounds.center;
-        this._animatePositionUpdate(p.x - this.group.bounds.width, p.y - this.group.bounds.height);
-
-        this.view.addAnimationBarrier();
-        this._updatePosition();
-        this.view.addAnimationBarrier();
+                var p = self.view.myHealth.bounds.center;
+                resolve(p);
+            }).then(function (p) {
+                return self._animatePositionUpdate(p.x - self.group.bounds.width, p.y - self.group.bounds.height);
+            }).then(function () {
+                return self._updatePosition();
+            });
+        });
     },
 
     _animateAttackCard: function(other) {
         if (this.card.owner == Owner.ME)
             return;
 
-        var otherView = this.view.cardView(other);
+        var self = this;
+        this.view.queueAction(true, function () {
+            return new Promise(function (resolve, reject) {
+                var otherView = self.view.cardView(other);
 
-        this.group.bringToFront();
+                if (!self.view._animationDisabled)
+                    self.group.bringToFront();
 
-        var p = otherView.group.bounds.center;
-
-        this.view.addAnimationBarrier();
-        this._animatePositionUpdate(p.x - this.group.bounds.width, p.y - this.group.bounds.height);
-
-        this.view.addAnimationBarrier();
-        this._updatePosition();
-        this.view.addAnimationBarrier();
+                var p = otherView.group.bounds.center;
+                resolve(p);
+            }).then(function (p) {
+                return self._animatePositionUpdate(p.x - self.group.bounds.width, p.y - self.group.bounds.height);
+            }).then(function () {
+                return self._updatePosition();
+            });
+        });
     },
 
     _animateDeath: function() {
-        this.view.addAnimationBarrier();
         var self = this;
-        this.view.queueAnimation(this.group, { opacity: 0, time: 1, transition: "easeInCubic" }, function() {
-            self.group.remove();
+        this.view.queueAction(true, function() {
+            return new Promise(function (resolve, reject) {
+                if (self.view._animationDisabled) {
+                    self.group.remove();
+                    resolve();
+                    return;
+                }
+                var params = { opacity: 0, time: 1, transition: "easeInCubic",
+                               onComplete: function() {
+                                   resolve();
+                                   self.group.remove();
+                               } };
+                Tweener.addTween(self.group, params);
+            });
         });
-        this.view.addAnimationBarrier();
     },
 
     _animatePositionUpdate: function(newX, newY) {
-        if (newX != this._x || newY != this._y) {
-            this.view.queueAnimation(this.group.position, { x: newX, y: newY,
-                                                            time: 1, transition: "easeInCubic" })
-            this._x = newX;
-            this._y = newY;
-        }
+        var self = this;
+        return new Promise(function (resolve, reject) {
+            if (self.view._animationDisabled) {
+                self.group.position.x = newX;
+                self.group.position.y = newY;
+                resolve();
+                return;
+            }
+            if (newX == self._x && newY == self._y) {
+                resolve();
+                return;
+            }
+            self._x = newX;
+            self._y = newY;
+
+            var params = { x: newX, y: newY,
+                           time: 1, transition: "easeInCubic",
+                           onComplete: function() { resolve(); } };
+            Tweener.addTween(self.group.position, params);
+        });
     },
 
     _addHeroImage: function() {
@@ -384,6 +413,13 @@ CardView.prototype = {
         }
     },
 
+    _queuePositionUpdate: function() {
+        var self = this;
+        this.view.queueAction(false, function() {
+            return self._updatePosition();
+        });
+    },
+
     _updatePosition: function() {
         var card = this.card;
         var cardView = this.group;
@@ -392,7 +428,8 @@ CardView.prototype = {
         var newX, newY;
 
         cardView.pivot = paper.view.bounds.topLeft;
-        if (card.state == CardState.HAND) {
+        switch (card.state) {
+        case CardState.HAND:
             newX = 20 * (index + 1) + index * cardView.bounds.width;
             if (card.owner == Owner.ME) {
                 newY = SCREEN_HEIGHT - cardView.bounds.height;
@@ -400,22 +437,29 @@ CardView.prototype = {
             } else {
                 newY =  44 - cardView.bounds.height;
             }
-        } else if (card.state == CardState.TABLE) {
+            break;
+        case CardState.TABLE:
             newX = 20 * (index + 1) + index * cardView.bounds.width;
             if (card.owner == Owner.ME) {
                 newY = 304 + 15;
             } else {
                 newY = 304 - 15 - cardView.bounds.height;
             }
-        } else {
+            break;
+        case CardState.DECK:
             newX = SCREEN_WIDTH - cardView.bounds.width;
             if (card.owner == Owner.ME) {
                 newY = SCREEN_HEIGHT / 2 + 5;
             } else {
                 newY = SCREEN_HEIGHT / 2 - 5 - cardView.bounds.height;
             }
+            break;
+        case CardState.DEAD:
+            newX = cardView.x;
+            newY = cardView.y;
+            break;
         }
-        this._animatePositionUpdate(newX, newY);
+        return this._animatePositionUpdate(newX, newY);
     },
 
     _addHighlite: function() {
@@ -522,7 +566,8 @@ function GameStateView(model) {
 
     this.cards = [];
 
-    this._queue = [];
+    this._exclusiveAction = new Promise(function (resolve) {resolve()});
+    this._promiseQueue = [];
     this._animationDisabled = true;
     this._activeAnimations = 0;
 
@@ -543,7 +588,10 @@ function GameStateView(model) {
     this.model.on('ready', this._init.bind(this));
     this.model.on('onNewCard', this._onNewCard.bind(this));
     this.model.on('oldMovesDone', (function() {
-        this._animationDisabled = false;
+        this.queueAction(true, (function() {
+            this._animationDisabled = false;
+            return new Promise(function (resolve) {resolve()});
+        }).bind(this));
     }).bind(this));
 
     this.model.on('changed::state', (function() {
@@ -568,55 +616,24 @@ GameStateView.prototype = {
         _network.ajax(uri, undefined, cb);
     },
 
+    queueAction: function(exclusive, cb) {
+        if (exclusive) {
+            var t = this._promiseQueue;
+            this._promiseQueue = [];
+            t.push(this._exclusiveAction);
+            //FIXME: report error if rejected
+            this._exclusiveAction = Promise.all(t).then(cb);
+        } else {
+            this._promiseQueue.push(this._exclusiveAction.then(cb));
+        }
+    },
+
     blockAnimation: function() {
         this._blockAnimation = true;
     },
 
     unblockAnimation: function() {
         this._blockAnimation = false;
-        this._startNextAnimation();
-    },
-
-    addAnimationBarrier: function() {
-        this._queue.push(null);
-    },
-
-    queueAnimation: function(obj, params, onComplete) {
-        assert(!('onComplete' in params));
-        this._queue.push({ obj: obj, params: params, onComplete: onComplete});
-
-        this._startNextAnimation();
-    },
-
-    _startNextAnimation: function() {
-        var self = this
-
-        if (this._blockAnimation)
-            return;
-
-        if (!this._queue.length)
-            return;
-        if (this._queue[0] === null) {
-            if (this._activeAnimations == 0 || this._animationDisabled) {
-                this._queue.shift();
-                this._startNextAnimation();
-            }
-            return;
-        }
-        var params = this._queue[0].params;
-        var onComplete = this._queue[0].onComplete;
-        if (this._animationDisabled)
-            params.time = 0;
-
-        this._activeAnimations++;
-        params.onComplete = function () {
-            if (onComplete)
-                onComplete();
-            self._activeAnimations--;
-            self._startNextAnimation();
-        }
-        Tweener.addTween(this._queue[0].obj, params);
-        self._queue.shift();
     },
 
     cardView: function(card) {
