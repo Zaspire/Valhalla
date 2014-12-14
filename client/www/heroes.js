@@ -327,11 +327,28 @@ var heroes = {
                 if (card.attacksLeft) {
                     card.health++;
                     card.damage++;
+                } else if (!card.__first) {
+                    card.visualState = '';
+                    card.__invisible = false;
                 }
+                card.__first = false;
+            }
+        },
+        onPlay: {
+            cast: function(card) {
+                card.__first = true;
+                card.__invisible = true;
+                card.visualState = "invisible";
+            }
+        },
+        canBeAttacked: {
+            cast: function(card) {
+                return !card.__invisible;
             }
         },
         description: [
-            "For each idle turn gets +1,+1"
+            "For each idle turn gets +1,+1.",
+            "Invisible."
         ],
     },
     h16: {

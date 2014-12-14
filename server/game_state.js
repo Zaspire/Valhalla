@@ -57,6 +57,8 @@ exports.newGame = function(account1, account2) {
             o.attack = String(heroes[o.type].attack);
         if (heroes[o.type].onPlay)
             o.onPlay = { cast: String(heroes[o.type].onPlay.cast) };
+        if (heroes[o.type].canBeAttacked)
+            o.canBeAttacked = { cast: String(heroes[o.type].canBeAttacked.cast) };
         o.state = CardState.DECK;
 
         return o;

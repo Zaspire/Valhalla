@@ -17,16 +17,17 @@
         <script type="text/javascript" src="heroes.js"></script>
     </head>
     <body>
-        <img id="frozen" style="display: none !important;" src="assets/frozen.webp"></img>
-        <img id="hm" style="display: none !important;" src="assets/hm.webp"></img>
-        <img id="shield" style="display: none !important;" src="assets/shield.webp"></img>
-        <img id="fg" style="display: none !important;" src="assets/front_side.webp"></img>
-        <img id="end_turn" style="display: none !important;" src="assets/end_turn.webp"></img>
-        <img id="bs" style="display: none !important;" src="assets/back_side.webp"></img>
-        <img id="bg" style="display: none !important;" src="assets/bg.webp"></img>
+        <img id="frozen" class="hidden" src="assets/frozen.webp"></img>
+        <img id="hm" class="hidden" src="assets/hm.webp"></img>
+        <img id="shield" class="hidden" src="assets/shield.webp"></img>
+        <img id="fg" class="hidden" src="assets/front_side.webp"></img>
+        <img id="end_turn" class="hidden" src="assets/end_turn.webp"></img>
+        <img id="bs" class="hidden" src="assets/back_side.webp"></img>
+        <img id="bg" class="hidden" src="assets/bg.webp"></img>
         <img id="win" class="hidden" src="assets/win.webp"></img>
         <img id="lose" class="hidden" src="assets/lose.webp"></img>
         <img id="glass_bg" class="hidden" src="assets/glass_bg.webp"></img>
+        <img id="invisible" class="hidden" src="assets/invisible.png"></img>
 
         <canvas id="myCanvas" resize></canvas>
         <script type="text/javascript">
@@ -46,7 +47,6 @@
           }
         </script>
         <script type="text/javascript" src="random.js"></script>
-        <script type="text/javascript" src="common_paper.js"></script>
         <script type="text/javascript" src="game_model.js"></script>
         <script type="text/javascript" src="game.js"></script>
     </body>
