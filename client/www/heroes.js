@@ -449,7 +449,7 @@ var heroes = {
                 if (card.owner != cards[i].owner)
                     continue;
                 if (cards[i].state === TABLE) {
-                    cards[i].health--;
+                    cards[i].health += 3;
                 }
             }
         },
