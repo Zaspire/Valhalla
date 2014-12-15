@@ -1,4 +1,4 @@
-paper.settings.applyMatrix = false;
+paper.install(window);
 
 var params = {};
 params.token = localStorage.getItem('token');
@@ -8,7 +8,8 @@ function draw(cards) {
 
     this._all = new Group();
     this._all.pivot = this._all.bounds.topLeft;
-    this._all.position = [0,0];
+    this._all.position.x = 0;
+    this._all.position.y = 0;
 
     var bg = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(SCREEN_WIDTH -4 , SCREEN_HEIGHT -4)));
     bg.fillColor="#ffffff";
@@ -88,4 +89,10 @@ function getCards() {
     });
 }
 
-getCards();
+window.addEventListener("load", function() {
+    var canvas = document.getElementById('myCanvas');
+    paper.setup(canvas);
+    paper.settings.applyMatrix = false;
+
+    getCards();
+});
