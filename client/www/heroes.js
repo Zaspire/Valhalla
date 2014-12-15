@@ -108,7 +108,21 @@ var heroes = {
         damage: 2,
         health: 3,
         cost: 2,
-        img: "5.webp"
+        img: "5.webp",
+        cast: function(card) {
+            card.attack = String(function(card1, card2) {
+                if (card2.damage <= 4) {
+                    card1.attack = undefined;
+                    card1.health += card2.health;
+                    card2.health = 0;
+                    return;
+                }
+                //FIXME:
+                card2.health -= card1.damage;
+                card1.health -= card2.damage;
+            });
+        },
+        ultimateDescription: "Eats enemy minion with 4 or less attack."
     },
     h6: {
         cardType: CardType.HERO,
