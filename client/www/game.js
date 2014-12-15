@@ -152,7 +152,7 @@ CardView.prototype = {
         var self = this;
         this.view.queueAction(true, function() {
             return new Promise(function (resolve, reject) {
-                if (self.view._animationDisabled) {
+                if (self.view._animationDisabled || self.card.cardType == CardType.SPELL) {
                     self.group.remove();
                     resolve();
                     return;
@@ -165,7 +165,7 @@ CardView.prototype = {
                 death.opacity = 0;
                 self.group.addChild(death);
 
-                var params = { opacity: 1, time: 2, transition: "linear",
+                var params = { opacity: 1, time: 1.3, transition: "linear",
                                onComplete: function() {
                                    resolve();
                                    self.group.remove();
@@ -463,8 +463,8 @@ CardView.prototype = {
             }
             break;
         case CardState.DEAD:
-            newX = cardView.x;
-            newY = cardView.y;
+            newX = cardView.position.x;
+            newY = cardView.position.y;
             break;
         }
         return this._animatePositionUpdate(newX, newY);
