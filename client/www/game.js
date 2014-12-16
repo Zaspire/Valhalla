@@ -365,6 +365,9 @@ CardView.prototype = {
     },
 
     _onMouseUp: function(event) {
+        if (this.card.state === CardState.DECK)
+            return;
+
         if (new Date() - this._mouseDownTime < 200) {
             this._magnify();
             return;
