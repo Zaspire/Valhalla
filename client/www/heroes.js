@@ -91,7 +91,52 @@ var heroes = {
         damage: 2,
         health: 5,
         cost: 3,
-        img: "3.webp"
+        img: "3.webp",
+        cast: function(card, cards, model) {
+            var minions = cards.filter(function(c) {
+                if (card.owner == c.owner)
+                    return false;
+                if (c.state !== TABLE)
+                    return false;
+                return true;
+            });
+            minions.sort(function(c1, c2) {
+                if (c1.id < c2.id) {
+                    return -1;
+                }
+                if (c1.id > c2.id) {
+                    return 1;
+                }
+                return 0;
+            });
+            var chozen = [];
+            for (var i = 0; i < minions.length; i++) {
+                var b = (model.random() % 1000) / 1000;
+                if (b > (2 - chozen.length)/(minions.length - i))
+                    continue;
+                chozen.push(minions[i]);
+            }
+
+            //FIXME:
+            function filter(obj) {
+                var hooks = [ 'onDeath', 'onNewTurn', 'attack', 'onPlay', 'onTurnEnd', 'canAttackCard', 'canBeAttacked'];
+
+                for (var i = 0; i < hooks.length; i++) {
+                    obj[hooks[i]] = undefined;
+                }
+            }
+            for (var i = 0; i < chozen.length; i++) {
+                chozen[i].health -= 3;
+                filter(chozen[i]);
+                chozen[i].visualState = '';
+                chozen[i].type = 'rock';
+                chozen[i].damage = heroes['rock'].damage;
+                chozen[i].health = heroes['rock'].health;
+                chozen[i].shield = heroes['rock'].shield;
+                chozen[i].attacksLeft = 0;
+            }
+        },
+        ultimateDescription: "Transform 2 random enemy minions into 0/3 Rock.",
     },
     h4: {
         cardType: CardType.HERO,
@@ -567,6 +612,15 @@ var heroes = {
         health: 7,
         cost: 0,
         img: "1001.webp"
+    },
+    rock: {
+        cardType: CardType.HERO,
+        name: "Rock",
+        damage: 0,
+        health: 3,
+        cost: 0,
+        shield: true,
+        img: "1002.webp"
     },
     spider: {
         cardType: CardType.HERO,

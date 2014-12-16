@@ -200,9 +200,12 @@ CardView.prototype = {
 
     _addHeroImage: function() {
         var self = this;
+        var hero = null;
         function update() {
+            if (hero)
+                hero.remove();
             if (self.card.type && heroes[self.card.type].img) {
-                var hero = new Raster(self.card.type);
+                hero = new Raster(self.card.type);
                 hero.pivot = hero.bounds.topLeft;
                 hero.position.x = 0;
                 hero.position.y = 0;
