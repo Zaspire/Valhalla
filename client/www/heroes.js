@@ -155,11 +155,23 @@ var heroes = {
         cost: 2,
         img: "5.webp",
         cast: function(card) {
+            if (card.visualState.length)
+                card.visualState += ',ulti';
+            else
+                card.visualState = 'ulti';
+
             card.attack = String(function(card1, card2) {
                 if (card2.damage <= 4) {
                     card1.attack = undefined;
                     card1.health += card2.health;
                     card2.health = 0;
+
+                    var visual = card1.visualState.split(',');
+                    var i = visual.indexOf('ulti');
+                    if (i != -1)
+                        visual.splice(i, 1);
+                    card1.visualState = visual.join(',');
+
                     return;
                 }
                 //FIXME:
@@ -445,12 +457,23 @@ var heroes = {
             }
         },
         cast: function(card, cards) {
+            if (card.visualState.length)
+                card.visualState += ',ulti';
+            else
+                card.visualState = 'ulti';
+
             card.__ultimate = true;
         },
         attack: String(function(card1, card2) {
             card1.attacksLeft--;
             if (card2.owner == card1.owner) {
                 if (card1.__ultimate) {
+                    var visual = card1.visualState.split(',');
+                    var i = visual.indexOf('ulti');
+                    if (i != -1)
+                        visual.splice(i, 1);
+                    card1.visualState = visual.join(',');
+
                     card2.shield = true;
                     card1.__ultimate = false;
                     return;
@@ -552,7 +575,17 @@ var heroes = {
         cost: 4,
         img: "21.webp",
         cast: function(card) {
+            if (card.visualState.length)
+                card.visualState += ',ulti';
+            else
+                card.visualState = 'ulti';
             card.attack = String(function(card1, card2) {
+                var visual = card1.visualState.split(',');
+                var i = visual.indexOf('ulti');
+                if (i != -1)
+                    visual.splice(i, 1);
+                card1.visualState = visual.join(',');
+
                 card1.attack = undefined;
                 card2.health = 0;
             });
