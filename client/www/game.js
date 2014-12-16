@@ -497,6 +497,10 @@ CardView.prototype = {
     },
 
     _addDamage: function() {
+        var sword = new Raster('sword');
+        sword.position.x = 125;
+        sword.position.y = 456;
+
         var dTxt = new PointText(new Point(55,485));
         dTxt.characterStyle= {
             font:"Courier",
@@ -511,14 +515,20 @@ CardView.prototype = {
         function updateText() {
             dTxt.content = self.card.damage;
             dTxt.visible = self.card.damage !== undefined;
+            sword.visible = self.card.damage !== undefined;
         }
         updateText();
         this.card.on('changed::damage', updateText);
 
         this.group.addChild(dTxt);
+        this.group.addChild(sword);
     },
 
     _addHealth: function() {
+        var heart = new Raster('heart');
+        heart.position.x = 255;
+        heart.position.y = 456;
+
         var hTxt = new PointText(new Point(290,486));
         hTxt.characterStyle= {
             font:"Courier",
@@ -533,14 +543,20 @@ CardView.prototype = {
         function updateText() {
             hTxt.content = self.card.health;
             hTxt.visible = self.card.health !== undefined;
+            heart.visible = self.card.health !== undefined;
         }
         updateText();
         this.card.on('changed::health', updateText);
 
+        this.group.addChild(heart);
         this.group.addChild(hTxt);
     },
 
     _addCost: function() {
+        var circle = new Raster('circle');
+        circle.position.x = 57;
+        circle.position.y = 57;
+
         var cTxt = new PointText(new Point(33,84));
         cTxt.characterStyle= {
             font:"Courier",
@@ -555,10 +571,12 @@ CardView.prototype = {
         function updateText() {
             cTxt.content = self.card.cost;
             cTxt.visible = self.card.cost !== undefined;
+            circle.visible = self.card.cost !== undefined;
         }
         updateText();
         this.card.on('changed::cost', updateText);
 
+        this.group.addChild(circle);
         this.group.addChild(cTxt);
     },
     _addShield: function() {
