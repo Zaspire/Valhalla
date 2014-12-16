@@ -70,18 +70,25 @@ CardView.prototype = {
     },
 
     _addVisualState: function() {
-        var fg;
+        var fg = {};
 
         var self = this;
         function update() {
-            if (fg)
-                fg.remove();
-            if (self.card.visualState) {
-                fg = new Raster(self.card.visualState);
-                fg.pivot = fg.bounds.topLeft;
-                fg.position.x = 0;
-                fg.position.y = 0;
-                self.group.addChild(fg);
+            var visual = self.card.visualState.split(',');
+            for (var i in fg) {
+                if (visual.indexOf(i) == -1) {
+                    fg[i].remove();
+                    delete fg[i];
+                }
+            }
+            for (var i = 0; i < visual.length; i++) {
+                if (!visual[i])
+                    continue;
+                fg[visual[i]] = new Raster(visual[i]);
+                fg[visual[i]].pivot = fg[visual[i]].bounds.topLeft;
+                fg[visual[i]].position.x = 0;
+                fg[visual[i]].position.y = 0;
+                self.group.addChild(fg[visual[i]]);
             }
         }
         this.card.on('changed::visualState', update);

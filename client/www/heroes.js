@@ -214,12 +214,18 @@ var heroes = {
                     c1._t_newTurn = [];
                 c1._t_newTurn.push(c1.onNewTurn);
 
-                //FIXME: restore previous state
-                c1.visualState = 'frozen';
+                if (c1.visualState.length)
+                    c1.visualState += ',frozen';
+                else
+                    c1.visualState = 'frozen';
                 c1.onNewTurn = {
                     cast: String(function(card) {
                         card.attacksLeft = 0;
-                        card.visualState = '';
+                        var visual = card.visualState.split(',');
+                        var i = visual.indexOf('frozen');
+                        if (i != -1)
+                            visual.splice(i, 1);
+                        card.visualState = visual.join(',');
                         card.onNewTurn = card._t_newTurn.pop();
                     })
                 };
@@ -387,6 +393,12 @@ var heroes = {
                     card.health++;
                     card.damage++;
                 } else if (!card.__first) {
+                    var visual = card.visualState.split(',');
+                    var i = visual.indexOf('invisible');
+                    if (i != -1)
+                        visual.splice(i, 1);
+                    card.visualState = visual.join(',');
+
                     card.visualState = '';
                     card.__invisible = false;
                 }
