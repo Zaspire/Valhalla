@@ -102,11 +102,11 @@ GameStateModel.prototype = {
     createCard: function(o) {
         assert(o.id);
 
-        var card = this._createCard(o.owner, o.type, o.state, o.id);
+        var card = this._createCard(o.owner, o.type, o.state, o.id, o.attacksLeft);
         this._cards.push(card);
     },
 
-    _createCard: function(owner, type, state, id) {
+    _createCard: function(owner, type, state, id, attacksLeft) {
         var card = new GObject({ owner: owner,
                                  type: type,
                                  id: id,
@@ -118,7 +118,7 @@ GameStateModel.prototype = {
                                  cost: undefined,
                                  shield: undefined,
                                  cardType: CardType.UNKNOWN,
-                                 attacksLeft: undefined });
+                                 attacksLeft: attacksLeft });
 
         if (type)
             this._initCard({ type: type, id: id }, card);
@@ -182,20 +182,20 @@ GameStateModel.prototype = {
 
         for (var i = 0; i < data.initial.my.hand.length; i++) {
             var card = data.initial.my.hand[i];
-            var c = self._createCard(Owner.ME, card.type, CardState.HAND, card.id);
+            var c = self._createCard(Owner.ME, card.type, CardState.HAND, card.id, 0);
             self._cards.push(c);
         }
         for (var i = 0; i < data.initial.my.deckSize; i++) {
-            var c = self._createCard(Owner.ME, undefined, CardState.DECK, undefined);
+            var c = self._createCard(Owner.ME, undefined, CardState.DECK, undefined, 0);
             self._cards.push(c);
         }
 
         for (var i = 0; i < data.initial.opponent.deckSize; i++) {
-            var c = self._createCard(Owner.OPPONENT, undefined, CardState.DECK, undefined);
+            var c = self._createCard(Owner.OPPONENT, undefined, CardState.DECK, undefined, 0);
             self._cards.push(c);
         }
         for (var i = 0; i < data.initial.opponent.handSize; i++) {
-            var c = self._createCard(Owner.OPPONENT, undefined, CardState.HAND, undefined);
+            var c = self._createCard(Owner.OPPONENT, undefined, CardState.HAND, undefined, 0);
             self._cards.push(c);
         }
 
@@ -315,7 +315,7 @@ GameStateModel.prototype = {
 
         card.type = type;
         card.id = desc.id;
-        var props = ['attacksLeft', 'damage', 'health', 'cost'];
+        var props = ['damage', 'health', 'cost'];
 
         card.shield = !!heroes[type].shield;
         card.cardType = heroes[type].cardType;
