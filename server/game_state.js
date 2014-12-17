@@ -351,10 +351,18 @@ exports.gameState = function(req, res) {
             var r = { action: e.action, params: e.params};
             if (e.email == email)
                 r.me = true;
-            if (r.action === END_TURN && r.me)
-                r.params = [null, null];
-            if (r.action === DRAW_CARD && !r.me)
-                r.params = [null, null];
+            if (r.action === END_TURN) {
+                if (r.me)
+                    r.params = [null, null];
+                else
+                    r.params = [null, { id: e.params[1].id, type: e.params[1].type }];
+            }
+            if (r.action === DRAW_CARD) {
+                if (!r.me)
+                    r.params = [null, null];
+                else
+                    r.params = [{ id: e.params[0].id, type: e.params[0].type }];
+            }
             return r;
         });
 
@@ -363,7 +371,9 @@ exports.gameState = function(req, res) {
                            turn: doc.initial.turn == email,
                            data: doc.initial.data,
                            my: {
-                               hand: myState.hand,
+                               hand: myState.hand.map(function(card) {
+                                   return { type: card.type, id: card.id };
+                               }),
                                deckSize: myState.deck.length,
                                health: myState.health,
                                mana: myState.mana,

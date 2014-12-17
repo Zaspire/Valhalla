@@ -14,7 +14,7 @@ var common = require('./common');
 
 var app = express();
 
-var MIN_CLIENT_VERSION = 1;
+var MIN_CLIENT_VERSION = 2;
 
 app.use(cors());
 app.disable('x-powered-by');

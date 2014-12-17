@@ -3,7 +3,7 @@ var host = 'http://192.168.1.9:3000/';
 var GA_ACCOUNT = 'UA-56813809-1';
 var SCREEN_WIDTH = 1280;
 var SCREEN_HEIGHT = 768;
-var VALHALLA_CLIENT_VERSION = 1;
+var VALHALLA_CLIENT_VERSION = 2;
 
 (function() {
     var errors = [];
@@ -77,7 +77,7 @@ NetworkRequestQueue.prototype = {
             return;
         var d = this._queue[0];
         var self = this;
-        $.ajax({ url: d.url, data: d.data, headers: { "Valhalla-Client": "1" } }).done(function(data) {
+        $.ajax({ url: d.url, data: d.data, headers: { "Valhalla-Client": VALHALLA_CLIENT_VERSION } }).done(function(data) {
             self._queue.shift();
             if (d.success)
                 d.success(data);

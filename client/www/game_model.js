@@ -102,52 +102,30 @@ GameStateModel.prototype = {
     createCard: function(o) {
         assert(o.id);
 
-        var card = this._createCard(o.owner, o.type, o.attacksLeft, o.state, o.id, o.damage, o.health, o.cost);
+        var card = this._createCard(o.owner, o.type, o.state, o.id);
         this._cards.push(card);
     },
 
-    _createCard: function(owner, type, attacksLeft, state, id, damage, health, cost) {
-        var shield = false;
-        var cardType = CardType.UNKNOWN;
-        var onDeath, onNewTurn, attack, onPlay, onTurnEnd, canAttackCard, canBeAttacked;
-        if (type in heroes) {
-            shield = !!heroes[type].shield;
-            cardType = heroes[type].cardType;
-            onDeath = heroes[type].onDeath;
-            attack = heroes[type].attack;
-            onNewTurn = heroes[type].onNewTurn;
-            onPlay = heroes[type].onPlay;
-            onTurnEnd = heroes[type].onTurnEnd;
-            canAttackCard = heroes[type].canAttackCard;
-            canBeAttacked = heroes[type].canBeAttacked;
-        }
-        if (cardType != CardType.HERO) {
-            health = undefined;
-            damage = undefined;
-        }
+    _createCard: function(owner, type, state, id) {
         var card = new GObject({ owner: owner,
                                  type: type,
-                                 damage: damage,
-                                 health: health,
-                                 cost: cost,
-                                 shield: shield,
                                  id: id,
-                                 cardType: cardType,
-                                 attacksLeft: attacksLeft,
                                  state: state,
-                                 visualState: '' });
+                                 visualState: '',
 
-        card.onPlay = onPlay;
-        card.onDeath = onDeath;
-        card.attack = attack;
-        card.onTurnEnd = onTurnEnd;
-        card.onNewTurn = onNewTurn;
-        card.canAttackCard = canAttackCard;
-        card.canBeAttacked = canBeAttacked;
+                                 damage: undefined,
+                                 health: undefined,
+                                 cost: undefined,
+                                 shield: undefined,
+                                 cardType: CardType.UNKNOWN,
+                                 attacksLeft: undefined });
+
+        if (type)
+            this._initCard({ type: type, id: id }, card);
 
         card.__cardUniqField = this._nextCardUniqId++;
-        //emits attackPlayer, attack
 
+        //emits attackPlayer, attack
         this.emit('onNewCard', card);
 
         var self = this;
@@ -165,7 +143,7 @@ GameStateModel.prototype = {
         if (runningUnderNode) {
             function doRequest(url, cb) {
                 var options = require('url').parse(url);
-                options.headers = { 'valhalla-client': '1' };
+                options.headers = { 'valhalla-client': '2' };
                 require('http').request(options, function(res) {
                     res.setEncoding('utf8');
                     res.on('data', function (chunk) {
@@ -204,20 +182,20 @@ GameStateModel.prototype = {
 
         for (var i = 0; i < data.initial.my.hand.length; i++) {
             var card = data.initial.my.hand[i];
-            var c = self._createCard(Owner.ME, card.type, 0, CardState.HAND, card.id, card.damage, card.health, card.cost);
+            var c = self._createCard(Owner.ME, card.type, CardState.HAND, card.id);
             self._cards.push(c);
         }
         for (var i = 0; i < data.initial.my.deckSize; i++) {
-            var c = self._createCard(Owner.ME, undefined, 0, CardState.DECK, undefined);
+            var c = self._createCard(Owner.ME, undefined, CardState.DECK, undefined);
             self._cards.push(c);
         }
 
         for (var i = 0; i < data.initial.opponent.deckSize; i++) {
-            var c = self._createCard(Owner.OPPONENT, undefined, 0, CardState.DECK, undefined);
+            var c = self._createCard(Owner.OPPONENT, undefined, CardState.DECK, undefined);
             self._cards.push(c);
         }
         for (var i = 0; i < data.initial.opponent.handSize; i++) {
-            var c = self._createCard(Owner.OPPONENT, undefined, 0, CardState.HAND, undefined);
+            var c = self._createCard(Owner.OPPONENT, undefined, CardState.HAND, undefined);
             self._cards.push(c);
         }
 
@@ -328,6 +306,35 @@ GameStateModel.prototype = {
         }
     },
 
+    _initCard: function(desc, card) {
+        var type = desc['type'];
+
+        card.type = type;
+        card.id = desc.id;
+        var props = ['attacksLeft', 'damage', 'health', 'cost'];
+
+        card.shield = !!heroes[type].shield;
+        card.cardType = heroes[type].cardType;
+        card.onDeath = heroes[type].onDeath;
+        card.canAttackCard = heroes[type].canAttackCard;
+        card.onTurnEnd = heroes[type].onTurnEnd;
+        card.onPlay = heroes[type].onPlay;
+        card.onNewTurn = heroes[type].onNewTurn;
+        card.attack = heroes[type].attack;
+        card.canBeAttacked = heroes[type].canBeAttacked;
+
+        for (var i = 0; i < props.length; i++) {
+            var prop = props[i];
+            if (!heroes[type][prop] === null)
+                continue;
+            card[prop] = heroes[type][prop];
+        }
+        if (card.cardType != CardType.HERO) {
+            card.health = undefined;
+            card.damage = undefined;
+        }
+    },
+
     cardPosition: function(card) {
         var arr;
         arr = this._cards.filter(function(c) {
@@ -368,31 +375,6 @@ GameStateController.prototype = {
             r.me = true;
 
         this.model._log.push(r);
-    },
-
-    _initCard: function(desc, card) {
-        var props = ['type', 'attacksLeft', 'id', 'damage', 'health', 'cost'];
-
-        card.shield = !!heroes[desc['type']].shield;
-        card.cardType = heroes[desc['type']].cardType;
-        card.onDeath = heroes[desc['type']].onDeath;
-        card.canAttackCard = heroes[desc['type']].canAttackCard;
-        card.onTurnEnd = heroes[desc['type']].onTurnEnd;
-        card.onPlay = heroes[desc['type']].onPlay;
-        card.onNewTurn = heroes[desc['type']].onNewTurn;
-        card.attack = heroes[desc['type']].attack;
-        card.canBeAttacked = heroes[desc['type']].canBeAttacked;
-
-        for (var i = 0; i < props.length; i++) {
-            var prop = props[i];
-            if (desc[prop] === null)
-                continue;
-            card[prop] = desc[prop];
-        }
-        if (card.cardType != CardType.HERO) {
-            card.health = undefined;
-            card.damage = undefined;
-        }
     },
 
     _card: function(id) {
@@ -538,7 +520,7 @@ GameStateController.prototype = {
                 assert(deck.length);
                 var c = deck[0];
 
-                this._initCard(_card, c);
+                this.model._initCard(_card, c);
             } else
                 throw e;
         }
@@ -592,7 +574,7 @@ GameStateController.prototype = {
                 assert(deck.length);
                 var c = deck[0];
 
-                this._initCard(_card, c);
+                this.model._initCard(_card, c);
             } else
                 throw e;
         }
@@ -642,7 +624,7 @@ GameStateController.prototype = {
                 assert(a1);
             this._log(DRAW_CARD, card);
             if (a1) {
-                this._initCard(a1, card);
+                this.model._initCard(a1, card);
                 var r = this.model._cards.filter(function (c) {return c.id == card.id;});
                 assert(r.length == 1);
             }
@@ -682,7 +664,7 @@ GameStateController.prototype = {
         card.state = CardState.HAND;
 
         if (a2) {
-            this._initCard(a2, card);
+            this.model._initCard(a2, card);
         }
 
         this._log(END_TURN, null, card);
