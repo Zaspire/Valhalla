@@ -175,6 +175,7 @@ StateModel.prototype = {
 
     _createCard: function(card, owner, state) {
         var o = common.clone(card);
+        o.visualState = '';
 
         o.emit = function() {}
         assert(o.state === state);
