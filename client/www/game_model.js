@@ -210,9 +210,13 @@ GameStateModel.prototype = {
 
         self.emit('oldMovesDone');
 
-        setInterval(function() {
-            self._requestGameState(self._updateState.bind(self));
-        }, 1000);
+        function doRequest() {
+            self._requestGameState(function (data) {
+                self._updateState(data)
+                setTimeout(doRequest, 2000);
+            });
+        }
+        setTimeout(doRequest, 2000);
     },
 
     _onHealthChanged: function() {
