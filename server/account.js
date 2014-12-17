@@ -8,6 +8,9 @@ var heroes = require('./heroes');
 
 var pdb = pmongo(common.config.mongo);
 
+var EXP_PER_WIN = 5, EXP_PER_LOSS = 1;
+var COINS_PER_LVL = 3;
+
 function xhrWithAuth(method, url, access_token) {
     var deferred = Q.defer();
     function requestComplete() {
@@ -85,6 +88,30 @@ exports.addBotAccount = function(name, id) {
     }).done(function() {}, function (e) {
         console.log(e);
     });
+}
+
+function expToLvl(exp) {
+    return Math.floor((-1 + Math.sqrt(1 + 4 * exp / EXP_PER_WIN)) / 2 + 1);
+}
+
+function addExp(email, exp, win, loss) {
+    return pdb.collection('accounts').findAndModify({ query: {_id: email},
+                                                      "new": true,
+                                                      update: { $inc: { loss: loss, win: win, exp: exp } } }).then(function (doc) {
+        if (expToLvl(doc[0].exp) != expToLvl(doc[0].exp - exp)) {
+            return pdb.collection('accounts').findAndModify({ query: {_id: email},
+                                                              update: { $inc: { coins : COINS_PER_LVL } } });
+        }
+        return {};
+    });
+}
+
+exports.addLoss = function(email) {
+    return addExp(email, EXP_PER_LOSS, 0, 1);
+}
+
+exports.addWin = function(email) {
+    return addExp(email, EXP_PER_WIN, 1, 0);
 }
 
 exports.authorize = function(req, res) {
@@ -170,19 +197,18 @@ exports.setDeck = function(req, res) {
     });
 }
 
-//FIXME:
-var EXP_PER_WIN = 5;
-
 exports.getAccountInfo = function(req, res) {
     var email = req.email;
     pdb.collection('accounts').findOne({ _id: email }).then(function(doc) {
         if (!doc)
             throw new Error('account does not exist');
-        return doc.exp;
-    }).done(function(exp) {
+        return { exp: doc.exp, coins: doc.coins };
+    }).done(function(o) {
+        var exp = o.exp;
         var r = {
             exp: exp,
-            lvl: Math.floor((-1 + Math.sqrt(1 + 4 * exp / EXP_PER_WIN)) / 2 + 1)
+            coins: o.coins,
+            lvl: expToLvl(exp)
         };
         r.nextLvlExp = r.lvl * (r.lvl + 1) * EXP_PER_WIN;
         res.send(JSON.stringify(r));

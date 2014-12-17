@@ -9,6 +9,7 @@ var common = require('./common');
 var pdb = pmongo(common.config.mongo);
 
 var heroes = require('./heroes').heroes;
+var Accounts = require('./account');
 var GameStateController = require('../ai/game_model').GameStateController;
 var Owner = require('../ai/game_model').Owner;
 var CardState = require('../ai/game_model').CardState;
@@ -21,8 +22,6 @@ var DRAW_CARD = 'draw_card';
 var PLAY_CARD = 'card';
 var ATTACK = 'attack';
 var PLAY_SPELL = 'spell';
-
-var EXP_PER_WIN = 5, EXP_PER_LOSS = 1;
 
 function generateDeck(account) {
     var deck = [];
@@ -311,10 +310,9 @@ exports.gameAction = function(req, res) {
                 winer = model.opponentEmail;
                 loser = email;
             }
-            pdb.collection('accounts').findAndModify({ query: {_id: loser},
-                                                       update: { $inc: { loss: 1, exp: EXP_PER_LOSS } } }).then(function () {
-                return pdb.collection('accounts').findAndModify({ query: {_id: winer},
-                                                                  update: { $inc: { win: 1, exp: EXP_PER_WIN } } });
+
+            Accounts.addLoss(loser).then(function() {
+                return Accounts.addWin(winer);
             }).done(function() {}, function (e) {
                 console.log(e);
             });

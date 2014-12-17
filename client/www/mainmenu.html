@@ -30,6 +30,10 @@
 <body>
     <img src="assets/menu1.webp" class="bg" usemap="#clickmap"></img>
     <img src="assets/menu2.webp" class="bg pulse" usemap="#clickmap"></img>
+    <div id="balance_container">
+      <img src="assets/balance.png" class="hidden" id="balance"></img>
+      <div id="balance_text" />
+    </div>
 
     <map name="clickmap">
         <area shape="rect" coords="674,0,1330,340" href="matchmaking.html">
@@ -40,6 +44,16 @@
         $(document).ready(function(e) {
             $('img[usemap]').rwdImageMaps();
         });
+        var token = localStorage.getItem('token');
+
+        _network.ajax(host + 'v1/info/' + token, undefined, function (data) {
+            data = JSON.parse(data);
+            $('#balance').removeClass('hidden').addClass('dialog_bg');
+            $('#balance_container').css({ position: 'fixed', top: '1%', left: '86%',
+                                          "z-index": '1', width: '12%', height: '10%' });
+            $('#balance_text').text(' ' + data.coins).css({ color: "white", position: 'absolute', top: '30%', left: '10%' });
+        });
+
     </script>
 </body>
 </html>
