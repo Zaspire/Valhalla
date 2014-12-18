@@ -202,7 +202,29 @@ var heroes = {
         health: 4,
         cost: 2,
         shield: true,
-        img: "6.webp"
+        img: "6.webp",
+        cast: function(card) {
+            if (card.visualState.length)
+                card.visualState += ',ulti';
+            else
+                card.visualState = 'ulti';
+
+            card.attack = String(function(card1, card2) {
+                card1.attack = undefined;
+
+                if (card2.maxHealth > card2.health)
+                    card2.health = 0;
+                else
+                    card2.health = 1;
+
+                var visual = card1.visualState.split(',');
+                var i = visual.indexOf('ulti');
+                if (i != -1)
+                    visual.splice(i, 1);
+                card1.visualState = visual.join(',');
+            });
+        },
+        ultimateDescription: "Kill damaged minion. Leave 1 health to undamaged"
     },
     h7: {
         cardType: CardType.HERO,
