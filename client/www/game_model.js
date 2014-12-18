@@ -63,6 +63,7 @@ var PLAY_SPELL = 'spell';
 var DRAW_CARD = 'draw_card';
 
 var HAND_LIMIT = 10;
+var TABLE_LIMIT = 5;
 
 function callHelper(f, arg1, arg2, arg3) {
     var func;
@@ -475,8 +476,14 @@ GameStateController.prototype = {
 
     canPlayCard: function(id1) {
         var card = this._myCard(id1);
+
         if (card.state != CardState.HAND || card.cost > this.me.mana
             || this.model.turn != this.owner || card.cardType != CardType.HERO)
+            return false;
+        var table = this.model._cards.filter(function (c) {
+            return c.owner == card.owner && c.state == CardState.TABLE && c.health > 0;
+        });
+        if (table.length >= TABLE_LIMIT)
             return false;
 
         return true;

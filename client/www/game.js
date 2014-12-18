@@ -436,6 +436,7 @@ CardView.prototype = {
 
     _queuePositionUpdate: function() {
         var self = this;
+        this._updateHighlite();
         this.view.queueAction(false, function() {
             return self._updatePosition();
         });
