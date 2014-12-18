@@ -62,7 +62,7 @@ var ATTACK = 'attack';
 var PLAY_SPELL = 'spell';
 var DRAW_CARD = 'draw_card';
 
-var HAND_LIMIT = 5;
+var HAND_LIMIT = 10;
 
 function callHelper(f, arg1, arg2, arg3) {
     var func;
@@ -342,17 +342,6 @@ GameStateModel.prototype = {
         } else {
             card.maxHealth = card.health;
         }
-    },
-
-    cardPosition: function(card) {
-        var arr;
-        arr = this._cards.filter(function(c) {
-            return c.owner == card.owner && c.state == card.state;
-        });
-        var t = arr.indexOf(card)
-        if (t == -1)
-            return arr.length;
-        return t;
     }
 };
 
@@ -608,7 +597,7 @@ GameStateController.prototype = {
             return card.owner == owner && card.state == CardState.HAND;
         });
 
-        if (hand.length > HAND_LIMIT) {
+        if (hand.length + 1 > HAND_LIMIT) {
             if (owner == Owner.ME)
                 this.model.emit("HandLimit");
             return;

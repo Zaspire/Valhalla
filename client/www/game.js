@@ -444,19 +444,34 @@ CardView.prototype = {
     _updatePosition: function() {
         var card = this.card;
         var cardView = this.group;
-        var index = this.model.cardPosition(card);
+
+        var cards = this.model._cards.filter(function(c) {
+            return c.owner == card.owner && c.state == card.state;
+        });
+        var index = cards.indexOf(card);
+        if (index == -1)
+            return;
 
         var newX, newY;
 
         cardView.pivot = paper.view.bounds.topLeft;
         switch (card.state) {
         case CardState.HAND:
-            newX = 20 * (index + 1) + index * cardView.bounds.width;
-            if (card.owner == Owner.ME) {
-                newY = SCREEN_HEIGHT - cardView.bounds.height;
-              //  newY = SCREEN_HEIGHT - cardView.bounds.height - 18;
-            } else {
-                newY =  44 - cardView.bounds.height;
+            {
+                var required = cards.length * (20 + cardView.bounds.width);
+                var avaliable = SCREEN_WIDTH - this.view.myHealth.bounds.width;
+
+                var offset = 0;
+                if (required > avaliable) {
+                    offset = (required - avaliable) / (cards.length - 1);
+                }
+                newX = 20 * (index + 1) + index * (cardView.bounds.width - offset);
+                if (card.owner == Owner.ME) {
+                    newY = SCREEN_HEIGHT - cardView.bounds.height;
+                    //  newY = SCREEN_HEIGHT - cardView.bounds.height - 18;
+                } else {
+                    newY =  44 - cardView.bounds.height;
+                }
             }
             break;
         case CardState.TABLE:
