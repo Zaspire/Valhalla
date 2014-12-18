@@ -348,17 +348,16 @@ exports.gameState = function(req, res) {
         var myState = doc.initial[common.base64_encode(email)];
 
         var log = doc.log.map(function (e) {
-            //FIXME: filter card info
             var r = { action: e.action, params: e.params};
             if (e.email == email)
                 r.me = true;
-            if (r.action === END_TURN) {
+            if (r.action === END_TURN && e.params[1]) {
                 if (r.me)
                     r.params = [null, null];
                 else
                     r.params = [null, { id: e.params[1].id, type: e.params[1].type }];
             }
-            if (r.action === DRAW_CARD) {
+            if (r.action === DRAW_CARD && e.params[0]) {
                 if (!r.me)
                     r.params = [null, null];
                 else

@@ -649,6 +649,9 @@ function GameStateView(model) {
     this._requestExp((function(d) {
         this.exp = JSON.parse(d);
     }).bind(this));
+
+    this.model.on('HandLimit', this._showHandLimit.bind(this));
+    this.model.on('EmptyDeck', this._showEmptyDeck.bind(this));
 }
 
 GameStateView.prototype = {
@@ -681,6 +684,22 @@ GameStateView.prototype = {
 
     unblockAnimation: function() {
         this._blockAnimation = false;
+    },
+
+    _showHandLimit: function() {
+        if (this._animationDisabled)
+            return;
+
+        //FIXME: exclusive action
+        showDialog('Your Hand Is Too Full!');
+    },
+
+    _showEmptyDeck: function() {
+        if (this._animationDisabled)
+            return;
+
+        //FIXME: exclusive action
+        showDialog('Your Deck Is Empty!');
     },
 
     cardView: function(card) {

@@ -62,6 +62,8 @@ var ATTACK = 'attack';
 var PLAY_SPELL = 'spell';
 var DRAW_CARD = 'draw_card';
 
+var HAND_LIMIT = 5;
+
 function callHelper(f, arg1, arg2, arg3) {
     var func;
     eval('func = ' + f);
@@ -80,7 +82,7 @@ function GameStateModel(host, token, gameid) {
 
 
     this._requestGameState(this._init.bind(this));
-    // signals: ready, onNewCard, reposition, oldMovesDone
+    // signals: ready, onNewCard, reposition, oldMovesDone, HandLimit
 
     this.setMaxListeners(70);
 }
@@ -600,42 +602,57 @@ GameStateController.prototype = {
         this._log(PLAY_CARD, id1, card);
     },
 
-    drawCard: function(a1) {
+    _drawCard: function(owner, a1) {
         var self = this;
+        var hand = this.model._cards.filter(function(card) {
+            return card.owner == owner && card.state == CardState.HAND;
+        });
+
+        if (hand.length > HAND_LIMIT) {
+            if (owner == Owner.ME)
+                this.model.emit("HandLimit");
+            return;
+        }
+
+        var deck = this.model._cards.filter(function(card) {
+            return card.owner == owner && card.state == CardState.DECK;
+        });
+
+        if (!deck.length) {
+            if (owner == Owner.ME)
+                this.model.emit("EmptyDeck");
+            //FIXME: deal damage to hero
+            return;
+        }
         if (runningUnderNode && this.model.server) {
-            var deck = this.model._cards.filter(function(card) {
-                return card.owner == self.owner && card.state == CardState.DECK;
-            });
-            // FIXME:
-            assert(deck.length);
 
             var card = deck[0];
             card.attacksLeft = 0;
             card.state = CardState.HAND;
-            this._log(DRAW_CARD, card);
+            return card;
         } else {
-            if (!(a1 || a1 === null))
-                return;
-
-            var deck = this.model._cards.filter(function(card) {
-                return card.owner == self.owner && card.state == CardState.DECK;
-            });
-            // FIXME:
-            assert(deck.length);
+            assert(a1 || a1 === null);
 
             var card = deck[0];
             card.attacksLeft = 0;
             card.state = CardState.HAND;
 
-            if (card.owner == Owner.ME)
-                assert(a1);
-            this._log(DRAW_CARD, card);
+            assert(card.owner != Owner.ME || a1);
             if (a1) {
                 this.model._initCard(a1, card);
                 var r = this.model._cards.filter(function (c) {return c.id == card.id;});
                 assert(r.length == 1);
             }
+            return card;
         }
+    },
+
+    drawCard: function(a1) {
+        // a1 - can be null. null represent opponent's card
+        if (!((a1 || a1 === null) || this.model.server))
+            return;
+        var card = this._drawCard(this.owner, a1);
+        this._log(DRAW_CARD, card);
     },
 
     endTurn: function(a1, a2) {
@@ -663,17 +680,8 @@ GameStateController.prototype = {
         var deck = this.model._cards.filter(function(card) {
             return card.owner == opponent && card.state == CardState.DECK;
         });
-        // FIXME:
-        assert(deck.length);
 
-        var card = deck[0];
-        card.attacksLeft = 0;
-        card.state = CardState.HAND;
-
-        if (a2) {
-            this.model._initCard(a2, card);
-        }
-
+        var card = this._drawCard(opponent, a2);
         this._log(END_TURN, null, card);
 
         this.opponent.maxMana = Math.min(10, this.opponent.maxMana + 1);
