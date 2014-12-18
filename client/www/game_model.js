@@ -115,6 +115,7 @@ GameStateModel.prototype = {
 
                                  damage: undefined,
                                  health: undefined,
+                                 maxHealth: undefined,
                                  cost: undefined,
                                  shield: undefined,
                                  cardType: CardType.UNKNOWN,
@@ -315,7 +316,6 @@ GameStateModel.prototype = {
 
         card.type = type;
         card.id = desc.id;
-        var props = ['damage', 'health', 'cost'];
 
         card.shield = !!heroes[type].shield;
         card.cardType = heroes[type].cardType;
@@ -327,6 +327,7 @@ GameStateModel.prototype = {
         card.attack = heroes[type].attack;
         card.canBeAttacked = heroes[type].canBeAttacked;
 
+        var props = ['damage', 'health', 'cost'];
         for (var i = 0; i < props.length; i++) {
             var prop = props[i];
             if (!heroes[type][prop] === null)
@@ -336,6 +337,8 @@ GameStateModel.prototype = {
         if (card.cardType != CardType.HERO) {
             card.health = undefined;
             card.damage = undefined;
+        } else {
+            card.maxHealth = card.health;
         }
     },
 

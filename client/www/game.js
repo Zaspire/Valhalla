@@ -533,10 +533,10 @@ CardView.prototype = {
         heart.position.y = 456;
 
         var hTxt = new PointText(new Point(290,486));
-        hTxt.characterStyle= {
-            font:"Courier",
-            fontSize:80,
-            fillColor:"#000000"
+        hTxt.characterStyle = {
+            font: "Courier",
+            fontSize: 80,
+            fillColor: "#000000"
         }
         hTxt.paragraphStyle = {
             justification:"left"
@@ -544,12 +544,20 @@ CardView.prototype = {
 
         var self = this;
         function updateText() {
-            hTxt.content = self.card.health;
-            hTxt.visible = self.card.health !== undefined;
-            heart.visible = self.card.health !== undefined;
+            var visible = self.card.health !== undefined;
+            hTxt.visible = visible;
+            heart.visible = visible;
+            if (visible) {
+                if (self.card.health == self.card.maxHealth)
+                    hTxt.characterStyle.fillColor = "#000000";
+                else
+                    hTxt.characterStyle.fillColor = "#ff0000";
+                hTxt.content = self.card.health;
+            }
         }
         updateText();
         this.card.on('changed::health', updateText);
+        this.card.on('changed::maxHealth', updateText);
 
         this.group.addChild(heart);
         this.group.addChild(hTxt);

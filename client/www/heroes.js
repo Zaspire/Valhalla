@@ -29,6 +29,7 @@ var heroes = {
                 var d = Math.min(4, card2.health);
                 card2.health -= d;
                 card1.health += d;
+                card1.health = Math.min(card1.health, card1.maxHealth);
             });
         },
         onTurnEnd: {
@@ -132,6 +133,7 @@ var heroes = {
                 chozen[i].type = 'rock';
                 chozen[i].damage = heroes['rock'].damage;
                 chozen[i].health = heroes['rock'].health;
+                chozen[i].maxHealth = heroes['rock'].health;
                 chozen[i].shield = heroes['rock'].shield;
                 chozen[i].attacksLeft = 0;
             }
@@ -164,6 +166,7 @@ var heroes = {
                 if (card2.damage <= 4) {
                     card1.attack = undefined;
                     card1.health += card2.health;
+                    card1.maxHealth = Math.max(card1.maxHealth, card1.health);
                     card2.health = 0;
 
                     var visual = card1.visualState.split(',');
@@ -382,12 +385,13 @@ var heroes = {
             for (var i = 0; i < cards.length; i++) {
                 if (card.owner == cards[i].owner)
                     continue;
-                if (cards[i].state === TABLE) {
+                if (cards[i].state === TABLE && cards[i].health > 0) {
+                    bonus += Math.min(2, cards[i].health);
                     cards[i].health -= 2;
-                    bonus += 2;
                 }
             }
             card.health += bonus;
+            card.maxHealth = Math.max(card.health, card.maxHealth);
         },
         ultimateDescription: "Steal 2 health from all enemy minions"
 
@@ -404,6 +408,7 @@ var heroes = {
                 if (card.attacksLeft) {
                     card.health++;
                     card.damage++;
+                    card.maxHealth = Math.max(card.health, card.maxHealth);
                 } else if (!card.__first) {
                     var visual = card.visualState.split(',');
                     var i = visual.indexOf('invisible');
@@ -478,7 +483,7 @@ var heroes = {
                     card1.__ultimate = false;
                     return;
                 }
-                card2.health += 2;
+                card2.health = Math.max(card2.health + 2, card2.health);
                 return;
             }
             card2.health -= card1.damage;
@@ -544,6 +549,7 @@ var heroes = {
                     continue;
                 if (cards[i].state === TABLE) {
                     cards[i].health += 3;
+                    cards[i].maxHealth = Math.max(cards[i].maxHealth, cards[i].health);
                 }
             }
         },

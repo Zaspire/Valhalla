@@ -43,7 +43,9 @@ exports.newGame = function(account1, account2) {
     function createCard(doc) {
         var o = common.clone(doc);
 
+        o.maxHealth = o.health;
         o.cardType = heroes[o.type].cardType;
+        o.visualState = '';
         if (heroes[o.type].onDeath)
             o.onDeath = { cast: String(heroes[o.type].onDeath.cast) };
         if (heroes[o.type].onNewTurn)
@@ -174,7 +176,6 @@ StateModel.prototype = {
 
     _createCard: function(card, owner, state) {
         var o = common.clone(card);
-        o.visualState = '';
 
         o.emit = function() {}
         assert(o.state === state);
