@@ -24,12 +24,23 @@ var heroes = {
         cost: 3,
         img: "1.webp",
         cast: function(card) {
+            if (card.visualState.length)
+                card.visualState += ',ulti';
+            else
+                card.visualState = 'ulti';
+
             card.attack = String(function(card1, card2) {
                 card1.attack = undefined;
                 var d = Math.min(4, card2.health);
                 card2.health -= d;
                 card1.health += d;
                 card1.health = Math.min(card1.health, card1.maxHealth);
+
+                var visual = card1.visualState.split(',');
+                var i = visual.indexOf('ulti');
+                if (i != -1)
+                    visual.splice(i, 1);
+                card1.visualState = visual.join(',');
             });
         },
         onTurnEnd: {
