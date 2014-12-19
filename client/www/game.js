@@ -1,8 +1,14 @@
-paper.install(window);
+var stage;
 
 var params = {};
 params.token = localStorage.getItem('token');
 params.gameid = localStorage.getItem('gameid');
+
+UIUtils = {
+    raster: function(id) {
+        return new createjs.Bitmap(document.getElementById(id));
+    }
+};
 
 function CardView(model, card, parent, view) {
     EventEmitter2.call(this);
@@ -22,11 +28,12 @@ CardView.prototype = {
 
     _init: function() {
         // FIXME: remove all listeners on destroy
-        var group = new Group();
-        this.group = group;
-        var m = new paper.Matrix(0.3917, 0, 0, 0.3917, 0, 0);
-        group.matrix = m;
-        group.applyMatrix = false;
+        var group = new createjs.Container();
+        this._group = group;
+        this.group = new createjs.Container();
+        this.group.addChild(this._group);
+
+        group.setTransform(0, 0, 0.3917, 0.3917);
 
         this._x = 0;
         this._y = 0;
@@ -47,9 +54,9 @@ CardView.prototype = {
         this.card.on('attackPlayer', this._animateAttackPlayer.bind(this));
         this.card.on('attack', this._animateAttackCard.bind(this));
 
-        this.group.onMouseDown = this._onMouseDown.bind(this);
-        this.group.onMouseDrag = this._onMouseDrag.bind(this);
-        this.group.onMouseUp = this._onMouseUp.bind(this);
+        this.group.addEventListener("mousedown", this._onMouseDown.bind(this));
+        this.group.addEventListener("pressmove", this._onMouseDrag.bind(this));
+        this.group.addEventListener("pressup", this._onMouseUp.bind(this));
 
         this.parent.addChild(this.group);
 
@@ -84,11 +91,8 @@ CardView.prototype = {
             for (var i = 0; i < visual.length; i++) {
                 if (!visual[i])
                     continue;
-                fg[visual[i]] = new Raster(visual[i]);
-                fg[visual[i]].pivot = fg[visual[i]].bounds.topLeft;
-                fg[visual[i]].position.x = 0;
-                fg[visual[i]].position.y = 0;
-                self.group.addChild(fg[visual[i]]);
+                fg[visual[i]] = UIUtils.raster(visual[i]);
+                self._group.addChild(fg[visual[i]]);
             }
         }
         this.card.on('changed::visualState', update);
@@ -96,19 +100,18 @@ CardView.prototype = {
     },
 
     _addBG: function() {
-        var bg = new Raster('bs');
+        var bg = UIUtils.raster('bs');
         this._bg = bg;
-        bg.pivot = bg.bounds.topLeft;
-        bg.position.x = 0;
-        bg.position.y = 0;
-        this.group.addChild(bg);
+        bg.x = 0;
+        bg.y = 0;
+        this._group.addChild(bg);
 
         var self = this;
         function update() {
             var source = 'bs';
             if (self.card.state == CardState.DEAD || self.card.state == CardState.TABLE || self.card.state == CardState.HAND && self.card.owner == Owner.ME)
                 source = 'fg';
-            bg.source = source;
+            bg.image = document.getElementById(source);
         }
         this.card.on('changed::state', update);
         update();
@@ -123,10 +126,11 @@ CardView.prototype = {
             return new Promise(function (resolve, reject) {
                 self.group.bringToFront();
 
-                var p = self.view.myHealth.bounds.center;
+                var bounds = self.view.myHealth.getBounds();
+                var p = { x: self.view.myHealth.x + bounds.width / 2, y: self.view.myHealth.y + bounds.height / 2};
                 resolve(p);
             }).then(function (p) {
-                return self._animatePositionUpdate(p.x - self.group.bounds.width, p.y - self.group.bounds.height);
+                return self._animatePositionUpdate(p.x - self.group.getBounds().width, p.y - self.group.getBounds().height);
             }).then(function () {
                 return self._updatePosition();
             });
@@ -145,10 +149,11 @@ CardView.prototype = {
                 if (!self.view._animationDisabled)
                     self.group.bringToFront();
 
-                var p = otherView.group.bounds.center;
+                var bounds = otherView.group.getBounds();
+                var p = { x: otherView.group.x + bounds.width / 2, y: otherView.group.y + bounds.height / 2};
                 resolve(p);
             }).then(function (p) {
-                return self._animatePositionUpdate(p.x - self.group.bounds.width, p.y - self.group.bounds.height);
+                return self._animatePositionUpdate(p.x - self.group.getBounds().width, p.y - self.group.getBounds().height);
             }).then(function () {
                 return self._updatePosition();
             });
@@ -165,14 +170,13 @@ CardView.prototype = {
                     return;
                 }
 
-                var death = new Raster('death');
-                death.pivot = death.bounds.topLeft;
-                death.position.x = 0;
-                death.position.y = 0;
-                death.opacity = 0;
-                self.group.addChild(death);
+                var death = UIUtils.raster('death');
+                death.x = 0;
+                death.y = 0;
+                death.alpha = 0;
+                self._group.addChild(death);
 
-                var params = { opacity: 1, time: 1.3, transition: "linear",
+                var params = { alpha: 1, time: 1.3, transition: "linear",
                                onComplete: function() {
                                    resolve();
                                    self.group.remove();
@@ -186,8 +190,8 @@ CardView.prototype = {
         var self = this;
         return new Promise(function (resolve, reject) {
             if (self.view._animationDisabled) {
-                self.group.position.x = newX;
-                self.group.position.y = newY;
+                self.group.x = newX;
+                self.group.y = newY;
                 resolve();
                 return;
             }
@@ -201,7 +205,7 @@ CardView.prototype = {
             var params = { x: newX, y: newY,
                            time: 1, transition: "easeInCubic",
                            onComplete: function() { resolve(); } };
-            Tweener.addTween(self.group.position, params);
+            Tweener.addTween(self.group, params);
         });
     },
 
@@ -212,13 +216,9 @@ CardView.prototype = {
             if (hero)
                 hero.remove();
             if (self.card.type && heroes[self.card.type].img) {
-                hero = new Raster(self.card.type);
-                hero.pivot = hero.bounds.topLeft;
-                hero.position.x = 0;
-                hero.position.y = 0;
-                self.group.addChild(hero);
+                hero = UIUtils.raster(self.card.type);
+                self._group.addChild(hero);
             }
-            paper.view.update();
         }
         this.card.on('changed::type', update);
         update();
@@ -254,28 +254,32 @@ CardView.prototype = {
         this._mouseDownTime = new Date();
         if (!this.highlite)
             return;
-
+        event.propagationStopped = true;
         this.group.bringToFront();
     },
 
     _onMouseDrag: function(event) {
         if (!this.highlite)
             return;
-        this.group.position = this.parent.globalToLocal(event.point);
+        this.group.x = event.stageX;
+        this.group.y = event.stageY;
 
-        this._x = this.group.position._x;
-        this._y = this.group.position._y;
+        this._x = this.group.x;
+        this._y = this.group.y;
+
+        event.propagationStopped = true;
     },
 
-    _magnify: function() {
+    _magnify: function(event) {
+        var group = new createjs.Container();
+        this.parent.addChild(group);
+        group.alpha = 0;
+
         this.group.bringToFront();
 
-        var group = new Group();
-        this.parent.addChild(group);
-        group.opacity = 0;
+        var graphics = new createjs.Graphics().beginFill("#000000").drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        var bg = new createjs.Shape(graphics);
 
-        var bg = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(SCREEN_WIDTH, SCREEN_HEIGHT)));
-        bg.fillColor="#000000";
         group.addChild(bg);
 
         var heroName = heroes[this.card.type].name;
@@ -283,85 +287,84 @@ CardView.prototype = {
         if (heroes[this.card.type].ultimateDescription) {
             ulti = heroes[this.card.type].ultimateDescription;
         }
-        var txt = new PointText(new Point(920, 60));
-        txt.content = heroName;
-        txt.characterStyle= {
-            font:"Courier",
-            fontSize:40,
-            fillColor:"#dddddd"
-        }
-        txt.paragraphStyle = {
-            justification:"center"
-        };
+        var txt = new createjs.Text();
+        txt.x = 920
+        txt.y = 60;
+        txt.text = heroName;
+        txt.font = "40px Courier";
+        txt.color = "#dddddd";
+        txt.textAlign = "center";
         group.addChild(txt);
 
-        txt = new PointText(new Point(920, 250));
+        var txt = new createjs.Text();
+        txt.x = 920;
+        txt.y = 250;
         if (ulti)
             ulti = 'Ultimate: ' + ulti;
-        txt.content = ulti;
-        txt.characterStyle= {
-            font:"Courier",
-            fontSize:30,
-            fillColor:"#dddddd"
-        }
-        txt.paragraphStyle = {
-            justification:"center"
-        };
+        txt.text = ulti;
+        txt.font = "30px Courier";
+        txt.color = "#dddddd"
+        txt.textAlign = "center";
         group.addChild(txt);
 
         for (var i = 0, y = 290; heroes[this.card.type].description && i < heroes[this.card.type].description.length; i++, y+=40) {
             var d = heroes[this.card.type].description[i];
 
-            txt = new PointText(new Point(920, y));
-            txt.content = d;
-            txt.characterStyle= {
-                font:"Courier",
-                fontSize:30,
-                fillColor:"#dddddd"
-            }
-            txt.paragraphStyle = {
-                justification:"center"
-            };
+            var txt = new createjs.Text();
+            txt.x = 920;
+            txt.y = y;
+            txt.text = d;
+            txt.font = "30px Courier";
+            txt.color = "#dddddd";
+            txt.textAlign = "center";
             group.addChild(txt);
         }
 
-        this.group.bringToFront();
+//        this.group.bringToFront();
+        graphics = new createjs.Graphics().beginFill("#ff0000").drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        var fg = new createjs.Shape(graphics);
+        fg.alpha = 0.01;
 
-        var fg = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(SCREEN_WIDTH, SCREEN_HEIGHT)));
-        fg.fillColor="#ff0000";
-        fg.opacity = 0;
 //FIXME: add only after complete
         var self = this;
 
         var time = 1;
         var transition = "easeInCubic";
-        var prevHeight = this.group.bounds.height;
-        var origX = self.group.position.x, origY = self.group.position.y;
-        fg.onMouseDown = function() {
-            Tweener.addTween(self.group.position, { x: origX, y: origY, time: 1,
-                                                    transition: transition,
-                                                    onComplete: function() {
+        var prevHeight = this.group.getBounds().height;
+        var origX = self.group.x, origY = self.group.y;
+        fg.addEventListener('mousedown', function(event) {
+            event.propagationStopped = true;
+
+            Tweener.addTween(self.group, { x: origX, y: origY, time: 1,
+                                           transition: transition,
+                                           onComplete: function() {
                 fg.remove();
                 group.remove();
                 self.view.unblockAnimation();
             } })
-            var o = {height: self.group.bounds.height};
+            var o = {height: self.group.getBounds().height};
             Tweener.addTween(o, { height: prevHeight, time: time,
                                   transition: transition,
-                                  onUpdate: function() {self.group.matrix.scale(o.height/self.group.bounds.height)} });
-            Tweener.addTween(group, { opacity: 0, time: time, transition: transition });
-        }
+                                  onUpdate: function() {
+                                      var c = o.height/self._group.getBounds().height;
+                                      self._group.setTransform(0, 0, c, c);
+                                  } });
+            Tweener.addTween(group, { alpha: 0, time: time, transition: transition });
+        });
         this.parent.addChild(fg);
-        fg.bringToFront();
+//        this.fg.bringToFront();
 
         this.view.blockAnimation();
 
         var o = {height: prevHeight};
         Tweener.addTween(o, { height: SCREEN_HEIGHT, time: time, transition: transition,
-                              onUpdate: function() {self.group.matrix.scale(o.height/self.group.bounds.height)} });
-        Tweener.addTween(group, { opacity: 1, time: time, transition: transition });
-        Tweener.addTween(this.group.position, { x: 0, y: 0, time: time,
-                                                transition: transition });
+                              onUpdate: function() {
+                                  var c = o.height/self._group.getBounds().height;
+                                  self._group.setTransform(0, 0, c, c);
+                              } });
+        Tweener.addTween(group, { alpha: 1, time: time, transition: transition });
+        Tweener.addTween(this.group, { x: 0, y: 0, time: time,
+                                       transition: transition });
     },
 
     _onMouseUp: function(event) {
@@ -374,11 +377,10 @@ CardView.prototype = {
         }
         if (!this.highlite)
             return;
-        var point = this.parent.globalToLocal(event.point);
 
         if (this.card.state == CardState.HAND) {
             if (this.card.cardType == CardType.HERO) {
-                if (this.group.position.y >= SCREEN_HEIGHT - this.group.bounds.height) {
+                if (this.group.y >= SCREEN_HEIGHT - this.group.getBounds().height) {
                     this._updatePosition();
                     return;
                 }
@@ -395,7 +397,8 @@ CardView.prototype = {
                         continue;
                     if (other.card.owner != this.card.owner)
                         continue;
-                    if (other.group.contains(point)) {
+                    point = other.group.globalToLocal(event.stageX, event.stageY);
+                    if (other.group.hitTest(point.x, point.y)) {
                         gameAction('spell', this.card.id, other.card.id);
                         myController.playSpell(this.card.id, other.card.id);
                         this._updatePosition();
@@ -407,7 +410,8 @@ CardView.prototype = {
             }
         }
         if (this.card.state == CardState.TABLE) {
-            if (this.view.opponentHealth.contains(point) && myController.canAttackOpponent()) {
+            var point = this.view.opponentHealth.globalToLocal(event.stageX, event.stageY);
+            if (this.view.opponentHealth.hitTest(point.x, point.y) && myController.canAttackOpponent()) {
                 gameAction('attack_player', this.card.id);
                 myController.attackPlayer(this.card.id);
                 this._updatePosition();
@@ -415,12 +419,13 @@ CardView.prototype = {
             }
             for (var i = 0; i < this.view.cards.length; i++) {
                 //FIXME:
-                var other = this.view.cards[i]
+                var other = this.view.cards[i];
                 if (this == other)
                     continue;
                 if (other.card.state != CardState.TABLE)
                     continue;
-                if (!other.group.contains(point))
+                point = other.group.globalToLocal(event.stageX, event.stageY);
+                if (!other.group.hitTest(point.x, point.y))
                     continue;
                 if (myController.canAttackCard(this.card.id, other.card.id)) {
                     gameAction('attack', this.card.id, other.card.id);
@@ -455,55 +460,53 @@ CardView.prototype = {
 
         var newX, newY;
 
-        cardView.pivot = paper.view.bounds.topLeft;
         switch (card.state) {
         case CardState.HAND:
             {
-                var required = cards.length * (20 + cardView.bounds.width);
-                var avaliable = SCREEN_WIDTH - this.view.myHealth.bounds.width;
+                var required = cards.length * (20 + cardView.getBounds().width);
+                var avaliable = SCREEN_WIDTH - this.view.myHealth.getBounds().width;
 
                 var offset = 0;
                 if (required > avaliable) {
                     offset = (required - avaliable) / (cards.length - 1);
                 }
-                newX = 20 * (index + 1) + index * (cardView.bounds.width - offset);
+                newX = 20 * (index + 1) + index * (cardView.getBounds().width - offset);
                 if (card.owner == Owner.ME) {
-                    newY = SCREEN_HEIGHT - cardView.bounds.height;
+                    newY = SCREEN_HEIGHT - cardView.getBounds().height;
                     //  newY = SCREEN_HEIGHT - cardView.bounds.height - 18;
                 } else {
-                    newY =  44 - cardView.bounds.height;
+                    newY =  44 - cardView.getBounds().height;
                 }
             }
             break;
         case CardState.TABLE:
-            newX = 20 * (index + 1) + index * cardView.bounds.width;
+            newX = 20 * (index + 1) + index * cardView.getBounds().width;
             if (card.owner == Owner.ME) {
                 newY = 304 + 15;
             } else {
-                newY = 304 - 15 - cardView.bounds.height;
+                newY = 304 - 15 - cardView.getBounds().height;
             }
             break;
         case CardState.DECK:
-            newX = SCREEN_WIDTH - cardView.bounds.width;
+            newX = SCREEN_WIDTH - cardView.getBounds().width;
             if (card.owner == Owner.ME) {
                 newY = SCREEN_HEIGHT / 2 + 5;
             } else {
-                newY = SCREEN_HEIGHT / 2 - 5 - cardView.bounds.height;
+                newY = SCREEN_HEIGHT / 2 - 5 - cardView.getBounds().height;
             }
             break;
         case CardState.DEAD:
-            newX = cardView.position.x;
-            newY = cardView.position.y;
+            newX = cardView.x;
+            newY = cardView.y;
             break;
         }
         return this._animatePositionUpdate(newX, newY);
     },
 
     _addHighlite: function() {
-        var border = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(this._bg.bounds.width, this._bg.bounds.height)));
-        border.strokeColor = "#00ff00";
+        var graphics = new createjs.Graphics().setStrokeStyle(3).beginStroke("#00ff00").drawRect(0, 0, 378, 512);
+        var border = new createjs.Shape(graphics);
 
-        border.strokeWidth = 3;
         var self = this;
         function updateVisibility() {
             border.visible = self.highlite;
@@ -511,52 +514,42 @@ CardView.prototype = {
         updateVisibility();
         this.on('changed::highlite', updateVisibility);
 
-        this.group.addChild(border);
-        this._bg.bringToFront();
+        this._group.addChild(border);
+        //this._bg.bringToFront();
     },
 
     _addDamage: function() {
-        var sword = new Raster('sword');
-        sword.position.x = 125;
-        sword.position.y = 456;
+        var sword = UIUtils.raster('sword');
+        sword.x = 105;
+        sword.y = 426;
 
-        var dTxt = new PointText(new Point(55,485));
-        dTxt.characterStyle= {
-            font:"Courier",
-            fontSize:80,
-            fillColor:"#000000"
-        }
-        dTxt.paragraphStyle = {
-            justification:"left"
-        };
+        var dTxt = new createjs.Text();
+        dTxt.x = 55;
+        dTxt.y = 426;
+        dTxt.font = "80px Courier";
 
         var self = this;
         function updateText() {
-            dTxt.content = self.card.damage;
+            dTxt.text = self.card.damage;
             dTxt.visible = self.card.damage !== undefined;
             sword.visible = self.card.damage !== undefined;
         }
         updateText();
         this.card.on('changed::damage', updateText);
 
-        this.group.addChild(dTxt);
-        this.group.addChild(sword);
+        this._group.addChild(dTxt);
+        this._group.addChild(sword);
     },
 
     _addHealth: function() {
-        var heart = new Raster('heart');
-        heart.position.x = 255;
-        heart.position.y = 456;
+        var heart = UIUtils.raster('heart');
+        heart.x = 225;
+        heart.y = 426;
 
-        var hTxt = new PointText(new Point(290,486));
-        hTxt.characterStyle = {
-            font: "Courier",
-            fontSize: 80,
-            fillColor: "#000000"
-        }
-        hTxt.paragraphStyle = {
-            justification:"left"
-        };
+        var hTxt = new createjs.Text();
+        hTxt.x = 290
+        hTxt.y = 426;
+        hTxt.font = "80px Courier";
 
         var self = this;
         function updateText() {
@@ -566,64 +559,58 @@ CardView.prototype = {
             if (visible) {
                 if (self.card.health == self.card.maxHealth) {
                     if (self.card.health > heroes[self.card.type].health)
-                        hTxt.characterStyle.fillColor = "#008400";
+                        hTxt.color = "#008400";
                     else
-                        hTxt.characterStyle.fillColor = "#000000";
+                        hTxt.color = "#000000";
                 } else
-                    hTxt.characterStyle.fillColor = "#ff0000";
-                hTxt.content = self.card.health;
+                    hTxt.color = "#ff0000";
+                hTxt.text = self.card.health;
             }
         }
         updateText();
         this.card.on('changed::health', updateText);
         this.card.on('changed::maxHealth', updateText);
 
-        this.group.addChild(heart);
-        this.group.addChild(hTxt);
+        this._group.addChild(heart);
+        this._group.addChild(hTxt);
     },
 
     _addCost: function() {
-        var circle = new Raster('circle');
-        circle.position.x = 57;
-        circle.position.y = 57;
+        var circle = UIUtils.raster('circle');
+        circle.x = 7;
+        circle.y = 7;
 
-        var cTxt = new PointText(new Point(33,84));
-        cTxt.characterStyle= {
-            font:"Courier",
-            fontSize:80,
-            fillColor:"#000000"
-        }
-        cTxt.paragraphStyle = {
-            justification:"left"
-        };
+        var cTxt = new createjs.Text();
+        cTxt.x = 33;
+        cTxt.y = 23;
+        cTxt.font = "80px Courier";
 
         var self = this;
         function updateText() {
-            cTxt.content = self.card.cost;
+            cTxt.text = self.card.cost;
             cTxt.visible = self.card.cost !== undefined;
             circle.visible = self.card.cost !== undefined;
         }
         updateText();
         this.card.on('changed::cost', updateText);
 
-        this.group.addChild(circle);
-        this.group.addChild(cTxt);
+        this._group.addChild(circle);
+        this._group.addChild(cTxt);
     },
     _addShield: function() {
-        var bg = new Raster('shield');
-        bg.pivot = bg.bounds.topLeft;
-        bg.position.x = 280;
-        bg.position.y = 10;
+        var bg = UIUtils.raster('shield');
+        bg.x = 280;
+        bg.y = 10;
 
         var self = this;
         function update() {
             bg.visible = self.card.shield;
             bg.bringToFront();
         }
-        update();
         this.card.on('changed::shield', update);
 
-        this.group.addChild(bg);
+        this._group.addChild(bg);
+        update();
     }
 };
 
@@ -637,18 +624,11 @@ function GameStateView(model) {
     this._animationDisabled = true;
     this._activeAnimations = 0;
 
-    this._all = new Group();
-    this._all.pivot = paper.view.bounds.topLeft;
-    this._all.position.x = 0;
-    this._all.position.y = 0;
-    this._all.applyMatrix = false;
-    this._all.matrix.scale(paper.view.bounds.width / SCREEN_WIDTH, paper.view.bounds.height / SCREEN_HEIGHT);
+    this._all = new createjs.Container();
+    stage.addChild(this._all);
 
-    var bg = new Raster('bg');
-    bg.pivot = bg.bounds.topLeft;
-    bg.position.x = 0;
-    bg.position.y = 0;
-    bg.scale(SCREEN_WIDTH / bg.bounds.width, SCREEN_HEIGHT / bg.bounds.height);
+    var bg = new createjs.Bitmap(document.getElementById('bg'));
+    bg.setTransform(0, 0, SCREEN_WIDTH / bg.getBounds().width, SCREEN_HEIGHT / bg.getBounds().height);
     this._all.addChild(bg);
 
     this.model.on('ready', this._init.bind(this));
@@ -730,151 +710,93 @@ GameStateView.prototype = {
         assert(false);
     },
 
-    _addOpponentHealth: function() {
-        //FIXME: deduplicate _addPlayerInfo
-        var group = new Group();
-        group.pivot = group.bounds.topLeft;
+    _createPlayerInfo: function(player) {
+        var _group = new createjs.Container();
+        var group = new createjs.Container();
+        group.addChild(_group);
 
-        var border = new Raster('hm');
-        border.pivot = border.bounds.topLeft;
-        border.position.x = 0;
-        border.position.y = 0;
-        group.addChild(border);
+        var border = UIUtils.raster('hm');
+        border.x = 0;
+        border.y = 0;
+        _group.addChild(border);
 
         var self = this;
 
-        var healthTxt = new PointText(new Point(80,104));
-        healthTxt.content = '\u2764' + this.model.opponent.health;
+        var healthTxt = new createjs.Text();
+        healthTxt.x = 80;
+        healthTxt.y = 88;
+        healthTxt.text = '\u2764' + player.health;
 
-        this.model.opponent.on('changed::health', function() {
-            healthTxt.content = '\u2764' + self.model.opponent.health;
-            paper.view.update();
+        player.on('changed::health', function() {
+            healthTxt.text = '\u2764' + player.health;
         });
-        healthTxt.characterStyle= {
-            font: "Courier",
-            fontSize: 22,
-            fillColor: "#000000"
-        }
-        group.addChild(healthTxt);
+        healthTxt.font = "22px Courier";
+        _group.addChild(healthTxt);
 
-        var txt = new PointText(new Point(80,35));
-        txt.content = '\u2B1F' + this.model.opponent.mana;
-        this.model.opponent.on('changed::mana', function() {
-            txt.content = '\u2B1F' + self.model.opponent.mana;
-            paper.view.update();
+        var txt = new createjs.Text();
+        txt.x = 80;
+        txt.y = 19;
+        txt.text = '\u2B1F' + player.mana;
+        player.on('changed::mana', function() {
+            txt.text = '\u2B1F' + player.mana;
         });
-        txt.characterStyle= {
-            font: "Courier",
-            fontSize: 22,
-            fillColor: "#000000"
-        }
-        group.addChild(txt);
+        txt.font = "22px Courier";
+        _group.addChild(txt);
 
-        var nameTxt = new PointText(new Point(97, 70));
-        nameTxt.content = this.model.opponent.name.length > 12 ? this.model.opponent.name.substr(0, 10) + '...' : this.model.opponent.name;
-        nameTxt.characterStyle= {
-            font: "Courier",
-            fontSize: 22,
-            fillColor: "#ffffff"
-        }
-        nameTxt.paragraphStyle = {
-            justification:"center"
-        };
-        group.addChild(nameTxt);
+        var nameTxt = new createjs.Text()
+        nameTxt.x = 97;
+        nameTxt.y = 54;
+        nameTxt.text = player.name.length > 12 ? player.name.substr(0, 10) + '...' : player.name;
+        nameTxt.font = "22px Courier";
+        nameTxt.color = "#ffffff";
 
-        var m = new paper.Matrix(145 / group.bounds.height, 0, 0, 145 / group.bounds.height, 0, 0);
-        group.matrix = m;
-        group.applyMatrix = false;
+        nameTxt.textAlign = "center";
+        _group.addChild(nameTxt);
 
-        group.position = [SCREEN_WIDTH - group.bounds.width, 0]
+        _group.setTransform(0, 0, 145 / group.getBounds().height, 145 / group.getBounds().height);
+
+        return group;
+    },
+
+    _addOpponentHealth: function() {
+        var group = this._createPlayerInfo(this.model.opponent);
+        group.x = SCREEN_WIDTH - group.getBounds().width;
+        group.y = 0;
         this._all.addChild(group);
 
         this.opponentHealth = group;
     },
 
     _addPlayerInfo: function() {
-        var group = new Group();
-        group.pivot = group.bounds.topLeft;
+        var group = this._createPlayerInfo(this.model.me);
+
+        group.x = SCREEN_WIDTH - group.getBounds().width;
+        group.y = SCREEN_HEIGHT - group.getBounds().height;
+        this._all.addChild(group);
 
         this.myHealth = group;
-
-        var border = new Raster('hm');
-        border.pivot = border.bounds.topLeft;
-        border.position.x = 0;
-        border.position.y = 0;
-        group.addChild(border);
-
-        var self = this;
-
-        var healthTxt = new PointText(new Point(80,104));
-        healthTxt.content = '\u2764' + this.model.me.health;
-
-        this.model.me.on('changed::health', function() {
-            healthTxt.content = '\u2764' + self.model.me.health;
-            paper.view.update();
-        });
-        healthTxt.characterStyle= {
-            font: "Courier",
-            fontSize: 22,
-            fillColor: "#000000"
-        }
-        group.addChild(healthTxt);
-
-        var txt = new PointText(new Point(80,35));
-        txt.content = '\u2B1F' + this.model.me.mana;
-        this.model.me.on('changed::mana', function() {
-            txt.content = '\u2B1F' + self.model.me.mana;
-            paper.view.update();
-        });
-        txt.characterStyle= {
-            font: "Courier",
-            fontSize: 22,
-            fillColor: "#000000"
-        }
-        group.addChild(txt);
-
-        var nameTxt = new PointText(new Point(97, 70));
-        nameTxt.content = this.model.me.name.length > 12 ? this.model.me.name.substr(0, 10) + '...' : this.model.me.name;
-        nameTxt.characterStyle= {
-            font: "Courier",
-            fontSize: 22,
-            fillColor: "#ffffff"
-        }
-        nameTxt.paragraphStyle = {
-            justification:"center"
-        };
-        group.addChild(nameTxt);
-
-        var m = new paper.Matrix(145 / group.bounds.height, 0, 0, 145 / group.bounds.height, 0, 0);
-        group.matrix = m;
-        group.applyMatrix = false;
-
-        group.position = [SCREEN_WIDTH - group.bounds.width, SCREEN_HEIGHT - group.bounds.height];
-        this._all.addChild(group);
     },
 
     _addNextTurnButton: function() {
-        var group = new Group();
+        var group = new createjs.Container();
 
-        var border = new Raster('end_turn');
-        border.pivot = border.bounds.topLeft;
-        border.position.x = 0;
-        border.position.y = 0;
+        var border = UIUtils.raster('end_turn');
+        border.x = 0;
+        border.y = 0;
         group.addChild(border);
 
-        var m = new paper.Matrix(219 / group.bounds.height, 0, 0, 219 / group.bounds.height, 0, 0);
-        group.matrix = m;
-        group.applyMatrix = false;
+        border.setTransform(0, 0, 219 / group.getBounds().height, 219 / group.getBounds().height);
 
-        group.position = [1050, SCREEN_HEIGHT / 2];
+        group.x = 950;
+        group.y = SCREEN_HEIGHT / 2 - group.getBounds().height / 2;
 
         this._all.addChild(group);
 
-        group.onMouseUp = function(event) {
+        group.addEventListener('pressup', function(event) {
             //FIXME:
             gameAction('finish');
             group.visible = false;
-        }
+        });
 
         group.visible = this.model.turn == Owner.ME;
 
@@ -896,7 +818,6 @@ GameStateView.prototype = {
         this.queueAction(true, (function() {
         this._requestExp((function(exp) {
             exp = JSON.parse(exp);
-            this._all.removeChildren();
 
             $('#myCanvas').addClass('hidden');
             var bg = '#lose';
@@ -948,13 +869,22 @@ function gameAction(action, id1, id2) {
         data.id2 = id2;
     _network.ajax(uri, data, null);
 }
+console.log(createjs.Container.prototype)
+
+createjs.DisplayObject.prototype.bringToFront = function() {
+    this.parent.setChildIndex(this, this.parent.children.length - 1);
+}
+
+createjs.DisplayObject.prototype.remove = function() {
+    this.parent.removeChild(this);
+}
 
 var model, myController, opponentController;
 window.addEventListener("load", function() {
-    var canvas = document.getElementById('myCanvas');
-    paper.setup(canvas);
-    paper.settings.applyMatrix = false;
-
+    stage = new createjs.Stage("myCanvas");
+    createjs.Touch.enable(stage);
+    stage.canvas.width = SCREEN_WIDTH;
+    stage.canvas.height = SCREEN_HEIGHT;
     model = new GameStateModel(host, params.token, params.gameid);
     myController = new GameStateController(model, Owner.ME);
     opponentController = new GameStateController(model, Owner.OPPONENT);
@@ -963,13 +893,8 @@ window.addEventListener("load", function() {
 
     var view = new GameStateView(model);
 
-    ////// HACK to make animation work
-    paper.view.onFrame = new Function();
-    //////
-
-    ////// HACK to make dnd work on phone
-    paper.view.onMouseDown = new Function();
-    paper.view.onMouseDrag = new Function();
-    paper.view.onMouseUp = new Function();
-    //////
+    createjs.Ticker.timingMode = createjs.Ticker.RAF;
+	createjs.Ticker.addEventListener("tick", function tick(event) {
+        stage.update(event);
+    });
 });

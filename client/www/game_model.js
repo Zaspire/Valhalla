@@ -607,7 +607,7 @@ GameStateController.prototype = {
         if (hand.length + 1 > HAND_LIMIT) {
             if (owner == Owner.ME)
                 this.model.emit("HandLimit");
-            return;
+            return null;
         }
 
         var deck = this.model._cards.filter(function(card) {
@@ -618,7 +618,7 @@ GameStateController.prototype = {
             if (owner == Owner.ME)
                 this.model.emit("EmptyDeck");
             //FIXME: deal damage to hero
-            return;
+            return null;
         }
         if (runningUnderNode && this.model.server) {
 
@@ -648,7 +648,9 @@ GameStateController.prototype = {
         if (!((a1 || a1 === null) || this.model.server))
             return;
         var card = this._drawCard(this.owner, a1);
-        this._log(DRAW_CARD, card);
+        if (!card)
+            card = null;
+        this._log(DRAW_CARD, card, this.owner);
     },
 
     endTurn: function(a1, a2) {

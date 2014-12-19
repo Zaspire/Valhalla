@@ -11,7 +11,7 @@
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="third_party/eventemitter2.js"></script>
         <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
-        <script type="text/javascript" src="third_party/paper-core.min.js"></script>
+        <script type="text/javascript" src="third_party/easeljs-0.8.0.min.js"></script>
         <script type="text/javascript" src="third_party/t.js"></script>
         <script type="text/javascript" src="third_party/underscore-min.js"></script>
         <script type="text/javascript" src="heroes.js"></script>
@@ -34,7 +34,7 @@
         <img id="death" class="hidden" src="assets/death.png"></img>
         <img id="ulti" class="hidden" src="assets/ultimate.png"></img>
 
-        <canvas id="myCanvas" resize></canvas>
+        <canvas id="myCanvas" class="bg"></canvas>
         <script type="text/javascript">
           document.addEventListener("deviceready", function keepAwake() {
               plugins.insomnia.keepAwake();

@@ -246,7 +246,7 @@ StateModel.prototype = {
 GameStateController.prototype._log = function(action, p1, p2) {
     var email = this.model.email;
     if (action == DRAW_CARD) {
-        if (p1.owner != Owner.ME)
+        if (p2 != Owner.ME)
             email = this.model.opponentEmail
     }
     this.model._log.push({ email: email, action: action, params: [ p1, p2 ] });
