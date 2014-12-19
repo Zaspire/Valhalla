@@ -564,9 +564,12 @@ CardView.prototype = {
             hTxt.visible = visible;
             heart.visible = visible;
             if (visible) {
-                if (self.card.health == self.card.maxHealth)
-                    hTxt.characterStyle.fillColor = "#000000";
-                else
+                if (self.card.health == self.card.maxHealth) {
+                    if (self.card.health > heroes[self.card.type].health)
+                        hTxt.characterStyle.fillColor = "#008400";
+                    else
+                        hTxt.characterStyle.fillColor = "#000000";
+                } else
                     hTxt.characterStyle.fillColor = "#ff0000";
                 hTxt.content = self.card.health;
             }
