@@ -11,6 +11,7 @@
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
         <script type="text/javascript" src="third_party/jquery.rwdImageMaps.js"></script>
+        <script type="text/javascript" src="third_party/soundjs-0.6.0.min.js"></script>
 
         <link rel="prefetch" href="mainmenu.html" />
     </head>
@@ -21,6 +22,11 @@
           <area shape="rect" coords="0,644,250,760" onclick="navigator.app.exitApp()">
       </map>
       <script>
+        createjs.Sound.registerSound("assets/audio/start.mp3", 'start');
+        createjs.Sound.on("fileload", function() {
+            createjs.Sound.play('start', { loop: -1 });
+        });
+
         $(document).ready(function(e) {
             $('img[usemap]').rwdImageMaps();
         });

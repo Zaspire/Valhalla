@@ -24,6 +24,7 @@
         }
         </style>
         <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="third_party/soundjs-0.6.0.min.js"></script>
 
         <link rel="prefetch" href="matchmaking.html" />
     </head>
@@ -41,11 +42,15 @@
     </map>
 
     <script>
+        createjs.Sound.registerSound("assets/audio/mainmenu.mp3", 'mainmenu');
+        createjs.Sound.play('mainmenu');
         $(document).ready(function(e) {
             $('img[usemap]').rwdImageMaps();
         });
         var token = localStorage.getItem('token');
-
+        createjs.Sound.on("fileload", function() {
+            createjs.Sound.play('mainmenu', { loop: -1 });
+        });
         _network.ajax(host + 'v1/info/' + token, undefined, function (data) {
             data = JSON.parse(data);
             $('#balance').removeClass('hidden').addClass('dialog_bg');

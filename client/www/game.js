@@ -75,6 +75,14 @@ CardView.prototype = {
             return;
         }
         this._queuePositionUpdate();
+        if (this.card.state === CardState.TABLE && this.card.shield) {
+            this.view.queueAction(true, function() {
+                return new Promise(function(resolve, reject) {
+                    createjs.Sound.play('shield');
+                    resolve();
+                });
+            });
+        }
     },
 
     _addVisualState: function() {
@@ -133,6 +141,8 @@ CardView.prototype = {
             }).then(function (p) {
                 return self._animatePositionUpdate(p.x - self.group.getBounds().width, p.y - self.group.getBounds().height);
             }).then(function () {
+                createjs.Sound.play('attack');
+
                 return self._updatePosition();
             });
         });
@@ -188,6 +198,8 @@ CardView.prototype = {
             }).then(function (p) {
                 return self._animatePositionUpdate(p.x - self.group.getBounds().width, p.y - self.group.getBounds().height);
             }).then(function () {
+                createjs.Sound.play('attack');
+
                 return self._updatePosition();
             });
         });
@@ -447,6 +459,7 @@ CardView.prototype = {
             if (this.view.opponentHealth.hitTest(point.x, point.y) && myController.canAttackOpponent()) {
                 gameAction('attack_player', this.card.id);
                 myController.attackPlayer(this.card.id);
+                createjs.Sound.play('attack');
                 this._updatePosition();
                 return;
             }
@@ -463,6 +476,7 @@ CardView.prototype = {
                 if (myController.canAttackCard(this.card.id, other.card.id)) {
                     gameAction('attack', this.card.id, other.card.id);
                     myController.attack(this.card.id, other.card.id);
+                    createjs.Sound.play('attack');
                     this._updatePosition();
                     return;
                 }
@@ -856,14 +870,20 @@ GameStateView.prototype = {
 
     _endScreen: function() {
         assert(this.model.state != GameState.IN_PROGRESS);
+        createjs.Sound.registerSound("assets/audio/win.mp3", 'win');
+        createjs.Sound.registerSound("assets/audio/lose.mp3", 'lose');
         this.queueAction(true, (function() {
         this._requestExp((function(exp) {
             exp = JSON.parse(exp);
 
             $('#myCanvas').addClass('hidden');
             var bg = '#lose';
-            if (this.model.state == GameState.WIN)
+            if (this.model.state == GameState.WIN) {
                 bg = '#win';
+                createjs.Sound.play('win');
+            } else {
+                createjs.Sound.play('lose');
+            }
             $(bg).addClass('bg').removeClass('hidden');
             $('#glass_bg').addClass('bg').removeClass('hidden').css({ "z-index": -1 });
 
@@ -922,6 +942,9 @@ createjs.DisplayObject.prototype.remove = function() {
 
 var model, myController, opponentController;
 window.addEventListener("load", function() {
+    createjs.Sound.registerSound("assets/audio/attack.mp3", 'attack');
+    createjs.Sound.registerSound("assets/audio/shield.mp3", 'shield');
+
     stage = new createjs.Stage("myCanvas");
     createjs.Touch.enable(stage);
     stage.canvas.width = SCREEN_WIDTH;
