@@ -537,7 +537,7 @@ CardView.prototype = {
     },
 
     _addHighlite: function() {
-        var graphics = new createjs.Graphics().setStrokeStyle(3).beginStroke("#00ff00").drawRect(0, 0, 378, 512);
+        var graphics = new createjs.Graphics().setStrokeStyle(8).beginStroke("#00ff00").drawRoundRect(0, 0, 378, 512, 40, 40, 40, 40);
         var border = new createjs.Shape(graphics);
 
         var self = this;
