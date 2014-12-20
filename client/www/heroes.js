@@ -516,7 +516,7 @@ var heroes = {
                     card1.__ultimate = false;
                     return;
                 }
-                card2.health = Math.max(card2.health + 2, card2.health);
+                card2.health = Math.min(card2.health + 2, card2.maxHealth);
                 return;
             }
             card2.health -= card1.damage;
