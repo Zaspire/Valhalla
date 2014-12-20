@@ -33,7 +33,8 @@ CardView.prototype = {
         this.group = new createjs.Container();
         this.group.addChild(this._group);
 
-        group.setTransform(0, 0, 0.3917, 0.3917);
+        group.scaleX = 0.3917;
+        group.scaleY = group.scaleX;
 
         this._x = 0;
         this._y = 0;
@@ -221,12 +222,10 @@ CardView.prototype = {
                 death.alpha = 0;
                 self._group.addChild(death);
 
-                var params = { alpha: 1, time: 1.3, transition: "linear",
-                               onComplete: function() {
-                                   resolve();
-                                   self.group.remove();
-                               } };
-                Tweener.addTween(death, params);
+                createjs.Tween.get(death).to({ alpha:1 }, 1300).call(function() {
+                    self.group.remove();
+                    resolve();
+                })
             });
         });
     },
@@ -247,10 +246,7 @@ CardView.prototype = {
             self._x = newX;
             self._y = newY;
 
-            var params = { x: newX, y: newY,
-                           time: 1, transition: "easeInCubic",
-                           onComplete: function() { resolve(); } };
-            Tweener.addTween(self.group, params);
+            createjs.Tween.get(self.group).to({ x: newX, y: newY }, 1000).call(resolve);
         });
     },
 
@@ -373,43 +369,30 @@ CardView.prototype = {
 //FIXME: add only after complete
         var self = this;
 
-        var time = 1;
-        var transition = "easeInCubic";
-        var prevHeight = this.group.getBounds().height;
+        var time = 1000;
+        var prevScale = this._group.scaleX;
+
         var origX = self.group.x, origY = self.group.y;
         fg.addEventListener('mousedown', function(event) {
             event.propagationStopped = true;
 
-            Tweener.addTween(self.group, { x: origX, y: origY, time: 1,
-                                           transition: transition,
-                                           onComplete: function() {
+            createjs.Tween.get(self.group).to({ x: origX, y: origY }, time).call(function() {
                 fg.remove();
                 group.remove();
                 self.view.unblockAnimation();
-            } })
-            var o = {height: self.group.getBounds().height};
-            Tweener.addTween(o, { height: prevHeight, time: time,
-                                  transition: transition,
-                                  onUpdate: function() {
-                                      var c = o.height/self._group.getBounds().height;
-                                      self._group.setTransform(0, 0, c, c);
-                                  } });
-            Tweener.addTween(group, { alpha: 0, time: time, transition: transition });
+            });
+            createjs.Tween.get(self._group).to({ scaleX: prevScale, scaleY: prevScale }, time);
+            createjs.Tween.get(group).to({ alpha: 0 }, time);
         });
         this.parent.addChild(fg);
 //        this.fg.bringToFront();
 
         this.view.blockAnimation();
 
-        var o = {height: prevHeight};
-        Tweener.addTween(o, { height: SCREEN_HEIGHT, time: time, transition: transition,
-                              onUpdate: function() {
-                                  var c = o.height/self._group.getBounds().height;
-                                  self._group.setTransform(0, 0, c, c);
-                              } });
-        Tweener.addTween(group, { alpha: 1, time: time, transition: transition });
-        Tweener.addTween(this.group, { x: 0, y: 0, time: time,
-                                       transition: transition });
+        var c = SCREEN_HEIGHT / self._group.getBounds().height;
+        createjs.Tween.get(this._group).to({ scaleX: c, scaleY: c }, time);
+        createjs.Tween.get(group).to({ alpha: 1 }, time)
+        createjs.Tween.get(this.group).to({ x: 0, y: 0 }, time);
     },
 
     _onMouseUp: function(event) {
@@ -683,7 +666,8 @@ function GameStateView(model) {
     stage.addChild(this._all);
 
     var bg = new createjs.Bitmap(document.getElementById('bg'));
-    bg.setTransform(0, 0, SCREEN_WIDTH / bg.getBounds().width, SCREEN_HEIGHT / bg.getBounds().height);
+    bg.scaleX = SCREEN_WIDTH / bg.getBounds().width;
+    bg.scaleY = SCREEN_HEIGHT / bg.getBounds().height;
     this._all.addChild(bg);
 
     this.model.on('ready', this._init.bind(this));
@@ -808,7 +792,8 @@ GameStateView.prototype = {
         nameTxt.textAlign = "center";
         _group.addChild(nameTxt);
 
-        _group.setTransform(0, 0, 145 / group.getBounds().height, 145 / group.getBounds().height);
+        _group.scaleX = 145 / group.getBounds().height;
+        _group.scaleY = _group.scaleX;
 
         return group;
     },
@@ -840,7 +825,8 @@ GameStateView.prototype = {
         border.y = 0;
         group.addChild(border);
 
-        border.setTransform(0, 0, 219 / group.getBounds().height, 219 / group.getBounds().height);
+        border.scaleX = 219 / group.getBounds().height;
+        border.scaleY = border.scaleX;
 
         group.x = 950;
         group.y = SCREEN_HEIGHT / 2 - group.getBounds().height / 2;
@@ -901,16 +887,15 @@ GameStateView.prototype = {
 
             e.attr('max', this.exp.nextLvlExp).attr('value', this.exp.exp);
             var animate = (function () {
-                Tweener.addTween(e[0], { time: 2, value: exp.exp });
+                createjs.Tween.get(e[0]).to({ value: exp.exp }, 2000);
             }).bind(this);
-            if (exp.exp > this.exp.nextLvlExp)
-                Tweener.addTween(e[0], { time: 2, value: this.exp.nextLvlExp,
-                                         onComplete: function() {
-                                             e[0].max = exp.nextLvlExp;
-                                             textNode.text('LVL:' + exp.lvl);
-                                             animate();
-                                         } });
-            else
+            if (exp.exp > this.exp.nextLvlExp) {
+                createjs.Tween.get(e[0]).to({ value: this.exp.nextLvlExp }, 2000).call(function() {
+                    e[0].max = exp.nextLvlExp;
+                    textNode.text('LVL:' + exp.lvl);
+                    animate();
+                });
+            } else
                 animate();
             document.body.onclick = function() {
                 window.location = "mainmenu.html";
