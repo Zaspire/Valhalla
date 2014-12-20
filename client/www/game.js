@@ -53,6 +53,7 @@ CardView.prototype = {
 
         this.card.on('attackPlayer', this._animateAttackPlayer.bind(this));
         this.card.on('attack', this._animateAttackCard.bind(this));
+        this.card.on('playSpell', this._animatePlaySpell.bind(this));
 
         this.group.addEventListener("mousedown", this._onMouseDown.bind(this));
         this.group.addEventListener("pressmove", this._onMouseDrag.bind(this));
@@ -131,6 +132,38 @@ CardView.prototype = {
                 resolve(p);
             }).then(function (p) {
                 return self._animatePositionUpdate(p.x - self.group.getBounds().width, p.y - self.group.getBounds().height);
+            }).then(function () {
+                return self._updatePosition();
+            });
+        });
+    },
+
+    _animatePlaySpell: function(other) {
+        if (this.card.owner == Owner.ME)
+            return;
+        var self = this;
+        this.view.queueAction(true, function () {
+            return new Promise(function (resolve, reject) {
+                var otherView = self.view.cardView(other);
+
+                if (!self.view._animationDisabled)
+                    self.group.bringToFront();
+
+                var bounds = otherView.group.getBounds();
+                var p = { x: otherView.group.x + bounds.width / 2, y: otherView.group.y + bounds.height / 2};
+                resolve(p);
+            }).then(function (p) {
+                return self._animatePositionUpdate(p.x, p.y);
+            }).then(function() {
+                return new Promise(function (resolve, reject) {
+                    if (self.view._animationDisabled) {
+                        resolve();
+                        return;
+                    }
+                    setTimeout(function() {
+                        resolve();
+                    }, 400);
+                });
             }).then(function () {
                 return self._updatePosition();
             });

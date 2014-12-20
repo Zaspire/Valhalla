@@ -535,6 +535,7 @@ GameStateController.prototype = {
 
         var card1 = this._myCard(id1), card2 = this._myCard(id2);
 
+        card1.emit('playSpell', card2);
         heroes[card1.type].cast(card2, this.model._cards, this.model);
 
         card1.state = CardState.DEAD;
