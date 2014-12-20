@@ -386,7 +386,7 @@ CardView.prototype = {
                 }
 
                 myController.playCard(this.card.id);
-                gameAction('card', this.card.id);
+                gameAction(PLAY_CARD, this.card.id);
                 return;
             } else {
                 for (var i = 0; i < this.view.cards.length; i++) {
@@ -399,7 +399,7 @@ CardView.prototype = {
                         continue;
                     point = other.group.globalToLocal(event.stageX, event.stageY);
                     if (other.group.hitTest(point.x, point.y)) {
-                        gameAction('spell', this.card.id, other.card.id);
+                        gameAction(PLAY_SPELL, this.card.id, other.card.id);
                         myController.playSpell(this.card.id, other.card.id);
                         this._updatePosition();
                         return;

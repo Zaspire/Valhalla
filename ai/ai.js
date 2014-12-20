@@ -17,7 +17,6 @@ var TIMEOUT = 10000;
 var TIMEOUT_BETWEEN_MOVES = 3000;
 
 function doRequest(url, cb) {
-console.log(url);
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url);
     xhr.setRequestHeader('valhalla-client', '2');
@@ -97,6 +96,21 @@ AI.prototype = {
 
                 return;
             }
+            if (this.myController.canPlaySpell(card.id)) {
+                var table = _.shuffle(this.model._cards.filter(function(c) {
+                    return c.owner == Owner.ME && c.state == CardState.TABLE;
+                }));
+                for (var i = 0; i < table.length; i++) {
+                    if (card.type === 'ultimate' && heroes[table[i].type].cast) {
+                        if (_.random(0, 100) > 50)
+                            continue;
+                        this.myController.playSpell(card.id, table[i].id);
+                        l = this.model._log.length;
+                        this._gameAction('spell', card.id, table[i].id, check);
+                        return;
+                    }
+                }
+            }
         }
         cards = _.shuffle(this.model._cards.filter(function(c) {
             return c.owner == Owner.ME && c.state == CardState.TABLE;
@@ -148,9 +162,6 @@ AI.prototype = {
         this._turnChanged();
 
         var self= this;
-        this.myController.me.on('changed::mana', function() {
-            console.trace('CHANGED: ' + self.myController.me.mana);
-        } );
     },
 
     _gameAction: function(action, id1, id2, cb) {
