@@ -563,9 +563,17 @@ CardView.prototype = {
 
         var self = this;
         function updateText() {
-            dTxt.text = self.card.damage;
             dTxt.visible = self.card.damage !== undefined;
             sword.visible = self.card.damage !== undefined;
+            if (dTxt.visible) {
+                dTxt.text = self.card.damage;
+                if (self.card.damage == heroes[self.card.type].damage)
+                    dTxt.color = "#000000";
+                else if (self.card.damage > heroes[self.card.type].damage)
+                    dTxt.color = "#008400";
+                else
+                    dTxt.color = "#ff0000";
+            }
         }
         updateText();
         this.card.on('changed::damage', updateText);
