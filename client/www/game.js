@@ -68,6 +68,12 @@ CardView.prototype = {
             this.model.me.on('changed::mana', this._updateHighlite.bind(this));
             this._updateHighlite();
         }
+
+        this._cache();
+    },
+
+    _cache: function() {
+        this.group.cache(0, 0, this.group.getBounds().width, this.group.getBounds().height);
     },
 
     _onStateChanged: function() {
@@ -76,6 +82,10 @@ CardView.prototype = {
             return;
         }
 
+        if (this.card.state !== CardState.DECK && !this.group.visible) {
+            this.group.visible = true;
+            this.group.cache();
+        }
         this._queuePositionUpdate();
         if (this.card.state === CardState.TABLE && this.card.shield) {
             this.view.queueAction(true, function() {
@@ -105,6 +115,7 @@ CardView.prototype = {
                 fg[visual[i]] = UIUtils.raster(visual[i]);
                 self._group.addChild(fg[visual[i]]);
             }
+            self._cache();
         }
         this.card.on('changed::visualState', update);
         update();
@@ -123,6 +134,7 @@ CardView.prototype = {
             if (self.card.state == CardState.DEAD || self.card.state == CardState.TABLE || self.card.state == CardState.HAND && self.card.owner == Owner.ME)
                 source = 'fg';
             bg.image = document.getElementById(source);
+            self._cache();
         }
         this.card.on('changed::state', update);
         update();
@@ -216,7 +228,7 @@ CardView.prototype = {
                     resolve();
                     return;
                 }
-
+                self.group.uncache();
                 var death = UIUtils.raster('death');
                 death.x = 0;
                 death.y = 0;
@@ -261,6 +273,7 @@ CardView.prototype = {
                 hero = UIUtils.raster(self.card.type);
                 self._group.addChild(hero);
             }
+            self._cache();
         }
         this.card.on('changed::type', update);
         update();
@@ -318,6 +331,7 @@ CardView.prototype = {
         group.alpha = 0;
 
         this.group.bringToFront();
+        this.group.uncache();
 
         var graphics = new createjs.Graphics().beginFill("#000000").drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
         var bg = new createjs.Shape(graphics);
@@ -381,6 +395,7 @@ CardView.prototype = {
                 fg.remove();
                 group.remove();
                 self.view.unblockAnimation();
+                self._cache();
             });
             createjs.Tween.get(self._group).to({ scaleX: prevScale, scaleY: prevScale }, time);
             createjs.Tween.get(group).to({ alpha: 0 }, time);
@@ -490,7 +505,10 @@ CardView.prototype = {
             return;
 
         if (this.card.state == CardState.DECK) {
+            var old = this.group.visible;
             this.group.visible = index == 0;
+            if (old !== this.group.visible)
+                this._cache();
         }
 
         var newX, newY;
@@ -545,6 +563,7 @@ CardView.prototype = {
         var self = this;
         function updateVisibility() {
             border.visible = self.highlite;
+            self._cache()
         }
         updateVisibility();
         this.on('changed::highlite', updateVisibility);
@@ -576,6 +595,7 @@ CardView.prototype = {
                 else
                     dTxt.color = "#ff0000";
             }
+            self._cache();
         }
         updateText();
         this.card.on('changed::damage', updateText);
@@ -609,6 +629,7 @@ CardView.prototype = {
                     hTxt.color = "#ff0000";
                 hTxt.text = self.card.health;
             }
+            self._cache();
         }
         updateText();
         this.card.on('changed::health', updateText);
@@ -633,6 +654,7 @@ CardView.prototype = {
             cTxt.text = self.card.cost;
             cTxt.visible = self.card.cost !== undefined;
             circle.visible = self.card.cost !== undefined;
+            self._cache();
         }
         updateText();
         this.card.on('changed::cost', updateText);
@@ -649,6 +671,7 @@ CardView.prototype = {
         function update() {
             bg.visible = self.card.shield;
             bg.bringToFront();
+            self._cache();
         }
         this.card.on('changed::shield', update);
 
@@ -673,6 +696,7 @@ function GameStateView(model) {
     var bg = new createjs.Bitmap(document.getElementById('bg'));
     bg.scaleX = SCREEN_WIDTH / bg.getBounds().width;
     bg.scaleY = SCREEN_HEIGHT / bg.getBounds().height;
+    bg.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     this._all.addChild(bg);
 
     this.model.on('ready', this._init.bind(this));
