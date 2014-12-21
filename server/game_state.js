@@ -199,6 +199,8 @@ StateModel.prototype = {
         assert(false);
     },
     createCard: function(o) {
+        if (!o.visualState)
+            o.visualState = '';
         var card = this._createCard(o, o.owner, o.state);
         this._cards.push(card);
     },

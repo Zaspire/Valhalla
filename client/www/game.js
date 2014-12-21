@@ -84,7 +84,7 @@ CardView.prototype = {
 
         if (this.card.state !== CardState.DECK && !this.group.visible) {
             this.group.visible = true;
-            this.group.cache();
+            this._cache();
         }
         this._queuePositionUpdate();
         if (this.card.state === CardState.TABLE && this.card.shield) {
