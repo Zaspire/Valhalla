@@ -75,6 +75,7 @@ CardView.prototype = {
             this._animateDeath();
             return;
         }
+
         this._queuePositionUpdate();
         if (this.card.state === CardState.TABLE && this.card.shield) {
             this.view.queueAction(true, function() {
@@ -487,6 +488,10 @@ CardView.prototype = {
         var index = cards.indexOf(card);
         if (index == -1)
             return;
+
+        if (this.card.state == CardState.DECK) {
+            this.group.visible = index == 0;
+        }
 
         var newX, newY;
 
