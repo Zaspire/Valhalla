@@ -100,13 +100,13 @@ AI.prototype = {
                 var table = _.shuffle(this.model._cards.filter(function(c) {
                     return c.owner == Owner.ME && c.state == CardState.TABLE;
                 }));
-                for (var i = 0; i < table.length; i++) {
-                    if (card.type === 'ultimate' && heroes[table[i].type].cast) {
+                for (var j = 0; j < table.length; j++) {
+                    if (card.type === 'ultimate' && heroes[table[j].type].cast) {
                         if (_.random(0, 100) > 50)
                             continue;
-                        this.myController.playSpell(card.id, table[i].id);
+                        this.myController.playSpell(card.id, table[j].id);
                         l = this.model._log.length;
-                        this._gameAction('spell', card.id, table[i].id, check);
+                        this._gameAction('spell', card.id, table[j].id, check);
                         return;
                     }
                 }
