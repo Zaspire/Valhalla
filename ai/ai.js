@@ -134,7 +134,7 @@ AI.prototype = {
 
             for (var k = 0; k < c2.length; k++) {
                 var card2 = c2[k];
-                if (this.myController.canBeAttacked(card2.id)) {
+                if (this.myController.canAttackCard(card1.id, card2.id)) {
                     this.myController.attack(card1.id, card2.id);
 
                     l = this.model._log.length;
