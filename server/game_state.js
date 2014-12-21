@@ -41,7 +41,10 @@ function generateDeck(account) {
 
 exports.newGame = function(account1, account2) {
     function createCard(doc) {
-        var o = common.clone(doc);
+        var o = common.clone(heroes[doc.type]);
+
+        o.id = doc.id;
+        o.type = doc.type;
 
         o.maxHealth = o.health;
         o.cardType = heroes[o.type].cardType;
