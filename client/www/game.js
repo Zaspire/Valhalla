@@ -857,7 +857,7 @@ GameStateView.prototype = {
         border.scaleX = 219 / group.getBounds().height;
         border.scaleY = border.scaleX;
 
-        group.x = 950;
+        group.x = 980;
         group.y = SCREEN_HEIGHT / 2 - group.getBounds().height / 2;
 
         this._all.addChild(group);
