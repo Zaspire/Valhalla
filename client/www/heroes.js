@@ -537,6 +537,7 @@ var heroes = {
         cast: function(card) {
             if (card.__prevTurnHealth) {
                 card.health += card.__prevTurnHealth;
+                card.maxHealth = Math.max(card.health, card.maxHealth);
             }
         },
         ultimateDescription: "Add health from previous turn",
