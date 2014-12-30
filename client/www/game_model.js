@@ -71,8 +71,28 @@ function callHelper(f, arg1, arg2, arg3) {
     return func(arg1, arg2, arg3);
 }
 
-function GameStateModel(host, token, gameid) {
+function StateModelCommon() {
     EventEmitter2.call(this);
+}
+
+StateModelCommon.prototype = {
+    __proto__: EventEmitter2.prototype,
+    healCard: function(card, h) {
+        card.health = Math.min(card.health + h, card.maxHealth);
+    },
+    increaseCardHealth: function(card, h) {
+        card.health += h;
+        card.maxHealth = Math.max(card.maxHealth, card.health);
+    },
+    dealDamageToCard: function(card, h) {
+        h = Math.min(h, card.health);
+        card.health -= h;
+        return h;
+    }
+};
+
+function GameStateModel(host, token, gameid) {
+    StateModelCommon.call(this);
 
     defineGProperty(this, 'state', GameState.IN_PROGRESS);
     defineGProperty(this, 'turn', Owner.OPPONENT);
@@ -89,7 +109,7 @@ function GameStateModel(host, token, gameid) {
 }
 
 GameStateModel.prototype = {
-    __proto__: EventEmitter2.prototype,
+    __proto__: StateModelCommon.prototype,
     _createPlayer: function(mana, maxMana, health, owner, name) {
         var player =  new GObject({ mana: mana,
                                     maxMana: maxMana,
@@ -555,12 +575,12 @@ GameStateController.prototype = {
         card1.emit('attack', card2);
 
         if (card1.attack) {
-            callHelper(card1.attack, card1, card2);
+            callHelper(card1.attack, card1, card2, this.model);
         } else {
             card1.attacksLeft--;
 
-            card2.health -= card1.damage;
-            card1.health -= card2.damage;
+            this.model.dealDamageToCard(card2, card1.damage);
+            this.model.dealDamageToCard(card1, card2.damage);
         }
 
         this._removeDeadCards();
@@ -692,6 +712,7 @@ GameStateController.prototype = {
 if (runningUnderNode) {
     exports.GameStateModel = GameStateModel;
     exports.GameStateController = GameStateController;
+    exports.StateModelCommon = StateModelCommon;
     exports.Owner = Owner;
     exports.CardState = CardState;
     exports.GameState = GameState;

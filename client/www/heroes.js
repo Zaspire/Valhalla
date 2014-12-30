@@ -29,12 +29,11 @@ var heroes = {
             else
                 card.visualState = 'ulti';
 
-            card.attack = String(function(card1, card2) {
+            card.attack = String(function(card1, card2, model) {
                 card1.attack = undefined;
-                var d = Math.min(4, card2.health);
-                card2.health -= d;
-                card1.health += d;
-                card1.health = Math.min(card1.health, card1.maxHealth);
+                var d = model.dealDamageToCard(4);
+                if (d > 0)
+                    model.increaseCardHealth(card, d);
 
                 var visual = card1.visualState.split(',');
                 var i = visual.indexOf('ulti');
@@ -69,9 +68,9 @@ var heroes = {
                     chozen.push(minions[i]);
                 }
                 for (var i = 0; i < chozen.length; i++) {
-                    chozen[i].health--;
+                    model.dealDamageToCard(chozen[i], 1);
                 }
-                card.health--;
+                model.dealDamageToCard(card, 1);
             }
         },
         description: [
@@ -86,12 +85,12 @@ var heroes = {
         health: 4,
         cost: 4,
         img: "2.webp",
-        cast: function(card, cards) {
+        cast: function(card, cards, model) {
             for (var i = 0; i < cards.length; i++) {
                 if (card.owner == cards[i].owner)
                     continue;
                 if (cards[i].state === TABLE) {
-                    cards[i].health--;
+                    model.dealDamageToCard(cards[i], 1);
                 }
             }
         },
@@ -138,7 +137,6 @@ var heroes = {
                 }
             }
             for (var i = 0; i < chozen.length; i++) {
-                chozen[i].health -= 3;
                 filter(chozen[i]);
                 chozen[i].visualState = '';
                 chozen[i].type = 'rock';
@@ -173,11 +171,11 @@ var heroes = {
             else
                 card.visualState = 'ulti';
 
-            card.attack = String(function(card1, card2) {
+            card.attack = String(function(card1, card2, model) {
                 if (card2.damage <= 4) {
                     card1.attack = undefined;
-                    card1.health += card2.health;
-                    card1.maxHealth = Math.max(card1.maxHealth, card1.health);
+
+                    model.increaseCardHealth(card1, card2.health);
                     card2.health = 0;
 
                     var visual = card1.visualState.split(',');
@@ -189,8 +187,8 @@ var heroes = {
                     return;
                 }
                 //FIXME:
-                card2.health -= card1.damage;
-                card1.health -= card2.damage;
+                model.dealDamageToCard(card2, card1.damage);
+                model.dealDamageToCard(card1, card2.damage);
             });
         },
         ultimateDescription: "Eats enemy minion with 4 or less attack."
@@ -279,7 +277,7 @@ var heroes = {
                 };
             }
             for (var i = 0; i < chozen.length; i++) {
-                chozen[i].health -= 3;
+                model.dealDamageToCard(chozen[i], 3);
                 froze(chozen[i]);
             }
         },
@@ -357,7 +355,7 @@ var heroes = {
                 if (card.owner == cards[i].owner)
                     continue;
                 if (cards[i].state === TABLE) {
-                    cards[i].health -= 2;
+                    model.dealDamageToCard(cards[i], 2);
                 }
             }
         },
@@ -413,18 +411,16 @@ var heroes = {
         health: 2,
         cost: 2,
         img: "14.webp",
-        cast: function(card, cards) {
+        cast: function(card, cards, model) {
             var bonus = 0;
             for (var i = 0; i < cards.length; i++) {
                 if (card.owner == cards[i].owner)
                     continue;
                 if (cards[i].state === TABLE && cards[i].health > 0) {
-                    bonus += Math.min(2, cards[i].health);
-                    cards[i].health -= 2;
+                    bonus += model.dealDamageToCard(cards[i], 2);
                 }
             }
-            card.health += bonus;
-            card.maxHealth = Math.max(card.health, card.maxHealth);
+            model.increaseCardHealth(card, bonus);
         },
         ultimateDescription: "Steal 2 health from all enemy minions"
 
@@ -437,11 +433,10 @@ var heroes = {
         cost: 3,
         img: "15.webp",
         onTurnEnd: {
-            cast: function(card) {
+            cast: function(card, cards, model) {
                 if (card.attacksLeft) {
-                    card.health++;
+                    model.increaseCardHealth(card, 1);
                     card.damage++;
-                    card.maxHealth = Math.max(card.health, card.maxHealth);
                 } else if (!card.__first) {
                     var visual = card.visualState.split(',');
                     var i = visual.indexOf('invisible');
@@ -502,7 +497,7 @@ var heroes = {
 
             card.__ultimate = true;
         },
-        attack: String(function(card1, card2) {
+        attack: String(function(card1, card2, model) {
             card1.attacksLeft--;
             if (card2.owner == card1.owner) {
                 if (card1.__ultimate) {
@@ -516,11 +511,11 @@ var heroes = {
                     card1.__ultimate = false;
                     return;
                 }
-                card2.health = Math.min(card2.health + 2, card2.maxHealth);
+                model.healCard(card2, 2);
                 return;
             }
-            card2.health -= card1.damage;
-            card1.health -= card2.damage;
+            model.dealDamageToCard(card2, card1.damage);
+            model.dealDamageToCard(card1, card2.damage);
         }),
         description: [
             "Can heal friendly minion instead on attack."
@@ -577,13 +572,12 @@ var heroes = {
         health: 4,
         cost: 6,
         img: "19.webp",
-        cast: function(card, cards) {
+        cast: function(card, cards, model) {
             for (var i = 0; i < cards.length; i++) {
                 if (card.owner != cards[i].owner)
                     continue;
                 if (cards[i].state === TABLE) {
-                    cards[i].health += 3;
-                    cards[i].maxHealth = Math.max(cards[i].maxHealth, cards[i].health);
+                    model.increaseCardHealth(cards[i], 3)
                 }
             }
         },
@@ -720,8 +714,8 @@ var heroes = {
         cardType: CardType.SPELL,
         name: "Chain Armor",
         cost: 3,
-        cast: function(card) {
-            card.health += 2;
+        cast: function(card, cards, model) {
+            model.increaseCardHealth(card, 2);
             card.damage += 1;
         },
         description: [
