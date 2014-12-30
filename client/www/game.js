@@ -282,25 +282,24 @@ CardView.prototype = {
     _updateHighlite: function() {
         var value = true;
 
-        if (this.model.turn != this.card.owner)
+        if (this.model.turn !== this.card.owner)
             value = false;
 
-        if (this.card.owner != Owner.ME)
+        if (this.card.owner !== Owner.ME || this.card.id === undefined)
             value = false;
 
-        if (this.card.state == CardState.DECK)
+        if (this.card.state === CardState.DECK || this.card.state === CardState.DEAD)
             value = false;
 
-        //FIXME: remove try statement
-        try {
-            if (value && !(myController.canPlayCard(this.card.id)
-                           || myController.canAttack(this.card.id)
-                           || myController.canPlaySpell(this.card.id))) {
-                value = false;
-            }
-        } catch (e) {
+        if (!value) {
+            this.highlite = false;
+            return;
+        }
+
+        if (value && !(myController.canPlayCard(this.card.id)
+                       || myController.canAttack(this.card.id)
+                       || myController.canPlaySpell(this.card.id))) {
             value = false;
-            console.log(e);
         }
         this.highlite = value;
     },
