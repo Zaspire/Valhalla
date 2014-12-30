@@ -232,6 +232,8 @@ GameStateModel.prototype = {
 
         for (var i = 0; i < data.log.length; i++) {
             self._handleAction(data.log[i]);
+            if (data.log[i].action == DRAW_CARD)
+                self._log.push(data.log[i]);
         }
 
         self.emit('oldMovesDone');
@@ -333,6 +335,8 @@ GameStateModel.prototype = {
 
         for (var i = this._log.length; i < data.log.length; i++) {
             this._handleAction(data.log[i]);
+            if (data.log[i].action == DRAW_CARD)
+                this._log.push(data.log[i]);
         }
     },
 
@@ -677,7 +681,8 @@ GameStateController.prototype = {
         var card = this._drawCard(this.owner, a1);
         if (!card)
             card = null;
-        this._log(DRAW_CARD, card, this.owner);
+        if (runningUnderNode)
+            this._log(DRAW_CARD, card, this.owner);
     },
 
     endTurn: function(a1, a2) {
