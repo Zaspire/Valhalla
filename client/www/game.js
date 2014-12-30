@@ -650,13 +650,14 @@ CardView.prototype = {
 
         var self = this;
         function updateText() {
+            cTxt.visible = self.card.state === CardState.HAND;
+            circle.visible = cTxt.visible;
             cTxt.text = self.card.cost;
-            cTxt.visible = self.card.cost !== undefined;
-            circle.visible = self.card.cost !== undefined;
             self._cache();
         }
         updateText();
         this.card.on('changed::cost', updateText);
+        this.card.on('changed::state', updateText);
 
         this._group.addChild(circle);
         this._group.addChild(cTxt);
@@ -943,7 +944,6 @@ function gameAction(action, id1, id2) {
         data.id2 = id2;
     _network.ajax(uri, data, null);
 }
-console.log(createjs.Container.prototype)
 
 createjs.DisplayObject.prototype.bringToFront = function() {
     this.parent.setChildIndex(this, this.parent.children.length - 1);
