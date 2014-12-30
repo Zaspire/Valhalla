@@ -187,8 +187,10 @@ var heroes = {
                     return;
                 }
                 //FIXME:
-                model.dealDamageToCard(card2, card1.damage);
-                model.dealDamageToCard(card1, card2.damage);
+                var damage1 = card1.damage;
+                var damage2 = card2.damage;
+                model.dealDamageToCard(card2, damage1);
+                model.dealDamageToCard(card1, damage2);
             });
         },
         ultimateDescription: "Eats enemy minion with 4 or less attack."
@@ -514,8 +516,10 @@ var heroes = {
                 model.healCard(card2, 2);
                 return;
             }
-            model.dealDamageToCard(card2, card1.damage);
-            model.dealDamageToCard(card1, card2.damage);
+            var damage1 = card1.damage;
+            var damage2 = card2.damage;
+            model.dealDamageToCard(card2, damage1);
+            model.dealDamageToCard(card1, damage2);
         }),
         description: [
             "Can heal friendly minion instead on attack."
@@ -669,11 +673,63 @@ var heroes = {
     },
     h26: {
         cardType: CardType.HERO,
-        name: "Untitled hero 26",
-        damage: 6,
-        health: 2,
+        name: "Swift Claw",
+        damage: 3,
+        health: 6,
         cost: 4,
         img: "26.png",
+        dealDamage: {
+            cast: function(card, h, model) {
+                var d = 0;
+                if (card.__invincible !== 1) {
+                    d = Math.min(card.health, h);
+                    card.health -= d;
+                }
+
+                var controller = model.getController(card.owner);
+                controller.drawCard();
+
+                card.damage += 3;
+
+                return d;
+            }
+        },
+        onNewTurn: {
+            cast: function(card) {
+                if (card.__invincible) {
+                    card.__invincible--;
+                    if (!card.__invincible) {
+                        var visual = card.visualState.split(',');
+                        var i = visual.indexOf('ulti');
+                        if (i != -1)
+                            visual.splice(i, 1);
+                        card.visualState = visual.join(',');
+                    }
+                }
+            }
+        },
+        onTurnEnd: {
+            cast: function(card, cards, model) {
+                if (card.__invincible) {
+                    card.__invincible--;
+                    if (card.__invincible) {
+                        if (card.visualState.length)
+                            card.visualState += ',ulti';
+                        else
+                            card.visualState = 'ulti';
+                    }
+                }
+            }
+        },
+        cast: function(card) {
+            card.__invincible = 2;
+        },
+
+        ultimateDescription: "invincible for next turn",
+
+        description: [
+            "Whenever this minion takes damage, draw a card and gain +3 damage"
+        ]
     },
 
     creep1: {

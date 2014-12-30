@@ -85,6 +85,8 @@ StateModelCommon.prototype = {
         card.maxHealth = Math.max(card.maxHealth, card.health);
     },
     dealDamageToCard: function(card, h) {
+        if (card.dealDamage)
+            return callHelper(card.dealDamage.cast, card, h, this);
         h = Math.min(h, card.health);
         card.health -= h;
         return h;
@@ -343,6 +345,7 @@ GameStateModel.prototype = {
         card.shield = !!heroes[type].shield;
         card.cardType = heroes[type].cardType;
         card.onDeath = heroes[type].onDeath;
+        card.dealDamage = heroes[type].dealDamage;
         card.canAttackCard = heroes[type].canAttackCard;
         card.onTurnEnd = heroes[type].onTurnEnd;
         card.onPlay = heroes[type].onPlay;
@@ -579,8 +582,11 @@ GameStateController.prototype = {
         } else {
             card1.attacksLeft--;
 
-            this.model.dealDamageToCard(card2, card1.damage);
-            this.model.dealDamageToCard(card1, card2.damage);
+            // damage can increase during dealDamageToCard
+            var damage1 = card1.damage;
+            var damage2 = card2.damage;
+            this.model.dealDamageToCard(card2, damage1);
+            this.model.dealDamageToCard(card1, damage2);
         }
 
         this._removeDeadCards();

@@ -3,7 +3,6 @@ var _ = require('underscore');
 
 var mongodb = require('mongodb');
 var pmongo = require('promised-mongo');
-var EventEmitter2 = require('events').EventEmitter;
 
 var common = require('./common');
 var pdb = pmongo(common.config.mongo);
@@ -14,6 +13,7 @@ var GameStateController = require('../ai/game_model').GameStateController;
 var Owner = require('../ai/game_model').Owner;
 var CardState = require('../ai/game_model').CardState;
 var GameState = require('../ai/game_model').GameState;
+var StateModelCommon = require('../ai/game_model').StateModelCommon;
 var SillyRandom = require('../client/www/random.js');
 
 var ATTACK_PLAYER = 'attack_player';
@@ -51,6 +51,8 @@ exports.newGame = function(account1, account2) {
         o.visualState = '';
         if (heroes[o.type].onDeath)
             o.onDeath = { cast: String(heroes[o.type].onDeath.cast) };
+        if (heroes[o.type].dealDamage)
+            o.dealDamage = { cast: String(heroes[o.type].dealDamage.cast) };
         if (heroes[o.type].onNewTurn)
             o.onNewTurn = { cast: String(heroes[o.type].onNewTurn.cast) };
         if (heroes[o.type].onTurnEnd)
@@ -113,7 +115,7 @@ exports.newGame = function(account1, account2) {
 }
 
 function StateModel(doc, email) {
-    EventEmitter2.call(this);
+    StateModelCommon.call(this);
 
     this._id = doc._id;
     this._log = doc.log;
@@ -175,7 +177,7 @@ function StateModel(doc, email) {
 }
 
 StateModel.prototype = {
-    __proto__: EventEmitter2.prototype,
+    __proto__: StateModelCommon.prototype,
 
     _createCard: function(card, owner, state) {
         var o = common.clone(card);
