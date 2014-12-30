@@ -232,7 +232,7 @@ GameStateModel.prototype = {
 
         for (var i = 0; i < data.log.length; i++) {
             self._handleAction(data.log[i]);
-            if (data.log[i].action == DRAW_CARD)
+            if (data.log[i].action === DRAW_CARD)
                 self._log.push(data.log[i]);
         }
 
@@ -265,9 +265,9 @@ GameStateModel.prototype = {
     },
 
     getController: function(owner) {
-        if (owner == this._myController.owner)
+        if (owner === this._myController.owner)
             return this._myController;
-        if (owner == this._opponentController.owner)
+        if (owner === this._opponentController.owner)
             return this._opponentController;
         assert(false);
     },
@@ -301,15 +301,15 @@ GameStateModel.prototype = {
     },
 
     _compareLogEntries: function(e1, e2) {
-        if (e1.action != e2.action)
+        if (e1.action !== e2.action)
             return false;
 
-        if (e1.me != e2.me)
+        if (e1.me !== e2.me)
             return false;
 
-        if (typeof(e1.params[0]) == 'string' && e1.params[0] != e1.params[0])
+        if (typeof(e1.params[0]) === 'string' && e1.params[0] !== e1.params[0])
             return false;
-        if (typeof(e1.params[1]) == 'string' && e1.params[1] != e1.params[1])
+        if (typeof(e1.params[1]) === 'string' && e1.params[1] !== e1.params[1])
             return false;
         //FIXME: compare card id in params
         return true;
@@ -335,7 +335,7 @@ GameStateModel.prototype = {
 
         for (var i = this._log.length; i < data.log.length; i++) {
             this._handleAction(data.log[i]);
-            if (data.log[i].action == DRAW_CARD)
+            if (data.log[i].action === DRAW_CARD)
                 this._log.push(data.log[i]);
         }
     },
@@ -364,7 +364,7 @@ GameStateModel.prototype = {
                 continue;
             card[prop] = heroes[type][prop];
         }
-        if (card.cardType != CardType.HERO) {
+        if (card.cardType !== CardType.HERO) {
             card.health = undefined;
             card.damage = undefined;
         } else {
@@ -386,9 +386,9 @@ function GameStateController(model, owner) {
 
 GameStateController.prototype = {
     _init: function(model, owner) {
-        assert(model.players.length == 2);
-        this.me = model.players.filter(function (p) {return p.owner == owner;})[0];
-        this.opponent = model.players.filter(function (p) {return p.owner != owner;})[0];
+        assert(model.players.length === 2);
+        this.me = model.players.filter(function (p) {return p.owner === owner;})[0];
+        this.opponent = model.players.filter(function (p) {return p.owner !== owner;})[0];
     },
 
     isFinished: function() {
@@ -397,19 +397,19 @@ GameStateController.prototype = {
 
     _log: function(action, p1, p2) {
         var r = {action: action, params: [p1, p2]};
-        if (this.me.owner == Owner.ME)
+        if (this.me.owner === Owner.ME)
             r.me = true;
 
         this.model._log.push(r);
     },
 
     _card: function(id) {
-        var r = this.model._cards.filter(function (c) {return c.id == id;});
+        var r = this.model._cards.filter(function (c) {return c.id === id;});
 
         if (!r)
             throw new Error('incorrect card id');
 
-        assert(r.length == 1);
+        assert(r.length === 1);
         r = r[0];
 
         return r;
@@ -418,7 +418,7 @@ GameStateController.prototype = {
     _myCard: function(id) {
         var r = this._card(id);
 
-        assert(r.owner == this.owner);
+        assert(r.owner === this.owner);
 
         return r;
     },
@@ -426,14 +426,14 @@ GameStateController.prototype = {
     _opponentCard: function(id) {
         var r = this._card(id);
 
-        assert(r.owner != this.owner);
+        assert(r.owner !== this.owner);
 
         return r;
     },
 
     _removeDeadCards: function() {
         function isAlive(card) {
-            return card.health > 0 || card.state != CardState.TABLE;
+            return card.health > 0 || card.state !== CardState.TABLE;
         }
         for (var i = 0; i < this.model._cards.length; i++) {
             var card = this.model._cards[i];
@@ -451,7 +451,7 @@ GameStateController.prototype = {
     _opponentHasShield: function() {
         var self = this;
         var shields = this.model._cards.filter(function (c) {
-            return c.owner != self.owner && c.state == CardState.TABLE && c.health > 0 && c.shield;
+            return c.owner !== self.owner && c.state === CardState.TABLE && c.health > 0 && c.shield;
         });
         return shields.length;
     },
@@ -459,7 +459,7 @@ GameStateController.prototype = {
     canAttack: function(id1) {
         var card = this._myCard(id1);
 
-        if (card.state != CardState.TABLE || this.model.turn != this.owner)
+        if (card.state !== CardState.TABLE || this.model.turn !== this.owner)
             return false;
 
         if (card.attacksLeft <= 0)
@@ -489,7 +489,7 @@ GameStateController.prototype = {
             var card = this._opponentCard(id2);
         } catch (e) {return false;}
 
-        if (card.state != CardState.TABLE)
+        if (card.state !== CardState.TABLE)
             return false;
 
         if (!card.shield && this._opponentHasShield())
@@ -504,11 +504,11 @@ GameStateController.prototype = {
     canPlayCard: function(id1) {
         var card = this._myCard(id1);
 
-        if (card.state != CardState.HAND || card.cost > this.me.mana
-            || this.model.turn != this.owner || card.cardType != CardType.HERO)
+        if (card.state !== CardState.HAND || card.cost > this.me.mana
+            || this.model.turn !== this.owner || card.cardType !== CardType.HERO)
             return false;
         var table = this.model._cards.filter(function (c) {
-            return c.owner == card.owner && c.state == CardState.TABLE && c.health > 0;
+            return c.owner === card.owner && c.state === CardState.TABLE && c.health > 0;
         });
         if (table.length >= TABLE_LIMIT)
             return false;
@@ -519,8 +519,8 @@ GameStateController.prototype = {
     canPlaySpell: function(id1) {
         var card = this._myCard(id1);
 
-        if (card.state != CardState.HAND || card.cost > this.me.mana
-            || this.model.turn != this.owner || card.cardType != CardType.SPELL)
+        if (card.state !== CardState.HAND || card.cost > this.me.mana
+            || this.model.turn !== this.owner || card.cardType !== CardType.SPELL)
             return false;
 
         return true;
@@ -547,7 +547,7 @@ GameStateController.prototype = {
         } catch (e) {
             if (_card) {
                 var deck = this.model._cards.filter(function(c) {
-                    return c.owner == self.owner && c.state == CardState.HAND;
+                    return c.owner === self.owner && c.state === CardState.HAND;
                 });
                 assert(deck.length);
                 var c = deck[0];
@@ -605,7 +605,7 @@ GameStateController.prototype = {
         } catch (e) {
             if (_card) {
                 var deck = this.model._cards.filter(function(c) {
-                    return c.owner == self.owner && c.state == CardState.HAND;
+                    return c.owner === self.owner && c.state === CardState.HAND;
                 });
                 assert(deck.length);
                 var c = deck[0];
@@ -632,21 +632,21 @@ GameStateController.prototype = {
     _drawCard: function(owner, a1) {
         var self = this;
         var hand = this.model._cards.filter(function(card) {
-            return card.owner == owner && card.state == CardState.HAND;
+            return card.owner === owner && card.state === CardState.HAND;
         });
 
         if (hand.length + 1 > HAND_LIMIT) {
-            if (owner == Owner.ME)
+            if (owner === Owner.ME)
                 this.model.emit("HandLimit");
             return null;
         }
 
         var deck = this.model._cards.filter(function(card) {
-            return card.owner == owner && card.state == CardState.DECK;
+            return card.owner === owner && card.state === CardState.DECK;
         });
 
         if (!deck.length) {
-            if (owner == Owner.ME)
+            if (owner === Owner.ME)
                 this.model.emit("EmptyDeck");
             //FIXME: deal damage to hero
             return null;
@@ -664,11 +664,11 @@ GameStateController.prototype = {
             card.attacksLeft = 0;
             card.state = CardState.HAND;
 
-            assert(card.owner != Owner.ME || a1);
+            assert(card.owner !== Owner.ME || a1);
             if (a1) {
                 this.model._initCard(a1, card);
-                var r = this.model._cards.filter(function (c) {return c.id == card.id;});
-                assert(r.length == 1);
+                var r = this.model._cards.filter(function (c) {return c.id === card.id;});
+                assert(r.length === 1);
             }
             return card;
         }
@@ -686,19 +686,19 @@ GameStateController.prototype = {
     },
 
     endTurn: function(a1, a2) {
-        var opponent = this.owner == Owner.ME ? Owner.OPPONENT: Owner.ME;
-        assert(this.model.turn == this.owner);
+        var opponent = this.owner === Owner.ME ? Owner.OPPONENT: Owner.ME;
+        assert(this.model.turn === this.owner);
 
         var self = this;
         this.model._cards.forEach(function(card, index, array) {
-            if (card.state != CardState.TABLE || card.owner != self.owner)
+            if (card.state !== CardState.TABLE || card.owner !== self.owner)
                 return;
             if (card.onTurnEnd)
                 callHelper(card.onTurnEnd.cast, card, self.model._cards, self.model);
         });
 
         this.model._cards.forEach(function(card, index, array) {
-            if (card.state != CardState.TABLE || card.owner != opponent)
+            if (card.state !== CardState.TABLE || card.owner !== opponent)
                 return;
             card.attacksLeft = 1;
             if (card.onNewTurn) {
@@ -708,7 +708,7 @@ GameStateController.prototype = {
         this._removeDeadCards();
 
         var deck = this.model._cards.filter(function(card) {
-            return card.owner == opponent && card.state == CardState.DECK;
+            return card.owner === opponent && card.state === CardState.DECK;
         });
 
         var card = this._drawCard(opponent, a2);

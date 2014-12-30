@@ -62,7 +62,7 @@ CardView.prototype = {
 
         this.parent.addChild(this.group);
 
-        if (this.card.owner == Owner.ME) {
+        if (this.card.owner === Owner.ME) {
             this.model.on('changed::turn', this._updateHighlite.bind(this));
             this.card.on('changed::attacksLeft', this._updateHighlite.bind(this));
             this.model.me.on('changed::mana', this._updateHighlite.bind(this));
@@ -77,7 +77,7 @@ CardView.prototype = {
     },
 
     _onStateChanged: function() {
-        if (this.card.state == CardState.DEAD) {
+        if (this.card.state === CardState.DEAD) {
             this._animateDeath();
             return;
         }
@@ -131,7 +131,7 @@ CardView.prototype = {
         var self = this;
         function update() {
             var source = 'bs';
-            if (self.card.state == CardState.DEAD || self.card.state == CardState.TABLE || self.card.state == CardState.HAND && self.card.owner == Owner.ME)
+            if (self.card.state === CardState.DEAD || self.card.state === CardState.TABLE || self.card.state === CardState.HAND && self.card.owner === Owner.ME)
                 source = 'fg';
             bg.image = document.getElementById(source);
             self._cache();
@@ -141,7 +141,7 @@ CardView.prototype = {
     },
 
     _animateAttackPlayer: function() {
-        if (this.card.owner == Owner.ME)
+        if (this.card.owner === Owner.ME)
             return;
 
         var self = this;
@@ -163,7 +163,7 @@ CardView.prototype = {
     },
 
     _animatePlaySpell: function(other) {
-        if (this.card.owner == Owner.ME)
+        if (this.card.owner === Owner.ME)
             return;
         var self = this;
         this.view.queueAction(true, function () {
@@ -195,7 +195,7 @@ CardView.prototype = {
     },
 
     _animateAttackCard: function(other) {
-        if (this.card.owner == Owner.ME)
+        if (this.card.owner === Owner.ME)
             return;
 
         var self = this;
@@ -223,7 +223,7 @@ CardView.prototype = {
         var self = this;
         this.view.queueAction(true, function() {
             return new Promise(function (resolve, reject) {
-                if (self.view._animationDisabled || self.card.cardType == CardType.SPELL) {
+                if (self.view._animationDisabled || self.card.cardType === CardType.SPELL) {
                     self.group.remove();
                     resolve();
                     return;
@@ -252,7 +252,7 @@ CardView.prototype = {
                 resolve();
                 return;
             }
-            if (newX == self._x && newY == self._y) {
+            if (newX === self._x && newY === self._y) {
                 resolve();
                 return;
             }
@@ -421,8 +421,8 @@ CardView.prototype = {
         if (!this.highlite)
             return;
 
-        if (this.card.state == CardState.HAND) {
-            if (this.card.cardType == CardType.HERO) {
+        if (this.card.state === CardState.HAND) {
+            if (this.card.cardType === CardType.HERO) {
                 if (this.group.y >= SCREEN_HEIGHT - this.group.getBounds().height) {
                     this._updatePosition();
                     return;
@@ -434,11 +434,11 @@ CardView.prototype = {
             } else {
                 for (var i = 0; i < this.view.cards.length; i++) {
                     var other = this.view.cards[i]
-                    if (this == other)
+                    if (this === other)
                         continue;
-                    if (other.card.state != CardState.TABLE)
+                    if (other.card.state !== CardState.TABLE)
                         continue;
-                    if (other.card.owner != this.card.owner)
+                    if (other.card.owner !== this.card.owner)
                         continue;
                     point = other.group.globalToLocal(event.stageX, event.stageY);
                     if (other.group.hitTest(point.x, point.y)) {
@@ -452,7 +452,7 @@ CardView.prototype = {
                 return;
             }
         }
-        if (this.card.state == CardState.TABLE) {
+        if (this.card.state === CardState.TABLE) {
             var point = this.view.opponentHealth.globalToLocal(event.stageX, event.stageY);
             if (this.view.opponentHealth.hitTest(point.x, point.y) && myController.canAttackOpponent()) {
                 gameAction('attack_player', this.card.id);
@@ -464,9 +464,9 @@ CardView.prototype = {
             for (var i = 0; i < this.view.cards.length; i++) {
                 //FIXME:
                 var other = this.view.cards[i];
-                if (this == other)
+                if (this === other)
                     continue;
-                if (other.card.state != CardState.TABLE)
+                if (other.card.state !== CardState.TABLE)
                     continue;
                 point = other.group.globalToLocal(event.stageX, event.stageY);
                 if (!other.group.hitTest(point.x, point.y))
@@ -497,15 +497,15 @@ CardView.prototype = {
         var cardView = this.group;
 
         var cards = this.model._cards.filter(function(c) {
-            return c.owner == card.owner && c.state == card.state;
+            return c.owner === card.owner && c.state === card.state;
         });
         var index = cards.indexOf(card);
-        if (index == -1)
+        if (index === -1)
             return;
 
-        if (this.card.state == CardState.DECK) {
+        if (this.card.state === CardState.DECK) {
             var old = this.group.visible;
-            this.group.visible = index == 0;
+            this.group.visible = index === 0;
             if (old !== this.group.visible)
                 this._cache();
         }
@@ -523,7 +523,7 @@ CardView.prototype = {
                     offset = (required - avaliable) / (cards.length - 1);
                 }
                 newX = 20 * (index + 1) + index * (cardView.getBounds().width - offset);
-                if (card.owner == Owner.ME) {
+                if (card.owner === Owner.ME) {
                     newY = SCREEN_HEIGHT - cardView.getBounds().height;
                     //  newY = SCREEN_HEIGHT - cardView.bounds.height - 18;
                 } else {
@@ -533,7 +533,7 @@ CardView.prototype = {
             break;
         case CardState.TABLE:
             newX = 20 * (index + 1) + index * cardView.getBounds().width;
-            if (card.owner == Owner.ME) {
+            if (card.owner === Owner.ME) {
                 newY = 304 + 15;
             } else {
                 newY = 304 - 15 - cardView.getBounds().height;
@@ -541,7 +541,7 @@ CardView.prototype = {
             break;
         case CardState.DECK:
             newX = SCREEN_WIDTH - cardView.getBounds().width;
-            if (card.owner == Owner.ME) {
+            if (card.owner === Owner.ME) {
                 newY = SCREEN_HEIGHT / 2 + 5;
             } else {
                 newY = SCREEN_HEIGHT / 2 - 5 - cardView.getBounds().height;
@@ -587,7 +587,7 @@ CardView.prototype = {
             sword.visible = self.card.damage !== undefined;
             if (dTxt.visible) {
                 dTxt.text = self.card.damage;
-                if (self.card.damage == heroes[self.card.type].damage)
+                if (self.card.damage === heroes[self.card.type].damage)
                     dTxt.color = "#000000";
                 else if (self.card.damage > heroes[self.card.type].damage)
                     dTxt.color = "#008400";
@@ -619,7 +619,7 @@ CardView.prototype = {
             hTxt.visible = visible;
             heart.visible = visible;
             if (visible) {
-                if (self.card.health == self.card.maxHealth) {
+                if (self.card.health === self.card.maxHealth) {
                     if (self.card.health > heroes[self.card.type].health)
                         hTxt.color = "#008400";
                     else
@@ -709,7 +709,7 @@ function GameStateView(model) {
     }).bind(this));
 
     this.model.on('changed::state', (function() {
-        if (this.state != GameState.IN_PROGRESS)
+        if (this.state !== GameState.IN_PROGRESS)
             this._endScreen();
     }).bind(this));
 
@@ -868,11 +868,11 @@ GameStateView.prototype = {
             group.visible = false;
         });
 
-        group.visible = this.model.turn == Owner.ME;
+        group.visible = this.model.turn === Owner.ME;
 
         var self = this;
         this.model.on('changed::turn', function () {
-            group.visible = self.model.turn == Owner.ME;
+            group.visible = self.model.turn === Owner.ME;
         });
     },
 
@@ -884,7 +884,7 @@ GameStateView.prototype = {
     },
 
     _endScreen: function() {
-        assert(this.model.state != GameState.IN_PROGRESS);
+        assert(this.model.state !== GameState.IN_PROGRESS);
         createjs.Sound.registerSound("assets/audio/win.mp3", 'win');
         createjs.Sound.registerSound("assets/audio/lose.mp3", 'lose');
         this.queueAction(true, (function() {
@@ -893,7 +893,7 @@ GameStateView.prototype = {
 
             $('#myCanvas').addClass('hidden');
             var bg = '#lose';
-            if (this.model.state == GameState.WIN) {
+            if (this.model.state === GameState.WIN) {
                 bg = '#win';
                 createjs.Sound.play('win');
             } else {
