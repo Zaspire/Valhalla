@@ -556,6 +556,8 @@ CardView.prototype = {
     },
 
     _addHighlite: function() {
+        if (this.card.owner === Owner.OPPONENT)
+            return;
         var graphics = new createjs.Graphics().setStrokeStyle(8).beginStroke("#00ff00").drawRoundRect(0, 0, 378, 512, 40, 40, 40, 40);
         var border = new createjs.Shape(graphics);
 
