@@ -63,6 +63,7 @@ function starterCards() {
         'h21': 1,
         'h22': 1,
         'h23': 1,
+        'h25': 1,
         'h26': 1,
         'chainArmor': 0,
         'ultimate': 5,

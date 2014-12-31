@@ -633,9 +633,9 @@ var heroes = {
     h22: {
         cardType: CardType.HERO,
         name: "Phoenix",
-        damage: 6,
-        health: 2,
-        cost: 4,
+        damage: 3,
+        health: 5,
+        cost: 5,
         img: "22.webp",
         onNewTurn: {
             cast: function(card, model) {
@@ -687,6 +687,8 @@ var heroes = {
                         visual.splice(i, 1);
                     card.visualState = visual.join(',');
                     card.dealDamage = card.__dealDamage.pop();
+
+                    return 0;
                 });
                 card2.__ultimateActive = false;
                 return;
@@ -730,11 +732,30 @@ var heroes = {
     },
     h25: {
         cardType: CardType.HERO,
-        name: "Untitled hero 25",
-        damage: 6,
-        health: 2,
-        cost: 4,
+        name: "Centaur",
+        damage: 2,
+        health: 5,
+        cost: 3,
         img: "25.png",
+        ultimateDescription: "Gain +3 health and shield.",
+        dealDamage: {
+            cast: function(card, h, model) {
+                var controller = model.getController(card.owner);
+                controller.drawCard();
+
+                h = Math.min(h, card.health);
+                card.health -= h;
+                return h;
+            }
+        },
+        cast: function(card, cards, model) {
+            card.shield = true;
+            model.increaseCardHealth(card, 3);
+        },
+        description: [
+            "Whenever this minion takes damage,",
+            "draw a card."
+        ]
     },
     h26: {
         cardType: CardType.HERO,
