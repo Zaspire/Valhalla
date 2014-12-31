@@ -632,11 +632,76 @@ var heroes = {
     },
     h22: {
         cardType: CardType.HERO,
-        name: "Untitled hero 21",
+        name: "Phoenix",
         damage: 6,
         health: 2,
         cost: 4,
         img: "22.webp",
+        onNewTurn: {
+            cast: function(card, model) {
+                var cards = model._cards.filter(function(c) {
+                    return c.owner !== card.owner && c.state === CardState.TABLE;
+                });
+                for (var i = 0; i < cards.length; i++) {
+                    model.dealDamageToCard(cards[i], 1);
+                }
+            }
+        },
+        canAttackCard: {
+            cast: function(card1, card2, orig) {
+                if (card2.owner == card1.owner && card1.__ultimateActive)
+                    return true;
+                return orig;
+            }
+        },
+        cast: function(card) {
+            if (card.visualState.length)
+                card.visualState += ',ulti';
+            else
+                card.visualState = 'ulti';
+            card.__ultimateActive = true;
+        },
+        attack: String(function(card1, card2, model) {
+            if (card1.owner === card2.owner && card1.__ultimateActive) {
+                var visual = card1.visualState.split(',');
+                var i = visual.indexOf('ulti');
+                if (i != -1)
+                    visual.splice(i, 1);
+                card1.visualState = visual.join(',');
+
+                if (card2.__dealDamage)
+                    card2.__dealDamage.push(card2.dealDamage);
+                else
+                    card2.__dealDamage = [card2.dealDamage];
+                card2.dealDamage = {};
+
+                if (card2.visualState.length)
+                    card2.visualState += ',ulti';
+                else
+                    card2.visualState = 'ulti';
+
+                card2.dealDamage.cast = String(function(card, h, model) {
+                    var visual = card.visualState.split(',');
+                    var i = visual.indexOf('ulti');
+                    if (i != -1)
+                        visual.splice(i, 1);
+                    card.visualState = visual.join(',');
+                    card.dealDamage = card.__dealDamage.pop();
+                });
+                card2.__ultimateActive = false;
+                return;
+            }
+            var damage1 = card1.damage;
+            var damage2 = card2.damage;
+            model.dealDamageToCard(card2, damage1);
+            model.dealDamageToCard(card1, damage2);
+            card1.attacksLeft--;
+        }),
+        ultimateDescription: "Grant friendly minion invincibility for one attack",
+        description: [
+            "Burn enemy minions.",
+            "(deal 1 damage each turn)"
+        ]
     },
     h23: {
         cardType: CardType.HERO,

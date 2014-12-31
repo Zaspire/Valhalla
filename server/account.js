@@ -61,7 +61,9 @@ function starterCards() {
         'h19': 1,
         'h20': 1,
         'h21': 1,
+        'h22': 1,
         'h23': 1,
+        'h26': 1,
         'chainArmor': 0,
         'ultimate': 5,
         'creep1': 5
