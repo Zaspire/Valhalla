@@ -235,7 +235,7 @@ CardView.prototype = {
                 death.alpha = 0;
                 self._group.addChild(death);
 
-                createjs.Tween.get(death).to({ alpha:1 }, 1300).call(function() {
+                createjs.Tween.get(death).to({ alpha:1 }, 1000).call(function() {
                     self.group.remove();
                     resolve();
                 })
@@ -259,7 +259,7 @@ CardView.prototype = {
             self._x = newX;
             self._y = newY;
 
-            createjs.Tween.get(self.group).to({ x: newX, y: newY }, 1000).call(resolve);
+            createjs.Tween.get(self.group).to({ x: newX, y: newY }, 700).call(resolve);
         });
     },
 
@@ -383,8 +383,8 @@ CardView.prototype = {
 //FIXME: add only after complete
         var self = this;
 
-        var time = 1000;
-        var prevScale = this._group.scaleX;
+        var time = 700;
+        var prevScale = this.group.scaleX;
 
         var origX = self.group.x, origY = self.group.y;
         fg.addEventListener('mousedown', function(event) {
@@ -396,7 +396,7 @@ CardView.prototype = {
                 self.view.unblockAnimation();
                 self._cache();
             });
-            createjs.Tween.get(self._group).to({ scaleX: prevScale, scaleY: prevScale }, time);
+            createjs.Tween.get(self.group).to({ scaleX: prevScale, scaleY: prevScale }, time);
             createjs.Tween.get(group).to({ alpha: 0 }, time);
         });
         this.parent.addChild(fg);
@@ -404,8 +404,8 @@ CardView.prototype = {
 
         this.view.blockAnimation();
 
-        var c = SCREEN_HEIGHT / self._group.getBounds().height;
-        createjs.Tween.get(this._group).to({ scaleX: c, scaleY: c }, time);
+        var c = SCREEN_HEIGHT / self.group.getBounds().height;
+        createjs.Tween.get(this.group).to({ scaleX: c, scaleY: c }, time);
         createjs.Tween.get(group).to({ alpha: 1 }, time)
         createjs.Tween.get(this.group).to({ x: 0, y: 0 }, time);
     },
@@ -579,9 +579,9 @@ CardView.prototype = {
         sword.y = 426;
 
         var dTxt = new createjs.Text();
-        dTxt.x = 55;
-        dTxt.y = 426;
-        dTxt.font = "80px Courier";
+        dTxt.x = 20;
+        dTxt.y = 166;
+        dTxt.font = "30px Courier";
 
         var self = this;
         function updateText() {
@@ -601,7 +601,7 @@ CardView.prototype = {
         updateText();
         this.card.on('changed::damage', updateText);
 
-        this._group.addChild(dTxt);
+        this.group.addChild(dTxt);
         this._group.addChild(sword);
     },
 
@@ -611,9 +611,9 @@ CardView.prototype = {
         heart.y = 426;
 
         var hTxt = new createjs.Text();
-        hTxt.x = 290
-        hTxt.y = 426;
-        hTxt.font = "80px Courier";
+        hTxt.x = 115;
+        hTxt.y = 166;
+        hTxt.font = "30px Courier";
 
         var self = this;
         function updateText() {
@@ -637,7 +637,7 @@ CardView.prototype = {
         this.card.on('changed::maxHealth', updateText);
 
         this._group.addChild(heart);
-        this._group.addChild(hTxt);
+        this.group.addChild(hTxt);
     },
 
     _addCost: function() {
@@ -646,9 +646,9 @@ CardView.prototype = {
         circle.y = 7;
 
         var cTxt = new createjs.Text();
-        cTxt.x = 33;
-        cTxt.y = 23;
-        cTxt.font = "80px Courier";
+        cTxt.x = 13;
+        cTxt.y = 8;
+        cTxt.font = "30px Courier";
 
         var self = this;
         function updateText() {
@@ -662,7 +662,7 @@ CardView.prototype = {
         this.card.on('changed::state', updateText);
 
         this._group.addChild(circle);
-        this._group.addChild(cTxt);
+        this.group.addChild(cTxt);
     },
     _addShield: function() {
         var bg = UIUtils.raster('shield');
@@ -794,14 +794,14 @@ GameStateView.prototype = {
 
         var healthTxt = new createjs.Text();
         healthTxt.x = 80;
-        healthTxt.y = 88;
+        healthTxt.y = 98;
         healthTxt.text = '\u2764' + player.health;
 
         player.on('changed::health', function() {
             healthTxt.text = '\u2764' + player.health;
         });
-        healthTxt.font = "22px Courier";
-        _group.addChild(healthTxt);
+        healthTxt.font = "26px Courier";
+        group.addChild(healthTxt);
 
         var txt = new createjs.Text();
         txt.x = 80;
@@ -810,18 +810,18 @@ GameStateView.prototype = {
         player.on('changed::mana', function() {
             txt.text = '\u2B1F' + player.mana;
         });
-        txt.font = "22px Courier";
-        _group.addChild(txt);
+        txt.font = "26px Courier";
+        group.addChild(txt);
 
         var nameTxt = new createjs.Text()
-        nameTxt.x = 97;
-        nameTxt.y = 54;
+        nameTxt.x = 108;
+        nameTxt.y = 64;
         nameTxt.text = player.name.length > 12 ? player.name.substr(0, 10) + '...' : player.name;
         nameTxt.font = "22px Courier";
         nameTxt.color = "#ffffff";
 
         nameTxt.textAlign = "center";
-        _group.addChild(nameTxt);
+        group.addChild(nameTxt);
 
         _group.scaleX = 145 / group.getBounds().height;
         _group.scaleY = _group.scaleX;
