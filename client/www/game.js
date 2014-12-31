@@ -806,9 +806,9 @@ GameStateView.prototype = {
         var txt = new createjs.Text();
         txt.x = 80;
         txt.y = 19;
-        txt.text = '\u2B1F' + player.mana;
+        txt.text = '\u262F' + player.mana;
         player.on('changed::mana', function() {
-            txt.text = '\u2B1F' + player.mana;
+            txt.text = '\u262F' + player.mana;
         });
         txt.font = "26px Courier";
         group.addChild(txt);
