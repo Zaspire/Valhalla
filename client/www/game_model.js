@@ -681,7 +681,7 @@ GameStateController.prototype = {
         var card = this._drawCard(this.owner, a1);
         if (!card)
             card = null;
-        if (runningUnderNode)
+        if (runningUnderNode && this.model.server)
             this._log(DRAW_CARD, card, this.owner);
     },
 
