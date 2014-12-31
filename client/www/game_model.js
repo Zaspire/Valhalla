@@ -128,7 +128,6 @@ GameStateModel.prototype = {
         assert(o.id);
 
         var card = this._createCard(o.owner, o.type, o.state, o.id, o.attacksLeft);
-        this._cards.push(card);
     },
 
     _createCard: function(owner, type, state, id, attacksLeft) {
@@ -150,6 +149,7 @@ GameStateModel.prototype = {
             this._initCard({ type: type, id: id }, card);
 
         card.__cardUniqField = this._nextCardUniqId++;
+        this._cards.push(card);
 
         //emits attackPlayer, attack
         this.emit('onNewCard', card);
@@ -208,21 +208,17 @@ GameStateModel.prototype = {
 
         for (var i = 0; i < data.initial.my.hand.length; i++) {
             var card = data.initial.my.hand[i];
-            var c = self._createCard(Owner.ME, card.type, CardState.HAND, card.id, 0);
-            self._cards.push(c);
+            self._createCard(Owner.ME, card.type, CardState.HAND, card.id, 0);
         }
         for (var i = 0; i < data.initial.my.deckSize; i++) {
-            var c = self._createCard(Owner.ME, undefined, CardState.DECK, undefined, 0);
-            self._cards.push(c);
+            self._createCard(Owner.ME, undefined, CardState.DECK, undefined, 0);
         }
 
         for (var i = 0; i < data.initial.opponent.deckSize; i++) {
-            var c = self._createCard(Owner.OPPONENT, undefined, CardState.DECK, undefined, 0);
-            self._cards.push(c);
+            self._createCard(Owner.OPPONENT, undefined, CardState.DECK, undefined, 0);
         }
         for (var i = 0; i < data.initial.opponent.handSize; i++) {
-            var c = self._createCard(Owner.OPPONENT, undefined, CardState.HAND, undefined, 0);
-            self._cards.push(c);
+            self._createCard(Owner.OPPONENT, undefined, CardState.HAND, undefined, 0);
         }
 
         self.emit('ready');
