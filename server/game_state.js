@@ -201,6 +201,7 @@ StateModel.prototype = {
         assert(false);
     },
     createCard: function(o) {
+        o.id = String(o.id);
         if (!o.visualState)
             o.visualState = '';
         var card = this._createCard(o, o.owner, o.state);
@@ -327,6 +328,7 @@ exports.gameAction = function(req, res) {
         }
     }, function(e) {
         console.log(e);
+        console.log(e.stack);
         res.status(400).end();
     });
 };

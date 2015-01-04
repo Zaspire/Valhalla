@@ -221,7 +221,6 @@ exports.buyCards = function(req, res) {
                                                           "new": true,
                                                           update: { $push: { cards: { $each: cards } } } })
     }).done(function(r) {
-        console.log(r)
         if (!r) {
             res.send('{ error: "not enough money" }');
             return;

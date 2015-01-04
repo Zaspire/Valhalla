@@ -126,6 +126,7 @@ GameStateModel.prototype = {
 
     createCard: function(o) {
         assert(o.id);
+        o.id = String(o.id);
 
         var card = this._createCard(o.owner, o.type, o.state, o.id, o.attacksLeft);
     },
@@ -402,10 +403,9 @@ GameStateController.prototype = {
     _card: function(id) {
         var r = this.model._cards.filter(function (c) {return c.id === id;});
 
-        if (!r)
+        if (r.length !== 1)
             throw new Error('incorrect card id');
 
-        assert(r.length === 1);
         r = r[0];
 
         return r;
