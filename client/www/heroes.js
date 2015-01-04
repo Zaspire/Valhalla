@@ -352,7 +352,7 @@ var heroes = {
         health: 6,
         cost: 4,
         img: "11.webp",
-        cast: function(card, cards) {
+        cast: function(card, cards, model) {
             for (var i = 0; i < cards.length; i++) {
                 if (card.owner == cards[i].owner)
                     continue;
