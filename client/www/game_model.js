@@ -158,7 +158,8 @@ GameStateModel.prototype = {
         var self = this;
         card.on('changed::state', function() {
             // FIXME:
-            self.emit('reposition');
+            if (card.state !== CardState.DEAD)
+                self.emit('reposition');
         });
 
         return card;
@@ -558,8 +559,8 @@ GameStateController.prototype = {
 
         var card1 = this._myCard(id1), card2 = this._myCard(id2);
 
-        card1.emit('playSpell', card2);
         heroes[card1.type].cast(card2, this.model._cards, this.model);
+        card1.emit('playSpell', card2);
 
         card1.state = CardState.DEAD;
 

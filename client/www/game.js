@@ -189,6 +189,11 @@ CardView.prototype = {
                     }, 400);
                 });
             }).then(function () {
+                var deadCards = this.model._cards.filter(function(c) {
+                    return c.state === CardState.DEAD;
+                });
+                if (deadCards)
+                    return;
                 return self._updatePosition();
             });
         });
@@ -213,6 +218,9 @@ CardView.prototype = {
                 return self._animatePositionUpdate(p.x - self.group.getBounds().width, p.y - self.group.getBounds().height);
             }).then(function () {
                 createjs.Sound.play('attack');
+
+                if (self.card.state === CardState.DEAD || other.state === CardState.DEAD)
+                    return;
 
                 return self._updatePosition();
             });
