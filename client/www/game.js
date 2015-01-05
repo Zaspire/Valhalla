@@ -346,38 +346,31 @@ CardView.prototype = {
         group.addChild(bg);
 
         var heroName = heroes[this.card.type].name;
-        var ulti = "";
-        if (heroes[this.card.type].ultimateDescription) {
-            ulti = heroes[this.card.type].ultimateDescription;
-        }
         var txt = new createjs.Text();
         txt.x = 920
         txt.y = 60;
         txt.text = heroName;
-        txt.font = "40px Courier";
+        txt.font = "40px Lobster";
         txt.color = "#dddddd";
         txt.textAlign = "center";
         group.addChild(txt);
 
-        var txt = new createjs.Text();
-        txt.x = 920;
-        txt.y = 250;
-        if (ulti)
-            ulti = 'Ultimate: ' + ulti;
-        txt.text = ulti;
-        txt.font = "30px Courier";
-        txt.color = "#dddddd"
-        txt.textAlign = "center";
-        group.addChild(txt);
 
-        for (var i = 0, y = 290; heroes[this.card.type].description && i < heroes[this.card.type].description.length; i++, y+=40) {
-            var d = heroes[this.card.type].description[i];
+        var description = [];
+        if (heroes[this.card.type].ultimateDescription) {
+            description.push('Ultimate: ' + heroes[this.card.type].ultimateDescription);
+        }
+        if (heroes[this.card.type].description)
+            description = description.concat(heroes[this.card.type].description);
+
+        for (var i = 0, y = 250; i < description.length; i++, y+=40) {
+            var d = description[i];
 
             var txt = new createjs.Text();
             txt.x = 920;
             txt.y = y;
             txt.text = d;
-            txt.font = "30px Courier";
+            txt.font = "30px Niconne";
             txt.color = "#dddddd";
             txt.textAlign = "center";
             group.addChild(txt);
