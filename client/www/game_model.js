@@ -174,8 +174,11 @@ GameStateModel.prototype = {
                 options.headers = { 'valhalla-client': '2' };
                 require('http').request(options, function(res) {
                     res.setEncoding('utf8');
+                    var data = "";
                     res.on('data', function (chunk) {
-                        cb(chunk);
+                        data += chunk;
+                    }).on('end', function () {
+                        cb(data);
                     });
                 }).on('error', function(e) {
                     console.log("Got error: " + e.message);
