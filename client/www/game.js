@@ -874,7 +874,9 @@ GameStateView.prototype = {
 
         group.addEventListener('pressup', function(event) {
             //FIXME:
-            gameAction('finish');
+            gameAction(END_TURN);
+
+            createjs.Sound.play('endturn');
             group.visible = false;
         });
 
@@ -964,9 +966,17 @@ createjs.DisplayObject.prototype.remove = function() {
 }
 
 var model, myController, opponentController;
+
 window.addEventListener("load", function() {
+    createjs.Sound.registerSound("assets/audio/mixdown1.mp3", 'mixdown1');
     createjs.Sound.registerSound("assets/audio/attack.mp3", 'attack');
     createjs.Sound.registerSound("assets/audio/shield.mp3", 'shield');
+    createjs.Sound.registerSound("assets/audio/endturn.mp3", 'endturn');
+
+    createjs.Sound.on("fileload", function(event) {
+        if (event.src === "assets/audio/mixdown1.mp3")
+            createjs.Sound.play('mixdown1', { loop: -1, volume: 0.2 });
+    });
 
     stage = new createjs.Stage("myCanvas");
     createjs.Touch.enable(stage);
