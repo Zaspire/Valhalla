@@ -60,5 +60,20 @@ img.dialog_bg {
 }
 .dialog_show {
     -webkit-animation: DialogShow 2s;
+}
 
+@font-face {
+  font-family: 'Niconne';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Niconne'), local('Niconne-Regular'),
+       url('third_party/fonts/niconne.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Lobster';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lobster'), local('Lobster-Regular'),
+       url('third_party/fonts/lobster.woff') format('woff');
 }
