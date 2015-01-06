@@ -407,7 +407,7 @@ CardView.prototype = {
 
         var c = SCREEN_HEIGHT / self.group.getBounds().height;
         createjs.Tween.get(this.group).to({ scaleX: c, scaleY: c }, time);
-        createjs.Tween.get(group).to({ alpha: 1 }, time)
+        createjs.Tween.get(group).to({ alpha: 1 }, time);
         createjs.Tween.get(this.group).to({ x: 0, y: 0 }, time);
     },
 
@@ -894,6 +894,7 @@ GameStateView.prototype = {
         createjs.Sound.registerSound("assets/audio/lose.mp3", 'lose');
         this.queueAction(true, (function() {
         this._requestExp((function(exp) {
+            createjs.Sound.stop();
             exp = JSON.parse(exp);
 
             $('#myCanvas').addClass('hidden');
