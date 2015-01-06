@@ -246,6 +246,7 @@ exports.getAccountInfo = function(req, res) {
             lvl: expToLvl(exp)
         };
         r.nextLvlExp = r.lvl * (r.lvl + 1) * EXP_PER_WIN;
+        r.lvlExp = Math.max(0, r.lvl * (r.lvl - 1) * EXP_PER_WIN);
         res.send(JSON.stringify(r));
     }, function(e) {
         console.log(e);

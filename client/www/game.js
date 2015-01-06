@@ -914,18 +914,19 @@ GameStateView.prototype = {
                            "font-size": '50px', color: 'white' });
             $('body').append(textNode);
 
-            var e = $('<progress/>');
+            var e = $('<meter/>');
             e.css({ position: 'fixed', top: '90%', left: '30%',
                     width: '40%', "z-index": '1',
                     background: 'white', padding: '2px' });
             $('body').append(e);
 
-            e.attr('max', this.exp.nextLvlExp).attr('value', this.exp.exp);
+            e.attr('min', this.exp.lvlExp).attr('max', this.exp.nextLvlExp).attr('value', this.exp.exp);
             var animate = (function () {
                 createjs.Tween.get(e[0]).to({ value: exp.exp }, 2000);
             }).bind(this);
             if (exp.exp > this.exp.nextLvlExp) {
                 createjs.Tween.get(e[0]).to({ value: this.exp.nextLvlExp }, 2000).call(function() {
+                    e[0].min = exp.lvlExp;
                     e[0].max = exp.nextLvlExp;
                     textNode.text('LVL:' + exp.lvl);
                     animate();
