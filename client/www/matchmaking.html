@@ -24,6 +24,12 @@
             width: auto;
             height: 100%;
         }
+        #wait_time {
+            position: fixed;
+            color: white;
+            font-size: 40px;
+            font-family: "Lobster";
+        }
         </style>
 
         <script type="text/javascript" src="common.js"></script>
@@ -31,12 +37,16 @@
         <script type="text/javascript" src="cordova.js"></script>
 
         <link rel="prefetch" href="game.html" />
+        <link href="http://fonts.googleapis.com/css?family=Niconne|Lobster" rel="stylesheet" type="text/css">
     </head>
     <body>
       <img src="assets/glass_bg.webp" class="bg"></img>
       <img src="assets/hourglass.webp" id="hourglass" class="rotate"></img>
 
+      <div id="wait_time" />
+
       <script type="text/javascript">
+        $('#wait_time').text('Average wait time 00:' + (30 - Math.floor((Math.random() * 5))))
         var params = {};
         params.token = localStorage.getItem('token');
 
