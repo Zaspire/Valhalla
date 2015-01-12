@@ -1,98 +1,198 @@
-paper.install(window);
-
 var params = {};
 params.token = localStorage.getItem('token');
 
-function draw(cards) {
-    project.clear();
+function MyCards(stage) {
+    EventEmitter2.call(this);
 
-    this._all = new Group();
-    this._all.pivot = this._all.bounds.topLeft;
-    this._all.position.x = 0;
-    this._all.position.y = 0;
+    this._all = new createjs.Container();
+    stage.addChild(this._all);
 
-    var bg = new Path.Rectangle(new Rectangle(new Point(0, 0), new Size(SCREEN_WIDTH -4 , SCREEN_HEIGHT -4)));
-    bg.fillColor="#ffffff";
-    bg.strokeColor="#808080";
-    bg.strokeWidth = 1;
+    var bg = new createjs.Bitmap(document.getElementById('bg'));
+    bg.scaleX = SCREEN_WIDTH / bg.getBounds().width;
+    bg.scaleY = SCREEN_HEIGHT / bg.getBounds().height;
+    bg.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     this._all.addChild(bg);
 
-    var x = 20;
-    var y = 20;
+    this._cardsContainer = new createjs.Container();
+    this._all.addChild(this._cardsContainer);
 
-    function createCb(i) {
-        return function(event) {
-            cards[i].selected = !cards[i].selected;
-            draw(cards);
-        };
-    }
-    var selected = 0;
-    for (var i = 0; i < cards.length; i++) {
-        var card = cards[i];
-        var g = createCard(card.damage, card.health, card.cost, card.selected, card.type);
+    this._cards = [];
+    this._views = [];
 
-        if (card.selected)
-            selected++;
-        g.pivot = g.bounds.topLeft;
-        g.position.x = x;
-        g.position.y = y;
-//        g.onMouseDown = createCb(i);
-        x += g.bounds.width + 20;
-        if (i % 10 == 9) {
-            y += g.bounds.height + 20;
-            x = 20
+    this._addScroll();
+    this._addSaveButton();
+
+    this._initCards();
+}
+
+MyCards.prototype = {
+    __proto__: EventEmitter2.prototype,
+
+    _initCards: function() {
+        var self = this;
+        function addCb(view) {
+            view.group.addEventListener("pressup", function() {
+                view.highlite = !view.highlite;
+            });
         }
+        _network.ajax(host + 'v1/my_cards/' + params.token, undefined, function(data) {
+            var data = JSON.parse(data);
+            var x = 10;
+            var y = 10;
+            for (var i = 0; i < data.length; i++) {
+                var card = self._createCard(Owner.ME, data[i].type, CardState.HAND, data[i].id);
+                var view = new BasicCardView(card, self._cardsContainer);
+                self._views.push(view);
 
-        addCardMagnifier(this, g, card.type, card.selected?"red":"green", createCb(i));
-        this._all.addChild(g);
-    }
-    if (selected == 30) {
-        var button = new Path.Rectangle(new Rectangle(new Point(x, y), new Size(100, 100)));
-        button.fillColor="#00ff00";
-        button.strokeColor="#808080";
-        button.strokeWidth = 1;
-        button.onMouseDown = function() {
-            save(cards);
-        };
-        this._all.addChild(button);
-    } else {
-        var txt = new PointText(new Point(x,y + 50));
-        txt.content = selected + '/30';
-        txt.characterStyle= {
-            font:"Courier",
-            fontSize:50,
-            fillColor:"#000000"
-        }
-        txt.paragraphStyle = {
-            justification:"left"
-        };
+                self.emit('newCard', view);
+
+                view.group.x = x;
+                view.group.y = y;
+
+                x += view.group.getBounds().width + 20;
+
+                if (x + view.group.getBounds().width > SCREEN_WIDTH) {
+                    x = 10;
+                    y += view.group.getBounds().height + 20;
+                }
+
+                if (data[i].selected)
+                    view.highlite = true;
+                addCb(view);
+            }
+        });
+    },
+
+    _addScroll: function() {
+        var g = new createjs.Graphics();
+        g.beginStroke("red").beginFill("blue").drawRect(1200, 20, 50, 50);
+        var up = new createjs.Shape(g);
+
+        g = new createjs.Graphics();
+        g.beginStroke("red").beginFill("blue").drawRect(1200, 700, 50, 50);
+        var down = new createjs.Shape(g);
+
+        var self = this;
+        down.addEventListener("pressup", function() {
+            var newY = self._cardsContainer.y - self._views[0].group.getBounds().height;
+            newY = -Math.min(-newY, self._cardsContainer.getBounds().height - self._views[0].group.getBounds().height);
+            createjs.Tween.get(self._cardsContainer).to({ y: newY }, 500);
+        });
+        up.addEventListener("pressup", function() {
+            var newY = self._cardsContainer.y + self._views[0].group.getBounds().height;
+            newY = Math.min(newY, 0);
+            createjs.Tween.get(self._cardsContainer).to({ y: newY }, 500);
+        });
+
+        this._all.addChild(up);
+        this._all.addChild(down);
+    },
+
+    _selectedCards: function() {
+        return this._views.filter(function(o){return o.highlite;}).map(function(o) {return o.card.id;});
+    },
+
+    _addSaveButton: function() {
+        var g = new createjs.Graphics();
+        g.beginStroke("red").beginFill("green").drawRect(1200, 350, 50, 50);
+        var save = new createjs.Shape(g);
+        this._all.addChild(save);
+
+        var self = this;
+        save.addEventListener("pressup", function() {
+            var deck = self._selectedCards();
+            assert(deck.length === 30);
+
+            _network.ajax(host + 'v1/my_cards/' + params.token + '/set', { deck: deck }, function(data) {
+                console.log(data);
+            });
+        });
+
+        var txt = new createjs.Text()
+        txt.x = 1225;
+        txt.y = 300;
+        txt.font = "22px Courier";
+        txt.color = "#ffffff";
+
+        txt.textAlign = "center";
+
         this._all.addChild(txt);
+        function updateText() {
+            var selected = self._selectedCards().length;
+            txt.text = selected + '/30';
+
+            save.visible = selected === 30;
+        }
+
+        self.on('newCard', function(card) {
+            card.on('changed::highlite', updateText);
+        });
+        updateText();
+    },
+
+    _createCard: function(owner, type, state, id) {
+        var card = new GObject({ owner: owner,
+                                 type: type,
+                                 id: id,
+                                 state: state,
+
+                                 damage: undefined,
+                                 health: undefined,
+                                 maxHealth: undefined,
+                                 cost: undefined,
+                                 shield: undefined,
+                                 cardType: CardType.UNKNOWN });
+
+        this._initCard({ type: type, id: id }, card);
+
+        this._cards.push(card);
+
+        return card;
+    },
+
+    _initCard: function(desc, card) {
+        var type = desc['type'];
+
+        card.type = type;
+        card.id = desc.id;
+
+        card.shield = !!heroes[type].shield;
+        card.cardType = heroes[type].cardType;
+        card.onDeath = heroes[type].onDeath;
+        card.dealDamage = heroes[type].dealDamage;
+        card.canAttackCard = heroes[type].canAttackCard;
+        card.onTurnEnd = heroes[type].onTurnEnd;
+        card.onPlay = heroes[type].onPlay;
+        card.onNewTurn = heroes[type].onNewTurn;
+        card.attack = heroes[type].attack;
+        card.canBeAttacked = heroes[type].canBeAttacked;
+
+        var props = ['damage', 'health', 'cost'];
+        for (var i = 0; i < props.length; i++) {
+            var prop = props[i];
+            if (!heroes[type][prop] === null)
+                continue;
+            card[prop] = heroes[type][prop];
+        }
+        if (card.cardType !== CardType.HERO) {
+            card.health = undefined;
+            card.damage = undefined;
+        } else {
+            card.maxHealth = card.health;
+        }
     }
-    this._all.scale(view.bounds.width / SCREEN_WIDTH, view.bounds.height / SCREEN_HEIGHT);
-    paper.view.draw();
-}
+};
 
-function save(cards) {
-    var deck = cards.filter(function(o){return o.selected;}).map(function(o) {return o.id;});
-
-    _network.ajax(host + 'v1/my_cards/' + params.token + '/set', { deck: deck }, function(data) {
-        console.log(data);
-        getCards();
-    });
-}
-
-function getCards() {
-
-    _network.ajax(host + 'v1/my_cards/' + params.token, undefined, function(data) {
-        console.log(data);
-        draw(JSON.parse(data));
-    });
-}
-
+insertHeroImages();
 window.addEventListener("load", function() {
-    var canvas = document.getElementById('myCanvas');
-    paper.setup(canvas);
-    paper.settings.applyMatrix = false;
+    stage = new createjs.Stage("myCanvas");
+    createjs.Touch.enable(stage);
+    stage.canvas.width = SCREEN_WIDTH;
+    stage.canvas.height = SCREEN_HEIGHT;
 
-    getCards();
+    new MyCards(stage);
+    createjs.Ticker.timingMode = createjs.Ticker.RAF;
+	createjs.Ticker.addEventListener("tick", function tick(event) {
+        stage.update(event);
+    });
 });

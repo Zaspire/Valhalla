@@ -21,8 +21,8 @@
         <img id="heart" class="hidden" src="assets/heart.png"></img>
         <img id="sword" class="hidden" src="assets/sword.png"></img>
         <img id="circle" class="hidden" src="assets/circle.png"></img>
-        <img id="hm" class="hidden" src="assets/hm.webp"></img>
         <img id="shield" class="hidden" src="assets/shield.webp"></img>
+        <img id="hm" class="hidden" src="assets/hm.webp"></img>
         <img id="fg" class="hidden" src="assets/front_side.png"></img>
         <img id="end_turn" class="hidden" src="assets/end_turn.webp"></img>
         <img id="bs" class="hidden" src="assets/back_side.webp"></img>
@@ -37,21 +37,12 @@
 
         <!--FIXME: don't use fixed screen size -->
         <canvas id="myCanvas" class="canvas_bg"></canvas>
+        <script type="text/javascript" src="common_ui.js"></script>
         <script type="text/javascript">
           document.addEventListener("deviceready", function keepAwake() {
               plugins.insomnia.keepAwake();
           }, false);
-          for (var id in heroes) {
-              if (!heroes[id].img)
-                  continue;
-
-              var img = document.createElement("img");
-              img.src = "assets/heroes/" + heroes[id].img;
-              img.style.display = "none";
-              img.id = id;
-
-              document.body.appendChild(img);
-          }
+          insertHeroImages();
         </script>
         <script type="text/javascript" src="random.js"></script>
         <script type="text/javascript" src="game_model.js"></script>

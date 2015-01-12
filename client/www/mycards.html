@@ -4,31 +4,24 @@
         <title>My Cards</title>
         <link href="common.css" rel="stylesheet" />
         <script type="text/javascript" src="common.js"></script>
-        <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
-        <script type="text/javascript" src="third_party/paper-core.min.js"></script>
-        <script type="text/javascript" src="third_party/t.js"></script>
         <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="third_party/eventemitter2.js"></script>
+        <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
+        <script type="text/javascript" src="third_party/easeljs-0.8.0.min.js"></script>
+        <script type="text/javascript" src="third_party/tweenjs-0.6.0.min.js"></script>
         <script type="text/javascript" src="heroes.js"></script>
     </head>
     <body>
-        <img id="fg" class="hidden" src="assets/front_side.webp"></img>
+        <img id="fg" class="hidden" src="assets/front_side.png"></img>
+        <img id="heart" class="hidden" src="assets/heart.png"></img>
+        <img id="sword" class="hidden" src="assets/sword.png"></img>
+        <img id="circle" class="hidden" src="assets/circle.png"></img>
+        <img id="shield" class="hidden" src="assets/shield.webp"></img>
+        <img id="bg" class="hidden" src="assets/bg.webp"></img>
 
-        <canvas id="myCanvas" resize></canvas>
-        <script type="text/javascript">
-          for (var id in heroes) {
-              if (!heroes[id].img)
-                  continue;
-
-              var img = document.createElement("img");
-              img.src = "assets/heroes/" + heroes[id].img;
-              img.style.display = "none";
-              img.id = id;
-
-              document.body.appendChild(img);
-          }
-        </script>
-
-        <script type="text/javascript" src="common_paper.js"></script>
+        <canvas id="myCanvas" class="canvas_bg"></canvas>
+        <script type="text/javascript" src="game_model.js"></script>
+        <script type="text/javascript" src="common_ui.js"></script>
         <script type="text/javascript" src="mycards.js"></script>
     </body>
 </html>
