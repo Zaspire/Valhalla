@@ -19,7 +19,7 @@ var TIMEOUT_BETWEEN_MOVES = 3000;
 function doRequest(url, cb) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url);
-    xhr.setRequestHeader('valhalla-client', '2');
+    xhr.setRequestHeader('valhalla-client', '3');
     xhr.onload = function() {
         //FIXME:
         assert(this.status == 200);

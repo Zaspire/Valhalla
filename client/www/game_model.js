@@ -82,7 +82,7 @@ StateModelCommon.prototype = {
     },
     increaseCardHealth: function(card, h) {
         card.health += h;
-        card.maxHealth = Math.max(card.maxHealth, card.health);
+        card.maxHealth += h;
     },
     dealDamageToCard: function(card, h) {
         if (card.dealDamage)
@@ -171,7 +171,7 @@ GameStateModel.prototype = {
         if (runningUnderNode) {
             function doRequest(url, cb) {
                 var options = require('url').parse(url);
-                options.headers = { 'valhalla-client': '2' };
+                options.headers = { 'valhalla-client': '3' };
                 require('http').request(options, function(res) {
                     res.setEncoding('utf8');
                     var data = "";
