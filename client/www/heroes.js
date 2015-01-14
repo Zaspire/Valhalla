@@ -99,10 +99,17 @@ var heroes = {
     h3: {
         cardType: CardType.HERO,
         name: "Medusa",
-        damage: 2,
+        damage: 1,
         health: 5,
         cost: 3,
         img: "3.webp",
+        onPlay: {
+            cast: function(card, model) {
+                var controller = model.getController(card.owner);
+                controller.drawCard();
+            }
+        },
+
         cast: function(card, cards, model) {
             var minions = cards.filter(function(c) {
                 if (card.owner == c.owner)
@@ -148,6 +155,9 @@ var heroes = {
             }
         },
         ultimateDescription: "Transform 2 random enemy minions into 0/3 Rock.",
+        description: [
+            "Draw card."
+        ]
     },
     h4: {
         cardType: CardType.HERO,
@@ -323,6 +333,39 @@ var heroes = {
                 model.createCard(card);
             }
         },
+        canAttackCard: {
+            cast: function(card1, card2, orig) {
+                if (card1.attack && card2.owner === card1.owner)
+                    return true;
+                return orig;
+            }
+        },
+
+        cast: function(card) {
+            if (card.visualState.length)
+                card.visualState += ',ulti';
+            else
+                card.visualState = 'ulti';
+
+            card.attack = String(function(card1, card2, model) {
+                if (card2.owner === card1.owner) {
+                    var visual = card1.visualState.split(',');
+                    var i = visual.indexOf('ulti');
+                    if (i != -1)
+                        visual.splice(i, 1);
+                    card1.visualState = visual.join(',');
+
+                    card2.damage *= 2;
+                    return;
+                }
+                //FIXME:
+                var damage1 = card1.damage;
+                var damage2 = card2.damage;
+                model.dealDamageToCard(card2, damage1);
+                model.dealDamageToCard(card1, damage2);
+            });
+        },
+        ultimateDescription: "Double attack of friendly minion.",
         description: [
             "Summon bear."
         ],
@@ -337,13 +380,22 @@ var heroes = {
         cast: function(card, cards) {
             card.__ultimate = true;
         },
+        onPlay: {
+            cast: function(card) {
+                card.attacksLeft = 1;
+            }
+        },
+
         ultimateDescription: "Add 4 damage each turn.",
         onNewTurn: {
             cast: function(card) {
                 if (card.__ultimate)
                     card.damage += 4;
             }
-        }
+        },
+        description: [
+            "Charge."
+        ]
     },
     h11: {
         cardType: CardType.HERO,
@@ -388,7 +440,7 @@ var heroes = {
         cardType: CardType.HERO,
         name: "The Troll",
         damage: 2,
-        health: 2,
+        health: 4,
         cost: 4,
         img: "13.webp",
         onPlay: {
@@ -486,7 +538,7 @@ var heroes = {
         img: "17.webp",
         canAttackCard: {
             cast: function(card1, card2, orig) {
-                if (card2.owner == card1.owner)
+                if (card2.owner === card1.owner)
                     return true;
                 return orig;
             }
@@ -573,7 +625,7 @@ var heroes = {
         cardType: CardType.HERO,
         name: "Enchantress",
         damage: 6,
-        health: 4,
+        health: 5,
         cost: 6,
         img: "19.webp",
         cast: function(card, cards, model) {
@@ -594,16 +646,15 @@ var heroes = {
         description: [
             "Charge."
         ],
-        ultimateDescription: "Give 3 health to friendly minions"
+        ultimateDescription: "Give 3 health to friendly minions."
     },
     h20: {
         cardType: CardType.HERO,
         name: "Tauren Chieftain",
-        damage: 6,
-        health: 9,
+        damage: 4,
+        health: 8,
         cost: 6,
         img: "20.webp",
-        shield: true
     },
     h21: {
         cardType: CardType.HERO,
@@ -637,6 +688,13 @@ var heroes = {
         health: 5,
         cost: 5,
         img: "22.webp",
+        onPlay: {
+            cast: function(card, model) {
+                var controller = model.getController(card.owner);
+                controller.drawCard();
+            }
+        },
+
         onNewTurn: {
             cast: function(card, model) {
                 var cards = model._cards.filter(function(c) {
@@ -701,6 +759,7 @@ var heroes = {
         }),
         ultimateDescription: "Grant friendly minion invincibility for one attack",
         description: [
+            "Draw card.",
             "Burn enemy minions.",
             "(deal 1 damage each turn)"
         ]
@@ -709,7 +768,7 @@ var heroes = {
         cardType: CardType.HERO,
         name: "Andromeda",
         damage: 1,
-        health: 6,
+        health: 4,
         cost: 3,
         img: "23.png",
         onNewTurn: {
@@ -734,10 +793,10 @@ var heroes = {
         cardType: CardType.HERO,
         name: "Centaur",
         damage: 2,
-        health: 5,
+        health: 4,
         cost: 3,
         img: "25.png",
-        ultimateDescription: "Gain +3 health and shield.",
+        ultimateDescription: "Gain +5 health and shield.",
         dealDamage: {
             cast: function(card, h, model) {
                 var controller = model.getController(card.owner);
@@ -750,7 +809,7 @@ var heroes = {
         },
         cast: function(card, cards, model) {
             card.shield = true;
-            model.increaseCardHealth(card, 3);
+            model.increaseCardHealth(card, 5);
         },
         description: [
             "Whenever this minion takes damage,",
