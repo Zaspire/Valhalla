@@ -24,9 +24,17 @@
             width: auto;
             height: 100%;
         }
-        #wait_time {
+        #avg_wait_time {
             position: fixed;
             color: white;
+            font-size: 38px;
+            font-family: "Lobster";
+        }
+        #time {
+            position: fixed;
+            color: white;
+            left: 100%;
+            -webkit-transform: translate(-100%,0);
             font-size: 38px;
             font-family: "Lobster";
         }
@@ -42,10 +50,11 @@
       <img src="assets/glass_bg.webp" class="bg"></img>
       <img src="assets/hourglass.webp" id="hourglass" class="rotate"></img>
 
-      <div id="wait_time" />
+      <div id="time">00:00</div>
+      <div id="avg_wait_time"></div>
 
       <script type="text/javascript">
-        $('#wait_time').text('Average wait time 00:' + (30 - Math.floor((Math.random() * 5))))
+        $('#avg_wait_time').text('Average wait time 00:' + (30 - Math.floor((Math.random() * 5))))
         var params = {};
         params.token = localStorage.getItem('token');
 
@@ -62,6 +71,18 @@
             });
         }
         request();
+
+        time = 0;
+        setInterval(function() {
+            time++;
+            var m = String(Math.floor(time / 60));
+            var sec = String(time % 60);
+            if (m.length === 1)
+                m = '0' + m;
+            if (sec.length === 1)
+                sec = '0' + sec;
+            $('#time').text(m + ':' + sec);
+        }, 1000);
       </script>
     </body>
 </html>
