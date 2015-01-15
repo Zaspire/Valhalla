@@ -734,13 +734,13 @@ var heroes = {
                 card2.dealDamage = {};
 
                 if (card2.visualState.length)
-                    card2.visualState += ',ulti';
+                    card2.visualState += ',divine';
                 else
-                    card2.visualState = 'ulti';
+                    card2.visualState = 'divine';
 
                 card2.dealDamage.cast = String(function(card, h, model) {
                     var visual = card.visualState.split(',');
-                    var i = visual.indexOf('ulti');
+                    var i = visual.indexOf('divine');
                     if (i != -1)
                         visual.splice(i, 1);
                     card.visualState = visual.join(',');
@@ -813,7 +813,7 @@ var heroes = {
         },
         description: [
             "Whenever this minion takes damage,",
-            "draw a card."
+            "Draw a card."
         ]
     },
     h26: {
@@ -845,7 +845,7 @@ var heroes = {
                     card.__invincible--;
                     if (!card.__invincible) {
                         var visual = card.visualState.split(',');
-                        var i = visual.indexOf('ulti');
+                        var i = visual.indexOf('divine');
                         if (i != -1)
                             visual.splice(i, 1);
                         card.visualState = visual.join(',');
@@ -859,9 +859,9 @@ var heroes = {
                     card.__invincible--;
                     if (card.__invincible) {
                         if (card.visualState.length)
-                            card.visualState += ',ulti';
+                            card.visualState += ',divine';
                         else
-                            card.visualState = 'ulti';
+                            card.visualState = 'divine';
                     }
                 }
             }
