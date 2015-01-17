@@ -82,7 +82,8 @@ NetworkRequestQueue.prototype = {
             return;
         var d = this._queue[0];
         var self = this;
-        $.ajax({ url: d.url, data: d.data, headers: { "Valhalla-Client": VALHALLA_CLIENT_VERSION } }).done(function(data) {
+        $.ajax({ url: d.url, data: d.data, timeout: 5000,
+                 headers: { "Valhalla-Client": VALHALLA_CLIENT_VERSION } }).done(function(data) {
             self._queue.shift();
             if (d.success)
                 d.success(data);
