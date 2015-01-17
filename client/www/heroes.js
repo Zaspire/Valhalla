@@ -783,10 +783,10 @@ var heroes = {
     },
     h24: {
         cardType: CardType.HERO,
-        name: "Untitled hero 24",
-        damage: 6,
-        health: 2,
-        cost: 4,
+        name: "Doombringer",
+        damage: 12,
+        health: 12,
+        cost: 10,
         img: "24.png",
     },
     h25: {
