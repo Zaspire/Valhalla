@@ -694,8 +694,6 @@ GameStateView.prototype = {
 
     _endScreen: function() {
         assert(this.model.state !== GameState.IN_PROGRESS);
-        createjs.Sound.registerSound("assets/audio/win.mp3", 'win');
-        createjs.Sound.registerSound("assets/audio/lose.mp3", 'lose');
         this.queueAction(true, (function() {
         this._requestExp((function(exp) {
             createjs.Sound.stop();
@@ -763,6 +761,8 @@ window.addEventListener("load", function() {
     createjs.Sound.registerSound("assets/audio/attack.mp3", 'attack');
     createjs.Sound.registerSound("assets/audio/shield.mp3", 'shield');
     createjs.Sound.registerSound("assets/audio/endturn.mp3", 'endturn');
+    createjs.Sound.registerSound("assets/audio/win.mp3", 'win');
+    createjs.Sound.registerSound("assets/audio/lose.mp3", 'lose');
 
     createjs.Sound.on("fileload", function(event) {
         if (event.src === "assets/audio/mixdown1.mp3")

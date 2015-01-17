@@ -5,6 +5,9 @@ var SCREEN_WIDTH = 1280;
 var SCREEN_HEIGHT = 768;
 var VALHALLA_CLIENT_VERSION = 3;
 
+var ANALYTICS_VIEW_NAME = null;
+var cordovaDeviceReady = false;
+
 (function() {
     var errors = [];
     var ready = false;
@@ -25,9 +28,11 @@ var VALHALLA_CLIENT_VERSION = 3;
     }
     document.addEventListener('deviceready', function() {
         analytics.startTrackerWithId(GA_ACCOUNT);
-        analytics.trackView(document.title);
+        analytics.trackView(ANALYTICS_VIEW_NAME ? ANALYTICS_VIEW_NAME : document.title);
         ready = true;
         reportErrors();
+
+        cordovaDeviceReady = true;
     });
 })();
 

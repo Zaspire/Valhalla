@@ -1,0 +1,44 @@
+img.pulse {
+    -webkit-animation: Pulsate 5s infinite;
+    animation: Pulsate 5s infinite;
+}
+@keyframes Pulsate {
+    0%   { opacity: 0; }
+    50%  { opacity: 1; }
+    100% { opacity: 0; }
+}
+@-webkit-keyframes Pulsate {
+    0%   { opacity: 0; }
+    50%  { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+img.rotate {
+    -webkit-animation: Spin 15s linear infinite;
+}
+@-webkit-keyframes Spin {
+    0% { -webkit-transform: translate(-50%,-50%) rotate(0deg); }
+    100% { -webkit-transform: translate(-50%,-50%) rotate(360deg); }
+}
+
+#hourglass {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: auto;
+    height: 100%;
+}
+#avg_wait_time {
+    position: fixed;
+    color: white;
+    font-size: 38px;
+    font-family: "Lobster";
+}
+#time {
+    position: fixed;
+    color: white;
+    left: 100%;
+    -webkit-transform: translate(-100%,0);
+    font-size: 38px;
+    font-family: "Lobster";
+}

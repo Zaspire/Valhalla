@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="co.drunken.valhalla" version="0.6.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="co.drunken.valhalla" version="0.8.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Valhalla: Fallen Heroes</name>
     <description>
         codename Valhalla
@@ -7,7 +7,7 @@
     <author email="support@drunken.co">
         Drunken Co.
     </author>
-    <content src="index.html" />
+    <content src="mainmenu.html" />
     <icon src="icon.png" />
     <access origin="*" />
     <preference name="Fullscreen" value="true" />

@@ -2,64 +2,45 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <title>MainMenu</title>
+        <meta name="format-detection" content="telephone=no" />
+        <title>Login</title>
         <link href="common.css" rel="stylesheet" />
+        <link href="mainmenu.css" rel="stylesheet" />
         <script type="text/javascript" src="common.js"></script>
+        <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
         <script type="text/javascript" src="third_party/jquery.rwdImageMaps.js"></script>
-        <style type="text/css" media="screen">
-        img.pulse {
-            -webkit-animation: Pulsate 5s infinite;
-            animation: Pulsate 5s infinite;
-        }
-        @keyframes Pulsate {
-            0%   { opacity: 0; }
-            50%  { opacity: 1; }
-            100% { opacity: 0; }
-        }
-        @-webkit-keyframes Pulsate {
-            0%   { opacity: 0; }
-            50%  { opacity: 1; }
-            100% { opacity: 0; }
-        }
-        </style>
-        <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="third_party/soundjs-0.6.0.min.js"></script>
-
-        <link rel="prefetch" href="matchmaking.html" />
+        <link rel="prefetch" href="game.html" />
     </head>
-<body>
-    <img src="assets/menu1.webp" class="bg" usemap="#clickmap"></img>
-    <img src="assets/menu2.webp" class="bg pulse" usemap="#clickmap"></img>
-    <div id="balance_container">
-      <img src="assets/balance.png" class="hidden" id="balance"></img>
-      <div id="balance_text" />
-    </div>
+    <body>
+        <div id="page1">
+            <img src="assets/main.webp" class="bg" usemap="#clickmap1"></img>
+            <map name="clickmap1">
+                <area shape="rect" coords="1286,386,1500,690" onclick="login()">
+                <area shape="rect" coords="0,644,250,760" onclick="navigator.app.exitApp()">
+            </map>
+        </div>
+        <div id="page2" class="hidden">
+            <img src="assets/menu1.webp" class="bg" usemap="#clickmap2"></img>
+            <img src="assets/menu2.webp" class="bg pulse" usemap="#clickmap2"></img>
+            <map name="clickmap2">
+                <area shape="rect" coords="674,0,1330,340" onclick="activateMatchMaking()">
+                <area shape="rect" coords="636,844,1236,1072" onclick="navigate('mycards.html')">
+                <area shape="rect" coords="0,200,600,800" onclick="navigate('buycards.html')">
+            </map>
+            <div id="balance_container">
+                <img src="assets/balance.png" class="hidden" id="balance"></img>
+                <div id="balance_text"></div>
+            </div>
+        </div>
+        <div id="page3" class="hidden">
+            <img src="assets/glass_bg.webp" class="bg"></img>
+            <img src="assets/hourglass.webp" id="hourglass" class="rotate"></img>
 
-    <map name="clickmap">
-        <area shape="rect" coords="674,0,1330,340" href="matchmaking.html">
-        <area shape="rect" coords="636,844,1236,1072" href="mycards.html">
-        <area shape="rect" coords="0,200,600,800" href="buycards.html">
-    </map>
-
-    <script>
-        createjs.Sound.registerSound("assets/audio/mainmenu.mp3", 'mainmenu');
-        createjs.Sound.play('mainmenu');
-        $(document).ready(function(e) {
-            $('img[usemap]').rwdImageMaps();
-        });
-        var token = localStorage.getItem('token');
-        createjs.Sound.on("fileload", function() {
-            createjs.Sound.play('mainmenu', { loop: -1 });
-        });
-        _network.ajax(host + 'v1/info/' + token, undefined, function (data) {
-            data = JSON.parse(data);
-            $('#balance').removeClass('hidden').addClass('dialog_bg');
-            $('#balance_container').css({ position: 'fixed', top: '1%', left: '86%',
-                                          "z-index": '1', width: '12%', height: '10%' });
-            $('#balance_text').text(' ' + data.coins).css({ color: "white", position: 'absolute', top: '30%', left: '10%' });
-        });
-
-    </script>
-</body>
+            <div id="time">00:00</div>
+            <div id="avg_wait_time"></div>
+        </div>
+        <script type="text/javascript" src="mainmenu.js"></script>
+    </body>
 </html>
