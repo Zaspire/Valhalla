@@ -201,6 +201,19 @@ exports.setDeck = function(req, res) {
     });
 }
 
+function cardsForSale() {
+    var cards = [];
+    for (var i = 1;; i++) {
+        var id = 'h' + i;
+        if (!(id in heroes.heroes))
+            break;
+        var type = heroes.heroes[id];
+        cards.push({type: id, damage: type.damage, cost: type.cost, health: type.health });
+    }
+
+    return cards;
+}
+
 exports.buyCards = function(req, res) {
     var email = req.email;
     pdb.collection('accounts').findAndModify({ query: { _id: email, coins: { $gte: PACK_PRICE }},
@@ -209,7 +222,7 @@ exports.buyCards = function(req, res) {
         if (!doc[0])
             return null;
         else {
-            var cards = common.shuffle(starterCards()).slice(0, 4);
+            var cards = common.shuffle(cardsForSale()).slice(0, 4);
             return pdb.collection('cards').insert(cards);
         }
     }).then(function(cards) {
