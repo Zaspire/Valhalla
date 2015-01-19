@@ -79,10 +79,14 @@ StateModelCommon.prototype = {
     __proto__: EventEmitter2.prototype,
     healCard: function(card, h) {
         card.health = Math.min(card.health + h, card.maxHealth);
+
+        this.emit('sound', 'heal');
     },
     increaseCardHealth: function(card, h) {
         card.health += h;
         card.maxHealth += h;
+
+        this.emit('sound', 'heal');
     },
     dealDamageToCard: function(card, h) {
         if (card.dealDamage)

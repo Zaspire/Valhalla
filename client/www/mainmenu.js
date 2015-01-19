@@ -1,5 +1,6 @@
-createjs.Sound.registerSound("assets/audio/start.mp3", 'start');
 createjs.Sound.registerSound("assets/audio/mainmenu.mp3", 'mainmenu');
+createjs.Sound.registerSound("assets/audio/start.mp3", 'start');
+createjs.Sound.registerSound("assets/audio/mm2.mp3", 'mm2');
 
 SoundUtils = {
     __current: null,
@@ -61,6 +62,7 @@ function trackView(id) {
         analytics.trackView(id);
     else
         ANALYTICS_VIEW_NAME = id;
+    document.title = id;
 }
 
 function login() {
@@ -111,7 +113,8 @@ function activateMainMenu() {
 }
 
 function activateMatchMaking() {
-    SoundUtils.stop();
+    SoundUtils.play('mm2');
+
     $('#page1').addClass('hidden');
     $('#page2').addClass('hidden');
     $('#page3').removeClass('hidden');

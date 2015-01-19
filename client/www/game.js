@@ -99,10 +99,13 @@ CardView.prototype = {
                 var p = { x: self.view.myHealth.x + bounds.width / 2, y: self.view.myHealth.y + bounds.height / 2};
                 resolve(p);
             }).then(function (p) {
+                if (self.card.damage >= 6)
+                    createjs.Sound.play('attack2');
+                else
+                    createjs.Sound.play('attack');
+
                 return self._animatePositionUpdate(p.x - self.group.getBounds().width, p.y - self.group.getBounds().height);
             }).then(function () {
-                createjs.Sound.play('attack');
-
                 return self._updatePosition();
             });
         });
@@ -163,7 +166,12 @@ CardView.prototype = {
             }).then(function (p) {
                 return self._animatePositionUpdate(p.x - self.group.getBounds().width, p.y - self.group.getBounds().height);
             }).then(function () {
-                createjs.Sound.play('attack');
+                if (self.card.owner !== other.owner) {
+                    if (self.card.damage >= 6)
+                        createjs.Sound.play('attack2');
+                    else
+                        createjs.Sound.play('attack');
+                }
 
                 if (self.card.state === CardState.DEAD || other.state === CardState.DEAD)
                     return;
@@ -388,7 +396,10 @@ CardView.prototype = {
             if (this.view.opponentHealth.hitTest(point.x, point.y) && myController.canAttackOpponent()) {
                 gameAction('attack_player', this.card.id);
                 myController.attackPlayer(this.card.id);
-                createjs.Sound.play('attack');
+                if (this.card.damage >= 6)
+                    createjs.Sound.play('attack2');
+                else
+                    createjs.Sound.play('attack');
                 this._updatePosition();
                 return;
             }
@@ -405,7 +416,14 @@ CardView.prototype = {
                 if (myController.canAttackCard(this.card.id, other.card.id)) {
                     gameAction('attack', this.card.id, other.card.id);
                     myController.attack(this.card.id, other.card.id);
-                    createjs.Sound.play('attack');
+
+                    if (this.card.owner !== other.card.owner) {
+                        if (this.card.damage >= 6)
+                            createjs.Sound.play('attack2');
+                        else
+                            createjs.Sound.play('attack');
+                    }
+
                     this._updatePosition();
                     return;
                 }
@@ -526,6 +544,10 @@ function GameStateView(model) {
 
     this.model.on('HandLimit', this._showHandLimit.bind(this));
     this.model.on('EmptyDeck', this._showEmptyDeck.bind(this));
+
+    this.model.on('sound', function(id) {
+        createjs.Sound.play(id);
+    });
 }
 
 GameStateView.prototype = {
@@ -763,6 +785,9 @@ window.addEventListener("load", function() {
     createjs.Sound.registerSound("assets/audio/endturn.mp3", 'endturn');
     createjs.Sound.registerSound("assets/audio/win.mp3", 'win');
     createjs.Sound.registerSound("assets/audio/lose.mp3", 'lose');
+    createjs.Sound.registerSound("assets/audio/attack2.mp3", 'attack2');
+    createjs.Sound.registerSound("assets/audio/heal.mp3", 'heal');
+    createjs.Sound.registerSound("assets/audio/ultimate.mp3", 'ultimate');
 
     createjs.Sound.on("fileload", function(event) {
         if (event.src === "assets/audio/mixdown1.mp3")

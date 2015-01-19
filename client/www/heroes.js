@@ -929,8 +929,10 @@ var heroes = {
         cost: 2,
         img: "2001.webp",
         cast: function(card, cards, model) {
-            if (heroes[card.type].cast)
+            if (heroes[card.type].cast) {
                 heroes[card.type].cast(card, cards, model);
+                model.emit('sound', 'ultimate');
+            }
         }
     }
 };
