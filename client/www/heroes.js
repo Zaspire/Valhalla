@@ -31,9 +31,9 @@ var heroes = {
 
             card.attack = String(function(card1, card2, model) {
                 card1.attack = undefined;
-                var d = model.dealDamageToCard(4);
+                var d = model.dealDamageToCard(card2, 4);
                 if (d > 0)
-                    model.increaseCardHealth(card, d);
+                    model.increaseCardHealth(card1, d);
 
                 var visual = card1.visualState.split(',');
                 var i = visual.indexOf('ulti');
