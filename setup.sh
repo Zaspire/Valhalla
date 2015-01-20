@@ -16,11 +16,11 @@ cd /srv/www/Valhalla.git/
 pushd server/; npm install; popd
 pushd ai/; npm install; popd
 
-ln -s /srv/www/Valhalla.git/configs/valhalla.service /etc/systemd/system/valhalla.service
-ln -s /srv/www/Valhalla.git/configs/valhalla_ai.service /etc/systemd/system/valhalla_ai.service
+touch /srv/www/Valhalla.git/server/access.log
+chown nobody /srv/www/Valhalla.git/server/access.log
 
-systemctl enable valhalla
-systemctl enable valhalla_ai
+systemctl enable /srv/www/Valhalla.git/configs/valhalla.service
+systemctl enable /srv/www/Valhalla.git/configs/valhalla_ai.service
 systemctl start valhalla
 systemctl start valhalla_ai
 
