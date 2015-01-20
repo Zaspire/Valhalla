@@ -9,4 +9,4 @@ Group=nobody
 Environment=NODE_ENV=production
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
