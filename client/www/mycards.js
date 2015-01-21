@@ -37,7 +37,7 @@ MyCards.prototype = {
         }
         _network.ajax(host + 'v1/my_cards/' + params.token, undefined, function(data) {
             var data = JSON.parse(data);
-            var x = 10;
+            var x = 30;
             var y = 10;
             for (var i = 0; i < data.length; i++) {
                 var card = self._createCard(Owner.ME, data[i].type, CardState.HAND, data[i].id);
@@ -49,10 +49,10 @@ MyCards.prototype = {
                 view.group.x = x;
                 view.group.y = y;
 
-                x += view.group.getBounds().width + 20;
+                x += view.group.getBounds().width + 40;
 
                 if (x + view.group.getBounds().width > SCREEN_WIDTH) {
-                    x = 10;
+                    x = 30;
                     y += view.group.getBounds().height + 20;
                 }
 
@@ -64,13 +64,17 @@ MyCards.prototype = {
     },
 
     _addScroll: function() {
-        var g = new createjs.Graphics();
-        g.beginStroke("red").beginFill("blue").drawRect(1200, 20, 50, 50);
-        var up = new createjs.Shape(g);
+        var up = UIUtils.raster('arrow');
+        up.scaleX = 144 / up.getBounds().width;
+        up.scaleY = up.scaleX;
+        up.x = SCREEN_WIDTH - 144;
 
-        g = new createjs.Graphics();
-        g.beginStroke("red").beginFill("blue").drawRect(1200, 700, 50, 50);
-        var down = new createjs.Shape(g);
+        var down = UIUtils.raster('arrow');
+        down.rotation = 180;
+        down.scaleX = up.scaleX;
+        down.scaleY = up.scaleX;
+        down.x = SCREEN_WIDTH;
+        down.y = SCREEN_HEIGHT;
 
         var self = this;
         down.addEventListener("pressup", function() {
@@ -93,9 +97,11 @@ MyCards.prototype = {
     },
 
     _addSaveButton: function() {
-        var g = new createjs.Graphics();
-        g.beginStroke("red").beginFill("green").drawRect(1200, 350, 50, 50);
-        var save = new createjs.Shape(g);
+        var save = UIUtils.raster('ok');
+        save.scaleX = 144 / save.getBounds().width;
+        save.scaleY = save.scaleX;
+        save.x = SCREEN_WIDTH - 144;
+        save.y = SCREEN_HEIGHT / 2 - 144 / 2;
         this._all.addChild(save);
 
         var self = this;
@@ -109,8 +115,8 @@ MyCards.prototype = {
         });
 
         var txt = new createjs.Text()
-        txt.x = 1225;
-        txt.y = 300;
+        txt.x = 1210;
+        txt.y = 290;
         txt.font = "22px Courier";
         txt.color = "#ffffff";
 
