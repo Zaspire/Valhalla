@@ -1,5 +1,7 @@
 var stage;
 
+const TURN_TIMEOUT = 90;
+
 var params = {};
 params.token = localStorage.getItem('token');
 params.gameid = localStorage.getItem('gameid');
@@ -555,6 +557,7 @@ GameStateView.prototype = {
         this._addNextTurnButton();
         this._addOpponentHealth();
         this._addPlayerInfo();
+        this._addTimer();
     },
 
     _requestExp: function(cb) {
@@ -675,8 +678,57 @@ GameStateView.prototype = {
         this.myHealth = group;
     },
 
+    _addTimer: function() {
+        var txt = new createjs.Text();
+        txt.x = 1055
+        txt.y = 235;
+        txt.font = "bold 40px Courier";
+        txt.color = "#dddddd";
+        txt.textAlign = "center";
+        this._all.addChild(txt);
+
+        var start = new Date();
+        this.model.on('changed::turn', function () {
+            start = new Date();
+        });
+        var update = (function() {
+            if (this.model.turn === Owner.ME) {
+                var d = Math.floor(((new Date()) - start) / 1000);
+                console.log(d);
+                var t = TURN_TIMEOUT - d;
+                if (t >= 0) {
+                    txt.visible = true;
+                    var m = String(Math.floor(t / 60));
+                    var s = String(t % 60);
+                    if (m.length < 2)
+                        m = '0' + m;
+                    if (s.length < 2)
+                        s = '0' + s;
+                    txt.text = m + ':' + s;
+                } else {
+                    txt.visible = false;
+                    if (this._endTurnButton.visible) {
+                        if (this.model.turn === Owner.ME) {
+                            gameAction(END_TURN);
+
+                            createjs.Sound.play('endturn');
+                        }
+                        this._endTurnButton.visible = false;
+                    }
+                }
+                if (!this._endTurnButton.visible)
+                    txt.visible = false;
+            } else {
+                txt.visible = false;
+            }
+        }).bind(this)
+        update();
+        setInterval(update, 1000);
+    },
+
     _addNextTurnButton: function() {
         var group = new createjs.Container();
+        this._endTurnButton = group;
 
         var border = UIUtils.raster('end_turn');
         border.x = 0;
