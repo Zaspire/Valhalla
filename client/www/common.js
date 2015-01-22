@@ -36,7 +36,7 @@ var cordovaDeviceReady = false;
     });
 })();
 
-function showDialog(msg, cb) {
+function showDialog(msg, cb, icon) {
     var dialog = document.createElement('div');
     dialog.className = 'bg hidden';
 
@@ -44,6 +44,13 @@ function showDialog(msg, cb) {
     img.className = 'dialog_bg';
     img.src = 'assets/dialog.webp';
     dialog.appendChild(img);
+
+    if (icon) {
+        var ic = document.createElement('img');
+        ic.className = 'dialog_icon';
+        ic.src = icon;
+        dialog.appendChild(ic);
+    }
 
     var container = document.createElement('div');
     container.className = 'dialog_text_container';
@@ -94,7 +101,7 @@ NetworkRequestQueue.prototype = {
                 msg = 'Client update required';
             showDialog(msg, function() {
                 navigator.app.exitApp();
-            });
+            }, 'assets/network_problem.png');
         });
     }
 };

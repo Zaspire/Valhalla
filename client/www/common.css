@@ -33,6 +33,13 @@ img.dialog_bg {
     top: 0;
     left: 0;
 }
+img.dialog_icon {
+    width: 20%;
+    height: auto;
+    position: absolute;
+    top: 35%;
+    left: 25%;
+}
 
 .dialog_text {
     position: absolute;
@@ -43,7 +50,7 @@ img.dialog_bg {
 }
 
 .dialog_text_container {
-    font-family:"Comic Sans MS", cursive, sans-serif;
+    font-family: "Lobster", cursive, sans-serif;
     position: absolute;
     top: 25%;
     left: 40%;
@@ -54,6 +61,7 @@ img.dialog_bg {
 .hidden {
     display: none !important;
 }
+
 @-webkit-keyframes DialogShow {
     0%   { transform: translate(0, -100% ); }
     100% { transform: translate(0, 0 ); }

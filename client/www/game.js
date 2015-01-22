@@ -590,7 +590,7 @@ GameStateView.prototype = {
             return;
 
         //FIXME: exclusive action
-        showDialog('Your Hand Is Too Full!');
+        showDialog('Your Hand Is Too Full!', undefined, 'assets/full_hand.png');
     },
 
     _showEmptyDeck: function() {
@@ -598,7 +598,7 @@ GameStateView.prototype = {
             return;
 
         //FIXME: exclusive action
-        showDialog('Your Deck Is Empty!');
+        showDialog('Your Deck Is Empty!', undefined, 'assets/no_card.png');
     },
 
     cardView: function(card) {
