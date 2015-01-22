@@ -16,19 +16,43 @@
                 width: auto;
                 transform: translate(-50%, 0%);
             }
+            .cost {
+                position: fixed;
+                top: 15%;
+                left: 50%;
+                height: 8%;
+                width: auto;
+                transform: translate(-50%, 0%);
+            }
+            .cost_text {
+                position: fixed;
+                top: 17%;
+                left: 50%;
+                font-size: 4vh;
+                transform: translate(-50%, 0%);
+                color: white;
+            }
         </style>
+        <link rel="prefetch" href="mycards.html" />
     </head>
 <body>
     <img class="bg" src="assets/glass_bg.webp"></img>
     <img class="bg" src="assets/box.png"></img>
+    <img class="cost" src="assets/cost.png"></img>
+    <div class="cost_text">5</div>
     <img class="buy_button" src="assets/buy.png" onclick="buy()" ></img>
     <script>
         var token = localStorage.getItem('token');
 
         function buy() {
             _network.ajax(host + 'v1/buy/' + token, undefined, function (data) {
-                document.write(data);
                 data = JSON.parse(data);
+                if (data.error) {
+                    showDialog('Not enough coins in your pocket', function() {
+                        window.location = 'mainmenu.html';
+                    });
+                }
+                window.location = 'mycards.html#end';
             });
         }
     </script>

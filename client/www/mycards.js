@@ -60,6 +60,10 @@ MyCards.prototype = {
                     view.highlite = true;
                 addCb(view);
             }
+            if (window.location.hash === '#end') {
+                var newY = -self._cardsContainer.getBounds().height + 2 * self._views[0].group.getBounds().height;
+                self._cardsContainer.y = newY;
+            }
         });
     },
 

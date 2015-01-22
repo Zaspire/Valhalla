@@ -10,7 +10,7 @@ var pdb = pmongo(common.config.mongo);
 
 var EXP_PER_WIN = 5, EXP_PER_LOSS = 1;
 var COINS_PER_LVL = 3;
-var PACK_PRICE = 1;
+var PACK_PRICE = 5;
 
 function xhrWithAuth(method, url, access_token) {
     var deferred = Q.defer();
@@ -139,7 +139,7 @@ exports.authorize = function(req, res) {
                 var deck = cards.slice(-common.DECK_SIZE).map(function(o) {return o.id});
                 doc = { _id: email, info: info,
                         win: 0, loss: 0,
-                        coins: 0, exp: 0, lvl: 1,
+                        coins: 7, exp: 0, lvl: 1,
                         cards: cards, deck: deck };
                 return pdb.collection('accounts').save(doc);
             });
