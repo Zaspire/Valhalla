@@ -428,6 +428,11 @@ CardView.prototype = {
 
                     this._updatePosition();
                     return;
+                } else {
+                    if (!other.card.shield && other.card.owner !== this.card.owner && myController.opponentHasShield()) {
+                        //FIXME: convert to promise
+                        showDialog('You must attack a minion with shield.', undefined, 'assets/taunt.png');
+                    }
                 }
             }
             this._updatePosition();
@@ -562,7 +567,7 @@ GameStateView.prototype = {
 
     _requestExp: function(cb) {
         var uri = this.model._host + 'v1/info/' + this.model._token;
-        _network.ajax(uri, undefined, cb);
+        _network.ajax(uri, undefined, cb, 30000);
     },
 
     queueAction: function(exclusive, cb) {
@@ -694,7 +699,6 @@ GameStateView.prototype = {
         var update = (function() {
             if (this.model.turn === Owner.ME) {
                 var d = Math.floor(((new Date()) - start) / 1000);
-                console.log(d);
                 var t = TURN_TIMEOUT - d;
                 if (t >= 0) {
                     txt.visible = true;

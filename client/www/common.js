@@ -75,8 +75,8 @@ function NetworkRequestQueue() {
     this._queue = [];
 }
 NetworkRequestQueue.prototype = {
-    ajax: function(url, data, success) {
-        this._queue.push({url: url, data: data, success: success});
+    ajax: function(url, data, success, timeout) {
+        this._queue.push({url: url, data: data, success: success, timeout: timeout});
         this.process();
     },
     process: function() {
@@ -89,7 +89,10 @@ NetworkRequestQueue.prototype = {
             return;
         var d = this._queue[0];
         var self = this;
-        $.ajax({ url: d.url, data: d.data, timeout: 5000,
+        var timeout = 5000;
+        if (d.timeout)
+            timeout = d.timeout;
+        $.ajax({ url: d.url, data: d.data, timeout: timeout,
                  headers: { "Valhalla-Client": VALHALLA_CLIENT_VERSION } }).done(function(data) {
             self._queue.shift();
             if (d.success)

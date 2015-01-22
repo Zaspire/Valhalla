@@ -190,7 +190,7 @@ GameStateModel.prototype = {
             }
             doRequest(uri, cb);
         } else {
-            _network.ajax(uri, undefined, cb);
+            _network.ajax(uri, undefined, cb, 10000);
         }
     },
 
@@ -452,7 +452,7 @@ GameStateController.prototype = {
         this.model.emit('reposition');
     },
 
-    _opponentHasShield: function() {
+    opponentHasShield: function() {
         var self = this;
         var shields = this.model._cards.filter(function (c) {
             return c.owner !== self.owner && c.state === CardState.TABLE && c.health > 0 && c.shield;
@@ -482,7 +482,7 @@ GameStateController.prototype = {
     },
 
     canAttackOpponent: function() {
-        if (this._opponentHasShield())
+        if (this.opponentHasShield())
             return false;
 
         return true;
@@ -496,7 +496,7 @@ GameStateController.prototype = {
         if (card.state !== CardState.TABLE)
             return false;
 
-        if (!card.shield && this._opponentHasShield())
+        if (!card.shield && this.opponentHasShield())
             return false;
 
         if (card.canBeAttacked)
