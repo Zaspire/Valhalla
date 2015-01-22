@@ -7,9 +7,21 @@
         <script type="text/javascript" src="common.js"></script>
         <script type="text/javascript" src="third_party/jquery-2.1.1.min.js"></script>
         <script type="text/javascript" src="cordova.js"></script>
+        <style>
+            .buy_button {
+                position: fixed;
+                top: 80%;
+                left: 50%;
+                height: 8%;
+                width: auto;
+                transform: translate(-50%, 0%);
+            }
+        </style>
     </head>
 <body>
-    <button onclick="buy()" style="height: 100px; width: 100px;">BUY</button>
+    <img class="bg" src="assets/glass_bg.webp"></img>
+    <img class="bg" src="assets/box.png"></img>
+    <img class="buy_button" src="assets/buy.png" onclick="buy()" ></img>
     <script>
         var token = localStorage.getItem('token');
 
