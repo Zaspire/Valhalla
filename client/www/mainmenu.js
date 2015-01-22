@@ -90,12 +90,9 @@ function login() {
 function updateCoins() {
     Token.get(function(token) {
         _network.ajax(host + 'v1/info/' + token, undefined, function (data) {
-            console.log(data);
             data = JSON.parse(data);
-            $('#balance').removeClass('hidden').addClass('dialog_bg');
-            $('#balance_container').css({ position: 'fixed', top: '1%', left: '86%',
-                                          "z-index": '1', width: '12%', height: '10%' });
-            $('#balance_text').text(' ' + data.coins).css({ color: "white", position: 'absolute', top: '30%', left: '10%' });
+            $('#balance').removeClass('hidden');
+            $('#balance_text').text(' ' + data.coins);
         });
     });
 }

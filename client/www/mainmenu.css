@@ -21,6 +21,24 @@ img.rotate {
     100% { -webkit-transform: translate(-50%,-50%) rotate(360deg); }
 }
 
+#balance {
+    position: fixed;
+    top: 1%;
+    left: 86%;
+    z-index: 1;
+    width: auto;
+    height: 5%;
+}
+#balance_text {
+    position: fixed;
+    top: 3.8%;
+    left: 88%;
+    z-index: 1;
+    color: white;
+    font-size: 2vh;
+    transform: translate(-50%, -50%);
+}
+
 #hourglass {
     position: fixed;
     top: 50%;
