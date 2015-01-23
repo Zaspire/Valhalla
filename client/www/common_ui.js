@@ -112,8 +112,9 @@ BasicCardView.prototype = {
         sword.y = 426;
 
         var dTxt = new createjs.Text();
-        dTxt.x = 20;
+        dTxt.x = 27;
         dTxt.y = 166;
+        dTxt.textAlign = "center";
         dTxt.font = "30px Courier";
 
         var self = this;
@@ -144,8 +145,9 @@ BasicCardView.prototype = {
         heart.y = 426;
 
         var hTxt = new createjs.Text();
-        hTxt.x = 115;
+        hTxt.x = 125;
         hTxt.y = 166;
+        hTxt.textAlign = "center";
         hTxt.font = "30px Courier";
 
         var self = this;
@@ -179,8 +181,9 @@ BasicCardView.prototype = {
         circle.y = 7;
 
         var cTxt = new createjs.Text();
-        cTxt.x = 13;
+        cTxt.x = 21;
         cTxt.y = 8;
+        cTxt.textAlign = "center";
         cTxt.font = "30px Courier";
 
         var self = this;
