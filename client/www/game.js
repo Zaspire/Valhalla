@@ -540,6 +540,10 @@ function GameStateView(model) {
         }).bind(this));
     }).bind(this));
 
+    this.model.on('OpponentLeft', function() {
+        showDialog('Opponent has left the game.', undefined, 'assets/exit.png');
+    });
+
     this.model.on('changed::state', (function() {
         if (this.state !== GameState.IN_PROGRESS)
             this._endScreen();

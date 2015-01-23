@@ -606,6 +606,8 @@ GameStateController.prototype = {
     },
 
     concede: function() {
+        if (this.owner !== Owner.ME)
+            this.model.emit('OpponentLeft');
         this.me.health = 0;
         this._log(CONCEDE);
     },
