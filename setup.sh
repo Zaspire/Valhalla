@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#mkdir /srv/www/Valhalla.git/; cd /srv/www/Valhalla.git/
+#mkdir -p /srv/www/Valhalla.git/; cd /srv/www/Valhalla.git/
 #yum install git; git init; git config receive.denyCurrentBranch ignore
 #git reset --hard
 
@@ -27,8 +27,12 @@ systemctl start valhalla_ai
 firewall-cmd --zone=public --permanent --add-port 3000/tcp
 firewall-cmd --reload
 
+chcon -Rt httpd_sys_content_t /srv/www/Valhalla.git/site
 cp configs/nginx.conf /etc/nginx/nginx.conf
 systemctl enable nginx.service
 service nginx start
 firewall-cmd --permanent --add-service=http
 firewall-cmd --reload
+
+#export NODE_ENV=production
+#node ai/create_bots.js
