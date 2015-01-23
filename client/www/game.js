@@ -291,7 +291,7 @@ CardView.prototype = {
         txt.x = 920
         txt.y = 60;
         txt.text = heroName;
-        txt.font = "40px Lobster";
+        txt.font = "47px Lobster";
         txt.color = "#dddddd";
         txt.textAlign = "center";
         group.addChild(txt);
@@ -304,6 +304,23 @@ CardView.prototype = {
         if (heroes[this.card.type].description)
             description = description.concat(heroes[this.card.type].description);
 
+        var td = [];
+        for (var i = 0; i < description.length; i++) {
+            var str = description[i];
+            if (str.length < 40) {
+                td.push(str);
+                continue;
+            }
+            var k = str.indexOf(' ', 35);
+            if (k === -1) {
+                td.push(str);
+                continue;
+            }
+            td.push(str.substr(0, k));
+            td.push(str.substr(k));
+        }
+        description = td;
+
         for (var i = 0, y = 250; i < description.length; i++, y+=40) {
             var d = description[i];
 
@@ -311,7 +328,7 @@ CardView.prototype = {
             txt.x = 920;
             txt.y = y;
             txt.text = d;
-            txt.font = "30px Niconne";
+            txt.font = "35px Niconne";
             txt.color = "#dddddd";
             txt.textAlign = "center";
             group.addChild(txt);
