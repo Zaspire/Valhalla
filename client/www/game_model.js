@@ -61,6 +61,7 @@ var PLAY_CARD = 'card';
 var ATTACK = 'attack';
 var PLAY_SPELL = 'spell';
 var DRAW_CARD = 'draw_card';
+var CONCEDE = 'concede';
 
 var HAND_LIMIT = 10;
 var TABLE_LIMIT = 5;
@@ -300,6 +301,8 @@ GameStateModel.prototype = {
         case DRAW_CARD:
             controller.drawCard(e.params[0]);
             break;
+        case CONCEDE:
+            controller.concede();
         default:
             assert(false);
         };
@@ -600,6 +603,11 @@ GameStateController.prototype = {
         this._removeDeadCards();
 
         this._log(ATTACK, id1, id2);
+    },
+
+    concede: function() {
+        this.me.health = 0;
+        this._log(CONCEDE);
     },
 
     playCard: function(id1, _card) {

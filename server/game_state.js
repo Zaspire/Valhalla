@@ -6,6 +6,7 @@ var pmongo = require('promised-mongo');
 
 var common = require('./common');
 var pdb = pmongo(common.config.mongo);
+var request = require('request');
 
 var heroes = require('./heroes').heroes;
 var Accounts = require('./account');
@@ -22,6 +23,7 @@ var DRAW_CARD = 'draw_card';
 var PLAY_CARD = 'card';
 var ATTACK = 'attack';
 var PLAY_SPELL = 'spell';
+var CONCEDE = 'concede';
 
 function generateDeck(account) {
     var deck = [];
@@ -101,6 +103,7 @@ exports.newGame = function(account1, account2) {
                           seed: Math.floor(Math.random() * 1000000000 + 1) },
                   turn: email1,
                   actionsCount: 0,
+                  timestamp: new Date(),
                   log: [] };
     state[common.base64_encode(email1)] = {hand: hand1, deck: deck1,
                                            name: getNameFromAccount(account1),
@@ -119,6 +122,7 @@ function StateModel(doc, email) {
 
     this._id = doc._id;
     this._log = doc.log;
+    this.timestamp = doc.timestamp;
 
     this.email = email;
     this.server = true;
@@ -221,7 +225,8 @@ StateModel.prototype = {
             players: [ this.email, this.opponentEmail ],
             log: this._log,
             actionsCount: this._log.length,
-            data: this.data
+            data: this.data,
+            timestamp: this.timestamp
         };
 
         var ce1 = common.base64_encode(this.email);
@@ -289,6 +294,7 @@ exports.gameAction = function(req, res) {
             break;
         case END_TURN:
             controller.endTurn();
+            model.timestamp = new Date();
             break;
         case PLAY_CARD:
             controller.playCard(id1);
@@ -299,6 +305,10 @@ exports.gameAction = function(req, res) {
         case ATTACK:
             controller.attack(id1, id2);
             break;
+        case CONCEDE:
+            assert(doc.actionsCount == id1);
+            controller.concede();
+            break;
         default:
             throw new Error('unknown action');
         };
@@ -306,8 +316,10 @@ exports.gameAction = function(req, res) {
         var r = model.serialize();
         r.initial = doc.initial;
         delete r._id;
+        if (controller.isFinished())
+            r.finished = true;
         return pdb.collection('games').findAndModifyEx({ query: { _id: doc._id, actionsCount: doc.actionsCount },
-                                                  update: { $set: r }});
+                                                         update: { $set: r }});
     }).done(function() {
         res.send('{}');
         if (model.me.health <= 0 || model.opponent.health <= 0) {
@@ -406,3 +418,19 @@ exports.gameState = function(req, res) {
         res.status(400).end();
     });
 }
+
+setInterval(function repeat() {
+    pdb.collection('games').findOne({ timestamp: { $lt: new Date(new Date() - 120 * 1000) }, finished: { $exists: false } }).then(function(doc) {
+        if (!doc)
+            return;
+        console.log(doc._id);
+
+        var url = 'http://localhost:' + common.config.server_port
+            + '/v1/game_action/' + common.crypt(doc.turn) + '/' + doc._id + '/concede/?id1=' + doc.actionsCount;
+        console.log(url);
+
+        request({ url: url, headers: {"valhalla-client": 3}}, function (error, response, body) {
+            repeat();
+        });
+    });
+}, 120 * 1000);
