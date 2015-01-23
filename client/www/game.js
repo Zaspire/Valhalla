@@ -44,6 +44,7 @@ CardView.prototype = {
     },
 
     _onStateChanged: function() {
+        var self = this;
         if (this.card.state === CardState.DEAD) {
             this._animateDeath();
             return;
@@ -57,7 +58,7 @@ CardView.prototype = {
         if (this.card.state === CardState.TABLE && this.card.shield) {
             this.view.queueAction(true, function() {
                 return new Promise(function(resolve, reject) {
-                    createjs.Sound.play('shield');
+                    self.view.playSound('shield');
                     resolve();
                 });
             });
@@ -102,9 +103,9 @@ CardView.prototype = {
                 resolve(p);
             }).then(function (p) {
                 if (self.card.damage >= 6)
-                    createjs.Sound.play('attack2');
+                    self.view.playSound('attack2');
                 else
-                    createjs.Sound.play('attack');
+                    self.view.playSound('attack');
 
                 return self._animatePositionUpdate(p.x - self.group.getBounds().width, p.y - self.group.getBounds().height);
             }).then(function () {
@@ -170,9 +171,9 @@ CardView.prototype = {
             }).then(function () {
                 if (self.card.owner !== other.owner) {
                     if (self.card.damage >= 6)
-                        createjs.Sound.play('attack2');
+                        self.view.playSound('attack2');
                     else
-                        createjs.Sound.play('attack');
+                        self.view.playSound('attack');
                 }
 
                 if (self.card.state === CardState.DEAD || other.state === CardState.DEAD)
@@ -399,9 +400,9 @@ CardView.prototype = {
                 gameAction('attack_player', this.card.id);
                 myController.attackPlayer(this.card.id);
                 if (this.card.damage >= 6)
-                    createjs.Sound.play('attack2');
+                    this.view.playSound('attack2');
                 else
-                    createjs.Sound.play('attack');
+                    this.view.playSound('attack');
                 this._updatePosition();
                 return;
             }
@@ -421,9 +422,9 @@ CardView.prototype = {
 
                     if (this.card.owner !== other.card.owner) {
                         if (this.card.damage >= 6)
-                            createjs.Sound.play('attack2');
+                            this.view.playSound('attack2');
                         else
-                            createjs.Sound.play('attack');
+                            this.view.playSound('attack');
                     }
 
                     this._updatePosition();
@@ -556,9 +557,9 @@ function GameStateView(model) {
     this.model.on('HandLimit', this._showHandLimit.bind(this));
     this.model.on('EmptyDeck', this._showEmptyDeck.bind(this));
 
-    this.model.on('sound', function(id) {
-        createjs.Sound.play(id);
-    });
+    this.model.on('sound', (function(id) {
+        this.playSound(id);
+    }).bind(this));
 }
 
 GameStateView.prototype = {
@@ -617,6 +618,11 @@ GameStateView.prototype = {
         }
 
         assert(false);
+    },
+
+    playSound: function(id) {
+        if (!this._animationDisabled)
+            createjs.Sound.play(id, { volume: 0.4 });
     },
 
     _createPlayerInfo: function(player) {
@@ -719,7 +725,7 @@ GameStateView.prototype = {
                         if (this.model.turn === Owner.ME) {
                             gameAction(END_TURN);
 
-                            createjs.Sound.play('endturn');
+                            this.playSound('endturn');
                         }
                         this._endTurnButton.visible = false;
                     }
@@ -751,17 +757,17 @@ GameStateView.prototype = {
 
         this._all.addChild(group);
 
+        var self = this;
         group.addEventListener('pressup', function(event) {
             //FIXME:
             gameAction(END_TURN);
 
-            createjs.Sound.play('endturn');
+            self.playSound('endturn');
             group.visible = false;
         });
 
         group.visible = this.model.turn === Owner.ME;
 
-        var self = this;
         this.model.on('changed::turn', function () {
             group.visible = self.model.turn === Owner.ME;
         });
@@ -785,9 +791,9 @@ GameStateView.prototype = {
             var bg = '#lose';
             if (this.model.state === GameState.WIN) {
                 bg = '#win';
-                createjs.Sound.play('win');
+                createjs.Sound.play('win', { volume: 0.5 });
             } else {
-                createjs.Sound.play('lose');
+                createjs.Sound.play('lose', { volume: 0.5 });
             }
             $(bg).addClass('bg').removeClass('hidden');
             $('#glass_bg').addClass('bg').removeClass('hidden').css({ "z-index": -1 });
@@ -851,7 +857,7 @@ window.addEventListener("load", function() {
 
     createjs.Sound.on("fileload", function(event) {
         if (event.src === "assets/audio/mixdown1.mp3")
-            createjs.Sound.play('mixdown1', { loop: -1, volume: 0.2 });
+            createjs.Sound.play('mixdown1', { loop: -1, volume: 0.4 });
     });
 
     stage = new createjs.Stage("myCanvas");
