@@ -1,17 +1,132 @@
-<html>
-  <head>
-    <title>Drunken Co. Entertainment</title>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Drunken Co. Entertainment</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
   m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
   ga('create', 'UA-58732875-1', 'auto');
   ga('send', 'pageview');
 
 </script>
-  </head>
-  <body>
-  </body>
+<style>
+  body {
+  margin: 0px !important;
+  background-color: #f5f5f5;
+  }
+  .f {
+      width: 100%;
+  height: auto;
+  padding: 1vw;
+  }
+  .name {
+      padding-top: 1vw;
+  }
+  .row {
+  border-bottom: 2px solid #d6d6d6;
+  }
+  .first-row {
+  background-color: #e5e5e5;
+  }
+  .name {
+  font-size: 28px;
+  font-weight: 300;
+  font-family: "Roboto", Arial;
+  color: #555;
+  }
+
+  .item > img {
+display: block;
+    margin-left: auto;
+  margin-right: auto;
+  }
+  .heading {
+  color: #333;
+  font-size: 28px;
+  font-weight: 100;
+  margin: 0 0 10px 0;
+  }
+  .description {
+    color: #333;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 20px;
+  overflow: hidden;
+  text-align: left;
+  }
+  .footer {
+background: #e5e5e5;
+  color: #555;
+  font-weight: 400;
+  padding-bottom: 30px;
+  }
+  .co {
+  padding-top: 1vw;
+  }
+</style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row first-row">
+                <div class="col-md-3">
+                  <img src="unnamed.png" class="f"></img>
+                </div>
+                <div class="col-md-9">
+                    <div class="name">Valhalla: Fallen Heroes</div>
+                    <a href="https://play.google.com/store/apps/details?id=co.drunken.valhalla">
+                        <img alt="Get it on Google Play" src="https://developer.android.com/images/brand/en_generic_rgb_wo_45.png" />
+                    </a>
+                    <div class="addthis_native_toolbox"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="heading">Description</div>
+                <div class="description">
+Start to play Valhalla: Fallen Heroes, an exciting online collectible card game with unique mechanics and intuitive interface. Epic free-to-play challenge, where only a great strategist like you can assemble an invincible deck from the huge selection of cards with devastating abilities!
+Show the best you can in a battle against real players all over the world!
+                 </div>
+            </div>
+            <div class="row">
+                <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+                    <ol class="carousel-indicators">
+                        <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+                        <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+                    </ol>
+
+                    <div class="carousel-inner" role="listbox">
+                        <div class="item active">
+                            <img src="screenshot1.png"></img>
+                        </div>
+                        <div class="item">
+                            <img src="screenshot2.png"></img>
+                        </div>
+                    </div>
+
+                    <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
+                        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
+                        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
+            </div>
+            <div class="row footer">
+                <div class="co">©2015 Drunken Co.</div>
+            </div>
+        </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+        <script>
+          $('.carousel').carousel();
+        </script>
+        <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-520d1df2358055fb" async="async"></script>
+    </body>
 </html>
