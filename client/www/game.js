@@ -577,6 +577,8 @@ function GameStateView(model) {
     this.model.on('sound', (function(id) {
         this.playSound(id);
     }).bind(this));
+
+    this._massAttackAnimation();
 }
 
 GameStateView.prototype = {
@@ -585,6 +587,48 @@ GameStateView.prototype = {
         this._addOpponentHealth();
         this._addPlayerInfo();
         this._addTimer();
+    },
+
+    _massAttackAnimation: function() {
+        var spriteSheet = new createjs.SpriteSheet({
+            images: [document.getElementById('mass_attack')],
+            frames: { width: 1800, height: 350 },
+            animations: {
+                mass_attack: [0, 5, "mass_attack", 0.1]
+            }
+        });
+
+        var animation = new createjs.Sprite(spriteSheet);
+        animation.scaleX = 0.5;
+        animation.scaleY = 0.5;
+        animation.visible = false;
+        this._all.addChild(animation);
+
+        var self = this;
+        var resolver;
+        this.model.on('mass_attack', function(owner) {
+            self.queueAction(true, function() {
+                return new Promise(function(resolve, reject) {
+                    if (self._animationDisabled) {
+                        resolve();
+                        return;
+                    }
+                    resolver = resolve;
+                    if (owner === Owner.ME)
+                        animation.y = SCREEN_HEIGHT / 2 - 50;
+                    else
+                        animation.y = 100;
+                    animation.bringToFront();
+                    animation.visible = true;
+                    animation.gotoAndPlay("mass_attack");
+                });
+            });
+        });
+        animation.addEventListener('animationend', function() {
+            animation.stop();
+            animation.visible = false;
+            resolver();
+        })
     },
 
     _requestExp: function(cb) {

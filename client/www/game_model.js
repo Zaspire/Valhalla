@@ -95,6 +95,23 @@ StateModelCommon.prototype = {
         h = Math.min(h, card.health);
         card.health -= h;
         return h;
+    },
+    otherOwner: function(owner) {
+        if (owner == Owner.ME)
+            return Owner.OPPONENT;
+        return Owner.ME;
+    },
+    massAttack: function(owner, d) {
+        var total = 0;
+        for (var i = 0; i < this._cards.length; i++) {
+            if (owner !== this._cards[i].owner)
+                continue;
+            if (this._cards[i].state === CardState.TABLE) {
+                total += this.dealDamageToCard(this._cards[i], d);
+            }
+        }
+        this.emit('mass_attack', owner);
+        return total;
     }
 };
 
@@ -569,8 +586,8 @@ GameStateController.prototype = {
 
         var card1 = this._myCard(id1), card2 = this._myCard(id2);
 
-        heroes[card1.type].cast(card2, this.model._cards, this.model);
         card1.emit('playSpell', card2);
+        heroes[card1.type].cast(card2, this.model._cards, this.model);
 
         card1.state = CardState.DEAD;
 

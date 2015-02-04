@@ -405,13 +405,7 @@ var heroes = {
         cost: 4,
         img: "11.webp",
         cast: function(card, cards, model) {
-            for (var i = 0; i < cards.length; i++) {
-                if (card.owner == cards[i].owner)
-                    continue;
-                if (cards[i].state === TABLE) {
-                    model.dealDamageToCard(cards[i], 2);
-                }
-            }
+            model.massAttack(model.otherOwner(card.owner), 2);
         },
         ultimateDescription: "Deal 2 damage to enemy minions."
     },
@@ -466,14 +460,7 @@ var heroes = {
         cost: 2,
         img: "14.webp",
         cast: function(card, cards, model) {
-            var bonus = 0;
-            for (var i = 0; i < cards.length; i++) {
-                if (card.owner == cards[i].owner)
-                    continue;
-                if (cards[i].state === TABLE && cards[i].health > 0) {
-                    bonus += model.dealDamageToCard(cards[i], 2);
-                }
-            }
+            var bonus = model.massAttack(model.otherOwner(card.owner), 2);
             model.increaseCardHealth(card, bonus);
         },
         ultimateDescription: "Steal 2 health from all enemy minions"
@@ -697,12 +684,7 @@ var heroes = {
 
         onNewTurn: {
             cast: function(card, model) {
-                var cards = model._cards.filter(function(c) {
-                    return c.owner !== card.owner && c.state === CardState.TABLE;
-                });
-                for (var i = 0; i < cards.length; i++) {
-                    model.dealDamageToCard(cards[i], 1);
-                }
+                model.massAttack(model.otherOwner(card.owner), 1);
             }
         },
         canAttackCard: {
