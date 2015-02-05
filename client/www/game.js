@@ -587,10 +587,10 @@ function GameStateView(model) {
     this._all = new createjs.Container();
     stage.addChild(this._all);
 
-    var bg = new createjs.Bitmap(document.getElementById('bg'));
+    var bg = UIUtils.raster('bg');
     bg.scaleX = SCREEN_WIDTH / bg.getBounds().width;
     bg.scaleY = SCREEN_HEIGHT / bg.getBounds().height;
-    bg.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+//    bg.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     this._all.addChild(bg);
 
     this.model.on('ready', this._init.bind(this));
@@ -857,7 +857,7 @@ GameStateView.prototype = {
         border.scaleX = 219 / group.getBounds().height;
         border.scaleY = border.scaleX;
 
-        group.x = 980;
+        group.x = 930;
         group.y = SCREEN_HEIGHT / 2 - group.getBounds().height / 2;
 
         this._all.addChild(group);
