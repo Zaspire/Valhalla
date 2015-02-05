@@ -55,14 +55,58 @@ CardView.prototype = {
             this._cache();
         }
         this._queuePositionUpdate();
-        if (this.card.state === CardState.TABLE && this.card.shield) {
-            this.view.queueAction(true, function() {
+        if (this.card.state === CardState.TABLE) {
+            this._addRing();
+            if (this.card.shield) {
+                this.view.queueAction(true, function() {
+                    return new Promise(function(resolve, reject) {
+                        self.view.playSound('shield');
+                        resolve();
+                    });
+                });
+            }
+        }
+    },
+
+    _addRing: function() {
+        if (!CardView.prototype._ringSpriteSheet) {
+            CardView.prototype._ringSpriteSheet = new createjs.SpriteSheet({
+                images: [document.getElementById('ring')],
+                frames: { width: 60, height: 60 },
+                animations: {
+                    ring: [0, 17, "ring", 0.5]
+                }
+            })
+        }
+
+        var animation = new createjs.Sprite(CardView.prototype._ringSpriteSheet);
+        animation.x = 157;
+        animation.y = 430;
+
+        this._group.addChild(animation);
+        this._cache();
+
+        var self = this;
+        var resolver;
+        this.card.on('ability', function() {
+            self.view.queueAction(true, function() {
                 return new Promise(function(resolve, reject) {
-                    self.view.playSound('shield');
-                    resolve();
+                    if (self.view._animationDisabled) {
+                        resolve();
+                        return;
+                    }
+                    self.group.uncache();
+                    animation.gotoAndPlay('ring');
+                    resolver = resolve;
                 });
             });
-        }
+        });
+        animation.addEventListener('animationend', function() {
+            animation.stop();
+            self._cache();
+
+            resolver();
+        });
     },
 
     _addVisualState: function() {

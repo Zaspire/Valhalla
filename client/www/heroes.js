@@ -30,6 +30,8 @@ var heroes = {
                 card.visualState = 'ulti';
 
             card.attack = String(function(card1, card2, model) {
+                card1.emit('ability');
+
                 card1.attack = undefined;
                 var d = model.dealDamageToCard(card2, 4);
                 if (d > 0)
@@ -44,6 +46,8 @@ var heroes = {
         },
         onTurnEnd: {
             cast: function(card, cards, model) {
+                card.emit('ability');
+
                 var minions = cards.filter(function(c) {
                     if (card.owner == c.owner)
                         return false;
@@ -86,13 +90,9 @@ var heroes = {
         cost: 4,
         img: "2.webp",
         cast: function(card, cards, model) {
-            for (var i = 0; i < cards.length; i++) {
-                if (card.owner == cards[i].owner)
-                    continue;
-                if (cards[i].state === TABLE) {
-                    model.dealDamageToCard(cards[i], 1);
-                }
-            }
+            card.emit('ability');
+
+            model.massAttack(model.otherOwner(card.owner), 1);
         },
         ultimateDescription: "Deal 1 damage to enemy minions"
     },
@@ -105,12 +105,16 @@ var heroes = {
         img: "3.webp",
         onPlay: {
             cast: function(card, model) {
+                card.emit('ability');
+
                 var controller = model.getController(card.owner);
                 controller.drawCard();
             }
         },
 
         cast: function(card, cards, model) {
+            card.emit('ability');
+
             var minions = cards.filter(function(c) {
                 if (card.owner == c.owner)
                     return false;
@@ -183,6 +187,8 @@ var heroes = {
 
             card.attack = String(function(card1, card2, model) {
                 if (card2.damage <= 4) {
+                    card1.emit('ability');
+
                     card1.attack = undefined;
 
                     model.increaseCardHealth(card1, card2.health);
@@ -220,6 +226,8 @@ var heroes = {
                 card.visualState = 'ulti';
 
             card.attack = String(function(card1, card2) {
+                card1.emit('ability');
+
                 card1.attack = undefined;
 
                 if (card2.maxHealth > card2.health)
@@ -244,6 +252,8 @@ var heroes = {
         cost: 4,
         img: "7.webp",
         cast: function(card, cards, model) {
+            card.emit('ability');
+
             var minions = cards.filter(function(c) {
                 if (card.owner == c.owner)
                     return false;
@@ -304,6 +314,8 @@ var heroes = {
         shield: true,
         img: "8.webp",
         cast: function(card, cards) {
+            card.emit('ability');
+
             card.damage *= 3;
         },
         ultimateDescription: "Gain 3x damage"
@@ -317,6 +329,8 @@ var heroes = {
         img: "9.webp",
         onPlay: {
             cast: function(card, model) {
+                card.emit('ability');
+
                 var card = {
                     cardType: heroes['bear'].cardType,
                     name: heroes['bear'].name,
@@ -349,6 +363,8 @@ var heroes = {
 
             card.attack = String(function(card1, card2, model) {
                 if (card2.owner === card1.owner) {
+                    card1.emit('ability');
+
                     var visual = card1.visualState.split(',');
                     var i = visual.indexOf('ulti');
                     if (i != -1)
@@ -382,6 +398,8 @@ var heroes = {
         },
         onPlay: {
             cast: function(card) {
+                card.emit('ability');
+
                 card.attacksLeft = 1;
             }
         },
@@ -389,8 +407,11 @@ var heroes = {
         ultimateDescription: "Add 4 damage each turn.",
         onNewTurn: {
             cast: function(card) {
-                if (card.__ultimate)
+                if (card.__ultimate) {
+                    card.emit('ability');
+
                     card.damage += 4;
+                }
             }
         },
         description: [
@@ -405,6 +426,8 @@ var heroes = {
         cost: 4,
         img: "11.webp",
         cast: function(card, cards, model) {
+            card.emit('ability');
+
             model.massAttack(model.otherOwner(card.owner), 2);
         },
         ultimateDescription: "Deal 2 damage to enemy minions."
@@ -415,6 +438,8 @@ var heroes = {
         ],
         onDeath: {
             cast: function(card) {
+                card.emit('ability');
+
                 card.onDeath = undefined;
                 card.health = heroes['h12'].health;
                 card.type = 'h12';
@@ -439,6 +464,8 @@ var heroes = {
         img: "13.webp",
         onPlay: {
             cast: function(card) {
+                card.emit('ability');
+
                 card.attacksLeft = 2;
             }
         },
@@ -460,6 +487,8 @@ var heroes = {
         cost: 2,
         img: "14.webp",
         cast: function(card, cards, model) {
+            card.emit('ability');
+
             var bonus = model.massAttack(model.otherOwner(card.owner), 2);
             model.increaseCardHealth(card, bonus);
         },
@@ -476,6 +505,8 @@ var heroes = {
         onTurnEnd: {
             cast: function(card, cards, model) {
                 if (card.attacksLeft) {
+                    card.emit('ability');
+
                     model.increaseCardHealth(card, 1);
                     card.damage++;
                 } else if (!card.__first) {
@@ -541,6 +572,8 @@ var heroes = {
         attack: String(function(card1, card2, model) {
             card1.attacksLeft--;
             if (card2.owner == card1.owner) {
+                card1.emit('ability');
+
                 if (card1.__ultimate) {
                     var visual = card1.visualState.split(',');
                     var i = visual.indexOf('ulti');
@@ -572,11 +605,10 @@ var heroes = {
         health: 5,
         cost: 4,
         img: "18.webp",
-        cast: function(card) {
-            if (card.__prevTurnHealth) {
-                card.health += card.__prevTurnHealth;
-                card.maxHealth = Math.max(card.health, card.maxHealth);
-            }
+        cast: function(card, cards, model) {
+            card.emit('ability');
+
+            model.increaseCardHealth(card, card.__prevTurnHealth);
         },
         ultimateDescription: "Add health from previous turn",
         description: [
@@ -589,6 +621,8 @@ var heroes = {
         },
         onNewTurn: {
             cast: function(card, model) {
+                card.emit('ability');
+
                 card.__prevTurnHealth = card.health;
 
                 var card = {
@@ -616,6 +650,8 @@ var heroes = {
         cost: 6,
         img: "19.webp",
         cast: function(card, cards, model) {
+            card.emit('ability');
+
             for (var i = 0; i < cards.length; i++) {
                 if (card.owner != cards[i].owner)
                     continue;
@@ -626,6 +662,8 @@ var heroes = {
         },
         onPlay: {
             cast: function(card) {
+                card.emit('ability');
+
                 card.attacksLeft = 1;
                 card.onPlay = undefined;
             }
@@ -656,6 +694,8 @@ var heroes = {
             else
                 card.visualState = 'ulti';
             card.attack = String(function(card1, card2) {
+                card1.emit('ability');
+
                 var visual = card1.visualState.split(',');
                 var i = visual.indexOf('ulti');
                 if (i != -1)
@@ -677,6 +717,8 @@ var heroes = {
         img: "22.webp",
         onPlay: {
             cast: function(card, model) {
+                card.emit('ability');
+
                 var controller = model.getController(card.owner);
                 controller.drawCard();
             }
@@ -684,6 +726,8 @@ var heroes = {
 
         onNewTurn: {
             cast: function(card, model) {
+                card.emit('ability');
+
                 model.massAttack(model.otherOwner(card.owner), 1);
             }
         },
@@ -703,6 +747,8 @@ var heroes = {
         },
         attack: String(function(card1, card2, model) {
             if (card1.owner === card2.owner && card1.__ultimateActive) {
+                card1.emit('ability');
+
                 var visual = card1.visualState.split(',');
                 var i = visual.indexOf('ulti');
                 if (i != -1)
@@ -755,6 +801,8 @@ var heroes = {
         img: "23.png",
         onNewTurn: {
             cast: function(card, model) {
+                card.emit('ability');
+
                 var controller = model.getController(card.owner);
                 controller.drawCard();
             }
@@ -781,6 +829,8 @@ var heroes = {
         ultimateDescription: "Gain +5 health and shield.",
         dealDamage: {
             cast: function(card, h, model) {
+                card.emit('ability');
+
                 var controller = model.getController(card.owner);
                 controller.drawCard();
 
@@ -790,6 +840,8 @@ var heroes = {
             }
         },
         cast: function(card, cards, model) {
+            card.emit('ability');
+
             card.shield = true;
             model.increaseCardHealth(card, 5);
         },
@@ -807,6 +859,8 @@ var heroes = {
         img: "26.png",
         dealDamage: {
             cast: function(card, h, model) {
+                card.emit('ability');
+
                 var d = 0;
                 if (card.__invincible !== 1) {
                     d = Math.min(card.health, h);
@@ -838,6 +892,8 @@ var heroes = {
         onTurnEnd: {
             cast: function(card, cards, model) {
                 if (card.__invincible) {
+                    card.emit('ability');
+
                     card.__invincible--;
                     if (card.__invincible) {
                         if (card.visualState.length)
