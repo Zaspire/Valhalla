@@ -10,7 +10,6 @@ function MyCards(stage) {
     var bg = new createjs.Bitmap(document.getElementById('bg'));
     bg.scaleX = SCREEN_WIDTH / bg.getBounds().width;
     bg.scaleY = SCREEN_HEIGHT / bg.getBounds().height;
-    bg.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     this._all.addChild(bg);
 
     this._cardsContainer = new createjs.Container();
