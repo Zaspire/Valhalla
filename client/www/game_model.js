@@ -320,6 +320,7 @@ GameStateModel.prototype = {
             break;
         case CONCEDE:
             controller.concede();
+            break;
         default:
             assert(false);
         };
