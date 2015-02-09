@@ -636,15 +636,15 @@ GameStateView.prototype = {
     _massAttackAnimation: function() {
         var spriteSheet = new createjs.SpriteSheet({
             images: [document.getElementById('mass_attack')],
-            frames: { width: 1800, height: 350 },
+            frames: { width: 1500, height: 400 },
             animations: {
-                mass_attack: [0, 5, "mass_attack", 0.1]
+                mass_attack: [0, 12, "mass_attack", 0.5]
             }
         });
 
         var animation = new createjs.Sprite(spriteSheet);
-        animation.scaleX = 0.5;
-        animation.scaleY = 0.5;
+        animation.scaleX = 0.6;
+        animation.scaleY = 0.6;
         animation.visible = false;
         this._all.addChild(animation);
 
@@ -659,9 +659,9 @@ GameStateView.prototype = {
                     }
                     resolver = resolve;
                     if (owner === Owner.ME)
-                        animation.y = SCREEN_HEIGHT / 2 - 50;
+                        animation.y = SCREEN_HEIGHT / 2 - 100;
                     else
-                        animation.y = 100;
+                        animation.y = 50;
                     animation.bringToFront();
                     animation.visible = true;
                     animation.gotoAndPlay("mass_attack");
