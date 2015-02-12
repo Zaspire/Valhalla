@@ -100,11 +100,14 @@ NetworkRequestQueue.prototype = {
             self._process.apply(self);
         }).fail(function(xhr) {
             var msg = 'Network problem';
-            if (xhr.status == 412)
+            var icon = 'assets/network_problem.png';
+            if (xhr.status == 412) {
                 msg = 'Client update required';
+                icon = 'assets/update.gif';
+            }
             showDialog(msg, function() {
                 navigator.app.exitApp();
-            }, 'assets/network_problem.png');
+            }, icon);
         });
     }
 };
