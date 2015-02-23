@@ -947,7 +947,7 @@ function gameAction(action, id1, id2) {
     _network.ajax(uri, data, null);
 }
 
-var model, myController, opponentController;
+var model, myController, opponentController, view;
 
 window.addEventListener("load", function() {
     createjs.Sound.registerSound("assets/audio/mixdown1.mp3", 'mixdown1');
@@ -975,7 +975,7 @@ window.addEventListener("load", function() {
     model.setOpponentController(opponentController);
     model.setMyController(myController);
 
-    var view = new GameStateView(model);
+    view = new GameStateView(model);
 
     createjs.Ticker.timingMode = createjs.Ticker.RAF;
 	createjs.Ticker.addEventListener("tick", function tick(event) {

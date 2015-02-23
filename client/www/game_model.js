@@ -254,20 +254,14 @@ GameStateModel.prototype = {
             self.turn = Owner.ME;
 
         for (var i = 0; i < data.log.length; i++) {
-            self._handleAction(data.log[i]);
+            self.__handleAction(data.log[i]);
             if (data.log[i].action === DRAW_CARD)
                 self._log.push(data.log[i]);
         }
 
         self.emit('oldMovesDone');
 
-        function doRequest() {
-            self._requestGameState(function (data) {
-                self._updateState(data)
-                setTimeout(doRequest, 2000);
-            });
-        }
-        setTimeout(doRequest, 2000);
+        self.updateState();
     },
 
     _onHealthChanged: function() {
@@ -295,7 +289,7 @@ GameStateModel.prototype = {
         assert(false);
     },
 
-    _handleAction: function(e) {
+    __handleAction: function(e) {
         var controller = this._opponentController;
         if (e.me)
             controller = this._myController;
@@ -326,6 +320,23 @@ GameStateModel.prototype = {
         };
     },
 
+    _handleAction: function(e, cb) {
+        var self = this;
+        if (!runningUnderNode && !view._animationDisabled) {
+            view.queueAction(true, function () {
+                return new Promise(function(resolve, reject) {
+                    self.__handleAction(e);
+                    resolve();
+                    cb();
+                });
+            });
+        } else {
+            this.__handleAction(e);
+            if (cb)
+                cb();
+        }
+    },
+
     _compareLogEntries: function(e1, e2) {
         if (e1.action !== e2.action)
             return false;
@@ -341,7 +352,24 @@ GameStateModel.prototype = {
         return true;
     },
 
-    _updateState: function(data) {
+    updateState: function() {
+        console.log('UPdate STATE');
+        var self = this;
+        self._requestGameState(function (data) {
+            var start = new Date();
+            self._updateState(data, function() {
+                var dt = new Date() - start;
+                console.log(dt);
+                if (dt >= 2000)
+                    self.updateState();
+                else {
+                    setTimeout(self.updateState.bind(self), 2000 - dt);
+                }
+            });
+        });
+    },
+
+    _updateState: function(data, cb) {
         var data = JSON.parse(data);
         if (!runningUnderNode)
             assert(_.isEqual(data.initial, this._initial));
@@ -350,8 +378,8 @@ GameStateModel.prototype = {
             if (!this._compareLogEntries(data.log[i], this._log[i])) {
                 if (data.log[i].action === DRAW_CARD && this._log[i].action !== DRAW_CARD) {
                     this._log.splice(i, 0, data.log[i]);
-                    this._handleAction(data.log[i]);
-                    return;
+                    this.__handleAction(data.log[i]);
+                    continue;
                 }
                 console.warn('different log');
                 console.warn(data.log[i])
@@ -359,11 +387,21 @@ GameStateModel.prototype = {
             }
         }
 
-        for (var i = this._log.length; i < data.log.length; i++) {
-            this._handleAction(data.log[i]);
-            if (data.log[i].action === DRAW_CARD)
-                this._log.push(data.log[i]);
+        var self = this;
+        var i = this._log.length;
+        function handleEntry() {
+            if (i >= data.log.length) {
+                cb();
+                return;
+            }
+            self._handleAction(data.log[i], function () {
+                if (data.log[i].action === DRAW_CARD)
+                    self._log.push(data.log[i]);
+                i++;
+                handleEntry();
+            });
         }
+        handleEntry();
     },
 
     _initCard: function(desc, card) {
