@@ -353,13 +353,11 @@ GameStateModel.prototype = {
     },
 
     updateState: function() {
-        console.log('UPdate STATE');
         var self = this;
         self._requestGameState(function (data) {
             var start = new Date();
             self._updateState(data, function() {
                 var dt = new Date() - start;
-                console.log(dt);
                 if (dt >= 2000)
                     self.updateState();
                 else {
@@ -371,8 +369,6 @@ GameStateModel.prototype = {
 
     _updateState: function(data, cb) {
         var data = JSON.parse(data);
-        if (!runningUnderNode)
-            assert(_.isEqual(data.initial, this._initial));
 
         for (var i = 0; i < Math.min(data.log.length, this._log.length); i++) {
             if (!this._compareLogEntries(data.log[i], this._log[i])) {

@@ -1,16 +1,14 @@
-var CastType = {
-    ON_DEATH: "On Death",
-    BATTLE_CRY: "Battle Cry"
-};
-var AbilityType = {
-    DAMAGE_TO_ALL: "deal 1 damage to ALL",
-};
+if (typeof(_) === "undefined") {
+    _ = function(str) {
+        return str;
+    }
+}
+
 var CardType = {
     UNKNOWN: 0,
     SPELL: 1,
     HERO: 2
 };
-
 
 //FIXME:
 var TABLE = 3;
@@ -18,7 +16,7 @@ var TABLE = 3;
 var heroes = {
     h1: {
         cardType: CardType.HERO,
-        name: "Butcher",
+        name: _("Butcher"),
         damage: 1,
         health: 5,
         cost: 3,
@@ -78,13 +76,13 @@ var heroes = {
             }
         },
         description: [
-            "At the end of each turn deal 1 damage to self and 3 random enemy minions"
+            _("At the end of each turn deal 1 damage to self and 3 random enemy minions")
         ],
-        ultimateDescription: "Feasts on minion flesh. Deal 4 damage"
+        ultimateDescription: _("Feasts on minion flesh. Deal 4 damage")
     },
     h2: {
         cardType: CardType.HERO,
-        name: "Slayer",
+        name: _("Slayer"),
         damage: 5,
         health: 4,
         cost: 4,
@@ -94,11 +92,11 @@ var heroes = {
 
             model.massAttack(model.otherOwner(card.owner), 1);
         },
-        ultimateDescription: "Deal 1 damage to enemy minions"
+        ultimateDescription: _("Deal 1 damage to enemy minions")
     },
     h3: {
         cardType: CardType.HERO,
-        name: "Medusa",
+        name: _("Medusa"),
         damage: 1,
         health: 5,
         cost: 3,
@@ -158,14 +156,14 @@ var heroes = {
                 chozen[i].attacksLeft = 0;
             }
         },
-        ultimateDescription: "Transform 2 random enemy minions into 0/3 Rock.",
+        ultimateDescription: _("Transform 2 random enemy minions into 0/3 Rock."),
         description: [
-            "Draw card."
+            _("Draw card.")
         ]
     },
     h4: {
         cardType: CardType.HERO,
-        name: "The Ent",
+        name: _("The Ent"),
         damage: 4,
         health: 4,
         cost: 4,
@@ -174,7 +172,7 @@ var heroes = {
     },
     h5: {
         cardType: CardType.HERO,
-        name: "Dark Angel",
+        name: _("Dark Angel"),
         damage: 2,
         health: 3,
         cost: 2,
@@ -209,11 +207,11 @@ var heroes = {
                 model.dealDamageToCard(card1, damage2);
             });
         },
-        ultimateDescription: "Eats enemy minion with 4 or less attack."
+        ultimateDescription: _("Eats enemy minion with 4 or less attack.")
     },
     h6: {
         cardType: CardType.HERO,
-        name: "Bloody Axe",
+        name: _("Bloody Axe"),
         damage: 1,
         health: 4,
         cost: 2,
@@ -242,11 +240,11 @@ var heroes = {
                 card1.visualState = visual.join(',');
             });
         },
-        ultimateDescription: "Kill damaged minion. Leave 1 health to undamaged"
+        ultimateDescription: _("Kill damaged minion. Leave 1 health to undamaged")
     },
     h7: {
         cardType: CardType.HERO,
-        name: "Frozen Virgin",
+        name: _("Frozen Virgin"),
         damage: 3,
         health: 6,
         cost: 4,
@@ -303,11 +301,11 @@ var heroes = {
                 froze(chozen[i]);
             }
         },
-        ultimateDescription: "Deal 3 damage to 2 random enemy minions and freeze them.",
+        ultimateDescription: _("Deal 3 damage to 2 random enemy minions and freeze them."),
     },
     h8: {
         cardType: CardType.HERO,
-        name: "Stone Giant",
+        name: _("Stone Giant"),
         damage: 3,
         health: 5,
         cost: 3,
@@ -318,11 +316,11 @@ var heroes = {
 
             card.damage *= 3;
         },
-        ultimateDescription: "Gain 3x damage"
+        ultimateDescription: _("Gain 3x damage")
     },
     h9: {
         cardType: CardType.HERO,
-        name: "Druid",
+        name: _("Druid"),
         damage: 5,
         health: 3,
         cost: 7,
@@ -381,14 +379,14 @@ var heroes = {
                 model.dealDamageToCard(card1, damage2);
             });
         },
-        ultimateDescription: "Double attack of friendly minion.",
+        ultimateDescription: _("Double attack of friendly minion."),
         description: [
-            "Summon bear."
+            _("Summon bear.")
         ],
     },
     h10: {
         cardType: CardType.HERO,
-        name: "The Sea Dragon",
+        name: _("The Sea Dragon"),
         damage: 2,
         health: 5,
         cost: 3,
@@ -404,7 +402,7 @@ var heroes = {
             }
         },
 
-        ultimateDescription: "Add 4 damage each turn.",
+        ultimateDescription: _("Add 4 damage each turn."),
         onNewTurn: {
             cast: function(card) {
                 if (card.__ultimate) {
@@ -415,12 +413,12 @@ var heroes = {
             }
         },
         description: [
-            "Charge."
+            _("Charge.")
         ]
     },
     h11: {
         cardType: CardType.HERO,
-        name: "Zeus",
+        name: _("Zeus"),
         damage: 3,
         health: 6,
         cost: 4,
@@ -430,11 +428,11 @@ var heroes = {
 
             model.massAttack(model.otherOwner(card.owner), 2);
         },
-        ultimateDescription: "Deal 2 damage to enemy minions."
+        ultimateDescription: _("Deal 2 damage to enemy minions.")
     },
     h12: {
         description: [
-            "Reborn."
+            _("Reborn.")
         ],
         onDeath: {
             cast: function(card) {
@@ -449,7 +447,7 @@ var heroes = {
             }
         },
         cardType: CardType.HERO,
-        name: "The Mad King",
+        name: _("The Mad King"),
         damage: 2,
         health: 6,
         cost: 5,
@@ -457,7 +455,7 @@ var heroes = {
     },
     h13: {
         cardType: CardType.HERO,
-        name: "The Troll",
+        name: _("The Troll"),
         damage: 2,
         health: 4,
         cost: 4,
@@ -475,13 +473,13 @@ var heroes = {
             }
         },
         description: [
-            "Charge.",
-            "Repeat attack."
+            _("Charge."),
+            _("Repeat attack.")
         ],
     },
     h14: {
         cardType: CardType.HERO,
-        name: "Prophet",
+        name: _("Prophet"),
         damage: 3,
         health: 2,
         cost: 2,
@@ -492,12 +490,12 @@ var heroes = {
             var bonus = model.massAttack(model.otherOwner(card.owner), 2);
             model.increaseCardHealth(card, bonus);
         },
-        ultimateDescription: "Steal 2 health from all enemy minions"
+        ultimateDescription: _("Steal 2 health from all enemy minions")
 
     },
     h15: {
         cardType: CardType.HERO,
-        name: "Riki",
+        name: _("Riki"),
         damage: 1,
         health: 2,
         cost: 3,
@@ -535,13 +533,13 @@ var heroes = {
             }
         },
         description: [
-            "For each idle turn gets +1,+1.",
-            "Invisible."
+            _("For each idle turn gets +1,+1."),
+            _("Invisible.")
         ],
     },
     h16: {
         cardType: CardType.HERO,
-        name: "Ranger",
+        name: _("Ranger"),
         damage: 8,
         health: 5,
         cost: 7,
@@ -549,7 +547,7 @@ var heroes = {
     },
     h17: {
         cardType: CardType.HERO,
-        name: "Omniknight",
+        name: _("Omniknight"),
         damage: 3,
         health: 5,
         cost: 3,
@@ -594,13 +592,13 @@ var heroes = {
             model.dealDamageToCard(card1, damage2);
         }),
         description: [
-            "Can heal friendly minion instead on attack."
+            _("Can heal friendly minion instead on attack.")
         ],
-        ultimateDescription: "Give friendly minion shield."
+        ultimateDescription: _("Give friendly minion shield.")
     },
     h18: {
         cardType: CardType.HERO,
-        name: "Nerub",
+        name: _("Nerub"),
         damage: 2,
         health: 5,
         cost: 4,
@@ -610,9 +608,9 @@ var heroes = {
 
             model.increaseCardHealth(card, card.__prevTurnHealth);
         },
-        ultimateDescription: "Add health from previous turn",
+        ultimateDescription: _("Add health from previous turn"),
         description: [
-            "Born spider each turn."
+            _("Born spider each turn.")
         ],
         onPlay: {
             cast: function(card) {
@@ -644,7 +642,7 @@ var heroes = {
     },
     h19: {
         cardType: CardType.HERO,
-        name: "Enchantress",
+        name: _("Enchantress"),
         damage: 6,
         health: 5,
         cost: 6,
@@ -669,13 +667,13 @@ var heroes = {
             }
         },
         description: [
-            "Charge."
+            _("Charge.")
         ],
-        ultimateDescription: "Give 3 health to friendly minions."
+        ultimateDescription: _("Give 3 health to friendly minions.")
     },
     h20: {
         cardType: CardType.HERO,
-        name: "Tauren Chieftain",
+        name: _("Tauren Chieftain"),
         damage: 4,
         health: 8,
         cost: 6,
@@ -683,7 +681,7 @@ var heroes = {
     },
     h21: {
         cardType: CardType.HERO,
-        name: "Sniper",
+        name: _("Sniper"),
         damage: 6,
         health: 2,
         cost: 4,
@@ -706,11 +704,11 @@ var heroes = {
                 card2.health = 0;
             });
         },
-        ultimateDescription: "Kill selected enemy minion"
+        ultimateDescription: _("Kill selected enemy minion")
     },
     h22: {
         cardType: CardType.HERO,
-        name: "Phoenix",
+        name: _("Phoenix"),
         damage: 3,
         health: 5,
         cost: 5,
@@ -785,16 +783,16 @@ var heroes = {
             model.dealDamageToCard(card1, damage2);
             card1.attacksLeft--;
         }),
-        ultimateDescription: "Grant friendly minion invincibility for one attack",
+        ultimateDescription: _("Grant friendly minion invincibility for one attack"),
         description: [
-            "Draw card.",
-            "Burn enemy minions.",
-            "(deal 1 damage each turn)"
+            _("Draw card."),
+            _("Burn enemy minions."),
+            _("(deal 1 damage each turn)")
         ]
     },
     h23: {
         cardType: CardType.HERO,
-        name: "Andromeda",
+        name: _("Andromeda"),
         damage: 1,
         health: 4,
         cost: 3,
@@ -808,12 +806,12 @@ var heroes = {
             }
         },
         description: [
-            "Draw additional card on each turn."
+            _("Draw additional card on each turn.")
         ]
     },
     h24: {
         cardType: CardType.HERO,
-        name: "Doombringer",
+        name: _("Doombringer"),
         damage: 12,
         health: 12,
         cost: 10,
@@ -821,12 +819,12 @@ var heroes = {
     },
     h25: {
         cardType: CardType.HERO,
-        name: "Centaur",
+        name: _("Centaur"),
         damage: 2,
         health: 4,
         cost: 3,
         img: "25.png",
-        ultimateDescription: "Gain +5 health and shield.",
+        ultimateDescription: _("Gain +5 health and shield."),
         dealDamage: {
             cast: function(card, h, model) {
                 card.emit('ability');
@@ -846,13 +844,13 @@ var heroes = {
             model.increaseCardHealth(card, 5);
         },
         description: [
-            "Whenever this minion takes damage,",
-            "Draw a card."
+            _("Whenever this minion takes damage,"),
+            _("Draw a card.")
         ]
     },
     h26: {
         cardType: CardType.HERO,
-        name: "Swift Claw",
+        name: _("Swift Claw"),
         damage: 3,
         health: 6,
         cost: 4,
@@ -908,16 +906,16 @@ var heroes = {
             card.__invincible = 2;
         },
 
-        ultimateDescription: "invincible for next turn",
+        ultimateDescription: _("invincible for next turn"),
 
         description: [
-            "Whenever this minion takes damage, draw a card and gain +3 damage"
+            _("Whenever this minion takes damage, draw a card and gain +3 damage")
         ]
     },
 
     creep1: {
         cardType: CardType.HERO,
-        name: "Weak Creep",
+        name: _("Weak Creep"),
         damage: 1,
         health: 1,
         cost: 1,
@@ -925,7 +923,7 @@ var heroes = {
     },
     bear: {
         cardType: CardType.HERO,
-        name: "Bear",
+        name: _("Bear"),
         damage: 3,
         health: 7,
         cost: 0,
@@ -933,7 +931,7 @@ var heroes = {
     },
     rock: {
         cardType: CardType.HERO,
-        name: "Rock",
+        name: _("Rock"),
         damage: 0,
         health: 3,
         cost: 0,
@@ -942,7 +940,7 @@ var heroes = {
     },
     spider: {
         cardType: CardType.HERO,
-        name: "Spider",
+        name: _("Spider"),
         damage: 1,
         health: 1,
         cost: 0,
@@ -951,19 +949,19 @@ var heroes = {
 
     chainArmor: {
         cardType: CardType.SPELL,
-        name: "Chain Armor",
+        name: _("Chain Armor"),
         cost: 3,
         cast: function(card, cards, model) {
             model.increaseCardHealth(card, 2);
             card.damage += 1;
         },
         description: [
-            "Give +1damage/+2health."
+            _("Give +1damage/+2health.")
         ]
     },
     ultimate: {
         cardType: CardType.SPELL,
-        name: "Ultimate",
+        name: _("Ultimate"),
         cost: 2,
         img: "2001.webp",
         cast: function(card, cards, model) {
@@ -977,7 +975,5 @@ var heroes = {
 
 if (typeof exports !== 'undefined') {
     exports.heroes = heroes;
-    exports.AbilityType = AbilityType;
-    exports.CastType = CastType;
     exports.CardType = CardType;
 }

@@ -114,3 +114,12 @@ NetworkRequestQueue.prototype = {
 };
 
 var _network = new NetworkRequestQueue();
+
+var translation = {};
+function _(str) {
+    var lang = navigator.language;
+    if (translation[lang] && translation[lang][str]) {
+        return translation[lang][str];
+    }
+    return str;
+}
