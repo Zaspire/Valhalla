@@ -208,7 +208,7 @@ GameStateModel.prototype = {
             }
             doRequest(uri, cb);
         } else {
-            _network.ajax(uri, undefined, cb, 10000);
+            _network.ajax(uri, undefined, cb, 20000);
         }
     },
 

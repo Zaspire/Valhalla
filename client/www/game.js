@@ -953,7 +953,7 @@ function gameAction(action, id1, id2) {
         data.id1 = id1;
     if (id2 !== undefined)
         data.id2 = id2;
-    _network.ajax(uri, data, null);
+    _network.ajax(uri, data, null, 20000);
 }
 
 var model, myController, opponentController, view;
