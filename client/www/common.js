@@ -123,3 +123,7 @@ function _(str) {
     }
     return str;
 }
+
+function isTranslated() {
+    return _("Riki") !== "Riki";
+}

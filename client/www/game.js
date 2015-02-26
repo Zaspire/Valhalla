@@ -336,6 +336,8 @@ CardView.prototype = {
         txt.y = 60;
         txt.text = heroName;
         txt.font = "47px Lobster";
+        if (isTranslated())
+            txt.font = "47px Comic";
         txt.color = "#dddddd";
         txt.textAlign = "center";
         group.addChild(txt);
@@ -351,17 +353,22 @@ CardView.prototype = {
         var td = [];
         for (var i = 0; i < description.length; i++) {
             var str = description[i];
+            console.log(str.length)
             if (str.length < 40) {
                 td.push(str);
                 continue;
             }
-            var k = str.indexOf(' ', 35);
-            if (k === -1) {
-                td.push(str);
-                continue;
+            while (str.length > 40) {
+                var k = str.indexOf(' ', 35);
+                if (k === -1) {
+                    td.push(str);
+                    str = "";
+                    break;
+                }
+                td.push(str.substr(0, k));
+                str = str.substr(k);
             }
-            td.push(str.substr(0, k));
-            td.push(str.substr(k));
+            td.push(str);
         }
         description = td;
 
@@ -373,6 +380,8 @@ CardView.prototype = {
             txt.y = y;
             txt.text = d;
             txt.font = "35px Niconne";
+            if (isTranslated())
+                txt.font = "35px Comic";
             txt.color = "#dddddd";
             txt.textAlign = "center";
             group.addChild(txt);
