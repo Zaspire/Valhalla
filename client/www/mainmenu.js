@@ -117,7 +117,10 @@ function activateMatchMaking() {
     $('#page3').removeClass('hidden');
 
     Token.get(function(token) {
-        $('#avg_wait_time').text('Average wait time 00:' + (30 - Math.floor((Math.random() * 5))))
+        $('#avg_wait_time').text(_("Average wait time") + ' 00:' + (30 - Math.floor((Math.random() * 5))));
+
+        if (isTranslated())
+            $('#avg_wait_time').css({ "font-family": "time new roman", "font-size": "28px" });
         var params = {};
         params.token = token;
 

@@ -345,7 +345,7 @@ CardView.prototype = {
 
         var description = [];
         if (heroes[this.card.type].ultimateDescription) {
-            description.push('Ultimate: ' + heroes[this.card.type].ultimateDescription);
+            description.push(_("Ultimate:") + ' ' + heroes[this.card.type].ultimateDescription);
         }
         if (heroes[this.card.type].description)
             description = description.concat(heroes[this.card.type].description);
@@ -354,12 +354,12 @@ CardView.prototype = {
         for (var i = 0; i < description.length; i++) {
             var str = description[i];
             console.log(str.length)
-            if (str.length < 40) {
+            if (str.length < 38) {
                 td.push(str);
                 continue;
             }
-            while (str.length > 40) {
-                var k = str.indexOf(' ', 35);
+            while (str.length > 38) {
+                var k = str.lastIndexOf(' ', 38);
                 if (k === -1) {
                     td.push(str);
                     str = "";
@@ -502,7 +502,7 @@ CardView.prototype = {
                 } else {
                     if (!other.card.shield && other.card.owner !== this.card.owner && myController.opponentHasShield()) {
                         //FIXME: convert to promise
-                        showDialog('You must attack a minion with shield.', undefined, 'assets/taunt.png');
+                        showDialog(_("You must attack a minion with shield."), undefined, 'assets/taunt.png');
                     }
                 }
             }
@@ -612,7 +612,7 @@ function GameStateView(model) {
     }).bind(this));
 
     this.model.on('OpponentLeft', function() {
-        showDialog('Opponent has left the game.', undefined, 'assets/exit.png');
+        showDialog(_("Opponent has left the game."), undefined, 'assets/exit.png');
     });
 
     this.model.on('changed::state', (function() {
@@ -714,7 +714,7 @@ GameStateView.prototype = {
             return;
 
         //FIXME: exclusive action
-        showDialog('Your Hand Is Too Full!', undefined, 'assets/full_hand.png');
+        showDialog(_("Your Hand Is Too Full!"), undefined, 'assets/full_hand.png');
     },
 
     _showEmptyDeck: function() {
@@ -722,7 +722,7 @@ GameStateView.prototype = {
             return;
 
         //FIXME: exclusive action
-        showDialog('Your Deck Is Empty!', undefined, 'assets/no_card.png');
+        showDialog(_("Your Deck Is Empty!"), undefined, 'assets/no_card.png');
     },
 
     cardView: function(card) {

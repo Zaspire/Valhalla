@@ -100,10 +100,10 @@ NetworkRequestQueue.prototype = {
                 d.success(data);
             self._process.apply(self);
         }).fail(function(xhr) {
-            var msg = 'Network problem';
+            var msg = _("Network problem");
             var icon = 'assets/network_problem.png';
             if (xhr.status == 412) {
-                msg = 'Client update required';
+                msg = _('Client update required');
                 icon = 'assets/update.gif';
             }
             showDialog(msg, function() {
@@ -117,7 +117,10 @@ var _network = new NetworkRequestQueue();
 
 var translation = {};
 function _(str) {
-    var lang = navigator.language;
+    var lang = navigator.language.toLowerCase();
+    if (!lang || !lang.match(/^[a-z]+/))
+        return str;
+    lang = lang.match(/^[a-z]+/)[0];
     if (translation[lang] && translation[lang][str]) {
         return translation[lang][str];
     }
