@@ -602,6 +602,11 @@ function GameStateView(model) {
 //    bg.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     this._all.addChild(bg);
 
+    var graphics = new createjs.Graphics().beginFill("#fff").drawRoundRect(10, 560, 1040, SCREEN_HEIGHT - 560, 20, 20, 20, 20);
+    var hand = new createjs.Shape(graphics);
+    hand.alpha = 0.4;
+    this._all.addChild(hand);
+
     this.model.on('ready', this._init.bind(this));
     this.model.on('onNewCard', this._onNewCard.bind(this));
     this.model.on('oldMovesDone', (function() {
