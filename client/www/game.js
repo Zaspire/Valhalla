@@ -1,3 +1,5 @@
+"use strict";
+
 var stage;
 
 const TURN_TIMEOUT = 90;
@@ -44,7 +46,7 @@ CardView.prototype = {
     },
 
     _onStateChanged: function() {
-        var self = this;
+        let self = this;
         if (this.card.state === CardState.DEAD) {
             this._animateDeath();
             return;
@@ -79,15 +81,15 @@ CardView.prototype = {
             })
         }
 
-        var animation = new createjs.Sprite(CardView.prototype._ringSpriteSheet);
+        let animation = new createjs.Sprite(CardView.prototype._ringSpriteSheet);
         animation.x = 157;
         animation.y = 430;
 
         this._group.addChild(animation);
         this._cache();
 
-        var self = this;
-        var resolver;
+        let self = this;
+        let resolver;
         this.card.on('ability', function() {
             self.view.queueAction(true, function() {
                 return new Promise(function(resolve, reject) {
@@ -110,9 +112,9 @@ CardView.prototype = {
     },
 
     _addVisualState: function() {
-        var fg = {};
+        let fg = {};
 
-        var self = this;
+        let self = this;
         function update() {
             var visual = self.card.visualState.split(',');
             for (var i in fg) {
@@ -137,13 +139,13 @@ CardView.prototype = {
         if (this.card.owner === Owner.ME)
             return;
 
-        var self = this;
+        let self = this;
         this.view.queueAction(true, function () {
             return new Promise(function (resolve, reject) {
                 self.group.bringToFront();
 
-                var bounds = self.view.myHealth.getBounds();
-                var p = { x: self.view.myHealth.x + bounds.width / 2, y: self.view.myHealth.y + bounds.height / 2};
+                let bounds = self.view.myHealth.getBounds();
+                let p = { x: self.view.myHealth.x + bounds.width / 2, y: self.view.myHealth.y + bounds.height / 2};
                 resolve(p);
             }).then(function (p) {
                 if (self.card.damage >= 6)
@@ -161,16 +163,16 @@ CardView.prototype = {
     _animatePlaySpell: function(other) {
         if (this.card.owner === Owner.ME)
             return;
-        var self = this;
+        let self = this;
         this.view.queueAction(true, function () {
             return new Promise(function (resolve, reject) {
-                var otherView = self.view.cardView(other);
+                let otherView = self.view.cardView(other);
 
                 if (!self.view._animationDisabled)
                     self.group.bringToFront();
 
-                var bounds = otherView.group.getBounds();
-                var p = { x: otherView.group.x + bounds.width / 2, y: otherView.group.y + bounds.height / 2};
+                let bounds = otherView.group.getBounds();
+                let p = { x: otherView.group.x + bounds.width / 2, y: otherView.group.y + bounds.height / 2};
                 resolve(p);
             }).then(function (p) {
                 return self._animatePositionUpdate(p.x, p.y);
@@ -185,7 +187,7 @@ CardView.prototype = {
                     }, 400);
                 });
             }).then(function () {
-                var deadCards = this.model._cards.filter(function(c) {
+                let deadCards = self.model._cards.filter(function(c) {
                     return c.state === CardState.DEAD;
                 });
                 if (deadCards)
@@ -199,16 +201,16 @@ CardView.prototype = {
         if (this.card.owner === Owner.ME)
             return;
 
-        var self = this;
+        let self = this;
         this.view.queueAction(true, function () {
             return new Promise(function (resolve, reject) {
-                var otherView = self.view.cardView(other);
+                let otherView = self.view.cardView(other);
 
                 if (!self.view._animationDisabled)
                     self.group.bringToFront();
 
-                var bounds = otherView.group.getBounds();
-                var p = { x: otherView.group.x + bounds.width / 2, y: otherView.group.y + bounds.height / 2};
+                let bounds = otherView.group.getBounds();
+                let p = { x: otherView.group.x + bounds.width / 2, y: otherView.group.y + bounds.height / 2};
                 resolve(p);
             }).then(function (p) {
                 return self._animatePositionUpdate(p.x - self.group.getBounds().width, p.y - self.group.getBounds().height);
@@ -229,7 +231,7 @@ CardView.prototype = {
     },
 
     _animateDeath: function() {
-        var self = this;
+        let self = this;
         this.view.queueAction(true, function() {
             return new Promise(function (resolve, reject) {
                 if (self.view._animationDisabled || self.card.cardType === CardType.SPELL) {
@@ -238,7 +240,7 @@ CardView.prototype = {
                     return;
                 }
                 self.group.uncache();
-                var death = UIUtils.raster('death');
+                let death = UIUtils.raster('death');
                 death.x = 0;
                 death.y = 0;
                 death.alpha = 0;
@@ -253,7 +255,7 @@ CardView.prototype = {
     },
 
     _animatePositionUpdate: function(newX, newY) {
-        var self = this;
+        let self = this;
         return new Promise(function (resolve, reject) {
             if (self.view._animationDisabled) {
                 self.group.x = newX;
@@ -273,7 +275,7 @@ CardView.prototype = {
     },
 
     _updateHighlite: function() {
-        var value = true;
+        let value = true;
 
         if (this.model.turn !== this.card.owner)
             value = false;
@@ -318,20 +320,20 @@ CardView.prototype = {
     },
 
     _magnify: function(event) {
-        var group = new createjs.Container();
+        let group = new createjs.Container();
         this.parent.addChild(group);
         group.alpha = 0;
 
         this.group.bringToFront();
         this.group.uncache();
 
-        var graphics = new createjs.Graphics().beginFill("#000000").drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-        var bg = new createjs.Shape(graphics);
+        let graphics = new createjs.Graphics().beginFill("#000000").drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        let bg = new createjs.Shape(graphics);
 
         group.addChild(bg);
 
-        var heroName = heroes[this.card.type].name;
-        var txt = new createjs.Text();
+        let heroName = heroes[this.card.type].name;
+        let txt = new createjs.Text();
         txt.x = 920
         txt.y = 60;
         txt.text = heroName;
@@ -343,23 +345,22 @@ CardView.prototype = {
         group.addChild(txt);
 
 
-        var description = [];
+        let description = [];
         if (heroes[this.card.type].ultimateDescription) {
             description.push(_("Ultimate:") + ' ' + heroes[this.card.type].ultimateDescription);
         }
         if (heroes[this.card.type].description)
             description = description.concat(heroes[this.card.type].description);
 
-        var td = [];
-        for (var i = 0; i < description.length; i++) {
-            var str = description[i];
-            console.log(str.length)
+        let td = [];
+        for (let i = 0; i < description.length; i++) {
+            let str = description[i];
             if (str.length < 38) {
                 td.push(str);
                 continue;
             }
             while (str.length > 38) {
-                var k = str.lastIndexOf(' ', 38);
+                let k = str.lastIndexOf(' ', 38);
                 if (k === -1) {
                     td.push(str);
                     str = "";
@@ -372,10 +373,10 @@ CardView.prototype = {
         }
         description = td;
 
-        for (var i = 0, y = 250; i < description.length; i++, y+=40) {
-            var d = description[i];
+        for (let i = 0, y = 250; i < description.length; i++, y+=40) {
+            let d = description[i];
 
-            var txt = new createjs.Text();
+            let txt = new createjs.Text();
             txt.x = 920;
             txt.y = y;
             txt.text = d;
@@ -389,16 +390,16 @@ CardView.prototype = {
 
 //        this.group.bringToFront();
         graphics = new createjs.Graphics().beginFill("#ff0000").drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-        var fg = new createjs.Shape(graphics);
+        let fg = new createjs.Shape(graphics);
         fg.alpha = 0.01;
 
 //FIXME: add only after complete
-        var self = this;
+        let self = this;
 
-        var time = 700;
-        var prevScale = this.group.scaleX;
+        const time = 700;
+        let prevScale = this.group.scaleX;
 
-        var origX = self.group.x, origY = self.group.y;
+        let origX = self.group.x, origY = self.group.y;
         fg.addEventListener('mousedown', function(event) {
             event.propagationStopped = true;
 
@@ -416,7 +417,7 @@ CardView.prototype = {
 
         this.view.blockAnimation();
 
-        var c = SCREEN_HEIGHT / self.group.getBounds().height;
+        let c = SCREEN_HEIGHT / self.group.getBounds().height;
         createjs.Tween.get(this.group).to({ scaleX: c, scaleY: c }, time);
         createjs.Tween.get(group).to({ alpha: 1 }, time);
         createjs.Tween.get(this.group).to({ x: 0, y: 0 }, time);
@@ -444,8 +445,8 @@ CardView.prototype = {
                 gameAction(PLAY_CARD, this.card.id);
                 return;
             } else {
-                for (var i = 0; i < this.view.cards.length; i++) {
-                    var other = this.view.cards[i]
+                for (let i = 0; i < this.view.cards.length; i++) {
+                    let other = this.view.cards[i]
                     if (this === other)
                         continue;
                     if (other.card.state !== CardState.TABLE)
@@ -465,7 +466,7 @@ CardView.prototype = {
             }
         }
         if (this.card.state === CardState.TABLE) {
-            var point = this.view.opponentHealth.globalToLocal(event.stageX, event.stageY);
+            let point = this.view.opponentHealth.globalToLocal(event.stageX, event.stageY);
             if (this.view.opponentHealth.hitTest(point.x, point.y) && myController.canAttackOpponent()) {
                 gameAction('attack_player', this.card.id);
                 myController.attackPlayer(this.card.id);
@@ -476,9 +477,9 @@ CardView.prototype = {
                 this._updatePosition();
                 return;
             }
-            for (var i = 0; i < this.view.cards.length; i++) {
+            for (let i = 0; i < this.view.cards.length; i++) {
                 //FIXME:
-                var other = this.view.cards[i];
+                let other = this.view.cards[i];
                 if (this === other)
                     continue;
                 if (other.card.state !== CardState.TABLE)
@@ -512,7 +513,7 @@ CardView.prototype = {
     },
 
     _queuePositionUpdate: function() {
-        var self = this;
+        let self = this;
         this._updateHighlite();
         this.view.queueAction(false, function() {
             return self._updatePosition();
@@ -520,32 +521,32 @@ CardView.prototype = {
     },
 
     _updatePosition: function() {
-        var card = this.card;
-        var cardView = this.group;
+        let card = this.card;
+        let cardView = this.group;
 
-        var cards = this.model._cards.filter(function(c) {
+        let cards = this.model._cards.filter(function(c) {
             return c.owner === card.owner && c.state === card.state;
         });
-        var index = cards.indexOf(card);
+        let index = cards.indexOf(card);
         if (index === -1)
             return;
 
         if (this.card.state === CardState.DECK) {
-            var old = this.group.visible;
+            let old = this.group.visible;
             this.group.visible = index === 0;
             if (old !== this.group.visible)
                 this._cache();
         }
 
-        var newX, newY;
+        let newX, newY;
 
         switch (card.state) {
         case CardState.HAND:
             {
-                var required = cards.length * (20 + cardView.getBounds().width);
-                var avaliable = SCREEN_WIDTH - this.view.myHealth.getBounds().width;
+                let required = cards.length * (20 + cardView.getBounds().width);
+                let avaliable = SCREEN_WIDTH - this.view.myHealth.getBounds().width;
 
-                var offset = 0;
+                let offset = 0;
                 if (required > avaliable) {
                     offset = (required - avaliable) / (cards.length - 1);
                 }
@@ -596,14 +597,14 @@ function GameStateView(model) {
     this._all = new createjs.Container();
     stage.addChild(this._all);
 
-    var bg = UIUtils.raster('bg');
+    let bg = UIUtils.raster('bg');
     bg.scaleX = SCREEN_WIDTH / bg.getBounds().width;
     bg.scaleY = SCREEN_HEIGHT / bg.getBounds().height;
 //    bg.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     this._all.addChild(bg);
 
-    var graphics = new createjs.Graphics().beginFill("#fff").drawRoundRect(10, 560, 1040, SCREEN_HEIGHT - 560, 20, 20, 20, 20);
-    var hand = new createjs.Shape(graphics);
+    let graphics = new createjs.Graphics().beginFill("#fff").drawRoundRect(10, 560, 1040, SCREEN_HEIGHT - 560, 20, 20, 20, 20);
+    let hand = new createjs.Shape(graphics);
     hand.alpha = 0.4;
     this._all.addChild(hand);
 
@@ -648,7 +649,7 @@ GameStateView.prototype = {
     },
 
     _massAttackAnimation: function() {
-        var spriteSheet = new createjs.SpriteSheet({
+        let spriteSheet = new createjs.SpriteSheet({
             images: [document.getElementById('mass_attack')],
             frames: { width: 1500, height: 400 },
             animations: {
@@ -656,14 +657,14 @@ GameStateView.prototype = {
             }
         });
 
-        var animation = new createjs.Sprite(spriteSheet);
+        let animation = new createjs.Sprite(spriteSheet);
         animation.scaleX = 0.6;
         animation.scaleY = 0.6;
         animation.visible = false;
         this._all.addChild(animation);
 
-        var self = this;
-        var resolver;
+        let self = this;
+        let resolver;
         this.model.on('mass_attack', function(owner) {
             self.queueAction(true, function() {
                 return new Promise(function(resolve, reject) {
@@ -690,13 +691,13 @@ GameStateView.prototype = {
     },
 
     _requestExp: function(cb) {
-        var uri = this.model._host + 'v1/info/' + this.model._token;
+        let uri = this.model._host + 'v1/info/' + this.model._token;
         _network.ajax(uri, undefined, cb, 30000);
     },
 
     queueAction: function(exclusive, cb) {
         if (exclusive) {
-            var t = this._promiseQueue;
+            let t = this._promiseQueue;
             this._promiseQueue = [];
             t.push(this._exclusiveAction);
             //FIXME: report error if rejected
@@ -731,7 +732,7 @@ GameStateView.prototype = {
     },
 
     cardView: function(card) {
-        for (var i = 0; i < this.cards.length; i++) {
+        for (let i = 0; i < this.cards.length; i++) {
             if (this.cards[i].card == card)
                 return this.cards[i];
         }
@@ -745,18 +746,18 @@ GameStateView.prototype = {
     },
 
     _createPlayerInfo: function(player) {
-        var _group = new createjs.Container();
-        var group = new createjs.Container();
+        let _group = new createjs.Container();
+        let group = new createjs.Container();
         group.addChild(_group);
 
-        var border = UIUtils.raster('hm');
+        let border = UIUtils.raster('hm');
         border.x = 0;
         border.y = 0;
         _group.addChild(border);
 
-        var self = this;
+        let self = this;
 
-        var healthTxt = new createjs.Text();
+        let healthTxt = new createjs.Text();
         healthTxt.x = 80;
         healthTxt.y = 98;
         healthTxt.text = '\u2764' + player.health;
@@ -767,7 +768,7 @@ GameStateView.prototype = {
         healthTxt.font = "26px Courier";
         group.addChild(healthTxt);
 
-        var txt = new createjs.Text();
+        let txt = new createjs.Text();
         txt.x = 80;
         txt.y = 19;
         txt.text = '\u262F' + player.mana;
@@ -777,7 +778,7 @@ GameStateView.prototype = {
         txt.font = "26px Courier";
         group.addChild(txt);
 
-        var nameTxt = new createjs.Text()
+        let nameTxt = new createjs.Text()
         nameTxt.x = 108;
         nameTxt.y = 64;
         nameTxt.text = player.name.length > 12 ? player.name.substr(0, 10) + '...' : player.name;
@@ -794,7 +795,7 @@ GameStateView.prototype = {
     },
 
     _addOpponentHealth: function() {
-        var group = this._createPlayerInfo(this.model.opponent);
+        let group = this._createPlayerInfo(this.model.opponent);
         group.x = SCREEN_WIDTH - group.getBounds().width;
         group.y = 0;
         this._all.addChild(group);
@@ -803,7 +804,7 @@ GameStateView.prototype = {
     },
 
     _addPlayerInfo: function() {
-        var group = this._createPlayerInfo(this.model.me);
+        let group = this._createPlayerInfo(this.model.me);
 
         group.x = SCREEN_WIDTH - group.getBounds().width;
         group.y = SCREEN_HEIGHT - group.getBounds().height;
@@ -813,7 +814,7 @@ GameStateView.prototype = {
     },
 
     _addTimer: function() {
-        var txt = new createjs.Text();
+        let txt = new createjs.Text();
         txt.x = 1055
         txt.y = 235;
         txt.font = "bold 40px Courier";
@@ -821,18 +822,18 @@ GameStateView.prototype = {
         txt.textAlign = "center";
         this._all.addChild(txt);
 
-        var start = new Date();
+        let start = new Date();
         this.model.on('changed::turn', function () {
             start = new Date();
         });
-        var update = (function() {
+        let update = (function() {
             if (this.model.turn === Owner.ME) {
-                var d = Math.floor(((new Date()) - start) / 1000);
-                var t = TURN_TIMEOUT - d;
+                let d = Math.floor(((new Date()) - start) / 1000);
+                let t = TURN_TIMEOUT - d;
                 if (t >= 0) {
                     txt.visible = true;
-                    var m = String(Math.floor(t / 60));
-                    var s = String(t % 60);
+                    let m = String(Math.floor(t / 60));
+                    let s = String(t % 60);
                     if (m.length < 2)
                         m = '0' + m;
                     if (s.length < 2)
@@ -860,10 +861,10 @@ GameStateView.prototype = {
     },
 
     _addNextTurnButton: function() {
-        var group = new createjs.Container();
+        let group = new createjs.Container();
         this._endTurnButton = group;
 
-        var border = UIUtils.raster('end_turn');
+        let border = UIUtils.raster('end_turn');
         border.x = 0;
         border.y = 0;
         group.addChild(border);
@@ -876,7 +877,7 @@ GameStateView.prototype = {
 
         this._all.addChild(group);
 
-        var self = this;
+        let self = this;
         group.addEventListener('pressup', function(event) {
             //FIXME:
             gameAction(END_TURN);
@@ -893,8 +894,8 @@ GameStateView.prototype = {
     },
 
     _onNewCard: function(card) {
-        var self = this;
-        var cardView = new CardView(this.model, card, this._all, this);
+        let self = this;
+        let cardView = new CardView(this.model, card, this._all, this);
 
         this.cards.push(cardView);
     },
@@ -907,7 +908,7 @@ GameStateView.prototype = {
             exp = JSON.parse(exp);
 
             $('#myCanvas').addClass('hidden');
-            var bg = '#lose';
+            let bg = '#lose';
             if (this.model.state === GameState.WIN) {
                 bg = '#win';
                 createjs.Sound.play('win', { volume: 0.5 });
@@ -917,20 +918,20 @@ GameStateView.prototype = {
             $(bg).addClass('bg').removeClass('hidden');
             $('#glass_bg').addClass('bg').removeClass('hidden').css({ "z-index": -1 });
 
-            var textNode = $('<div/>').text('LVL:' + this.exp.lvl);
+            let textNode = $('<div/>').text('LVL:' + this.exp.lvl);
             textNode.css({ position: 'fixed', top: '10%', left: '10%',
                            "z-index": '1', "font-family": '"Comic Sans MS", cursive, sans-serif',
                            "font-size": '50px', color: 'white' });
             $('body').append(textNode);
 
-            var e = $('<meter/>');
+            let e = $('<meter/>');
             e.css({ position: 'fixed', top: '90%', left: '30%',
                     width: '40%', "z-index": '1',
                     background: 'white', padding: '2px' });
             $('body').append(e);
 
             e.attr('min', this.exp.lvlExp).attr('max', this.exp.nextLvlExp).attr('value', this.exp.exp);
-            var animate = (function () {
+            let animate = (function () {
                 createjs.Tween.get(e[0]).to({ value: exp.exp }, 2000);
             }).bind(this);
             if (exp.exp > this.exp.nextLvlExp) {
@@ -951,9 +952,9 @@ GameStateView.prototype = {
 };
 
 function gameAction(action, id1, id2) {
-    var uri = host + 'v1/game_action/' + params.token + '/' + params.gameid + '/' + action + '/';
+    let uri = host + 'v1/game_action/' + params.token + '/' + params.gameid + '/' + action + '/';
 
-    var data = {};
+    let data = {};
     if (id1 !== undefined)
         data.id1 = id1;
     if (id2 !== undefined)

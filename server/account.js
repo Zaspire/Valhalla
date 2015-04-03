@@ -1,19 +1,20 @@
-var assert = require('assert');
-var Q = require('q');
-var XMLHttpRequest = require('xhr2');
-var pmongo = require('promised-mongo');
+"use strict";
+const assert = require('assert');
+const Q = require('q');
+const XMLHttpRequest = require('xhr2');
+const pmongo = require('promised-mongo');
 
-var common = require('./common');
-var heroes = require('./heroes');
+const common = require('./common');
+const heroes = require('./heroes');
 
-var pdb = pmongo(common.config.mongo);
+const pdb = pmongo(common.config.mongo);
 
-var EXP_PER_WIN = 5, EXP_PER_LOSS = 1;
-var COINS_PER_LVL = 3;
-var PACK_PRICE = 5;
+const EXP_PER_WIN = 5, EXP_PER_LOSS = 1;
+const COINS_PER_LVL = 3;
+const PACK_PRICE = 5;
 
 function xhrWithAuth(method, url, access_token) {
-    var deferred = Q.defer();
+    let deferred = Q.defer();
     function requestComplete() {
         if (this.status != 200) {
             deferred.reject();
@@ -26,7 +27,7 @@ function xhrWithAuth(method, url, access_token) {
         }
     }
 
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.open(method, url);
     xhr.setRequestHeader('Authorization', 'Bearer ' + access_token);
     xhr.onload = requestComplete;
@@ -40,7 +41,7 @@ function getUserInfo(token) {
 }
 
 function starterCards() {
-    var type2count = {
+    let type2count = {
         'h1': 1,
         'h2': 1,
         'h3': 1,
@@ -70,12 +71,12 @@ function starterCards() {
         'ultimate': 5,
         'creep1': 5
     };
-    var res = [];
-    for (var id in type2count) {
+    let res = [];
+    for (let id in type2count) {
         assert(id in heroes.heroes);
-        var type = heroes.heroes[id];
-        var card = {type: id, damage: type.damage, cost: type.cost, health: type.health };
-        for (var i = 0; i <type2count[id]; i++)
+        let type = heroes.heroes[id];
+        let card = {type: id, damage: type.damage, cost: type.cost, health: type.health };
+        for (let i = 0; i <type2count[id]; i++)
             res.push(common.clone(card));
     }
     return res;
@@ -83,8 +84,8 @@ function starterCards() {
 
 exports.addBotAccount = function(name, id) {
     pdb.collection('cards').insert(starterCards()).then(function(cards) {
-        var cards = cards.map(function (o) {o.id = String(o._id); delete o._id; return o;});
-        var deck = cards.slice(-common.DECK_SIZE).map(function(o) {return o.id});
+        cards = cards.map(function (o) {o.id = String(o._id); delete o._id; return o;});
+        let deck = cards.slice(-common.DECK_SIZE).map(function(o) {return o.id});
         doc = { _id: id, info: { nickname: name }, win: 0, loss: 0,
                 coins: 10, exp: 0, lvl: 1,
                 cards: cards, deck: deck };
@@ -119,14 +120,14 @@ exports.addWin = function(email) {
 }
 
 exports.authorize = function(req, res) {
-    var token = req.params.gtoken;
-    var email = req.params.email;
-    var info;
+    let token = req.params.gtoken;
+    let email = req.params.email;
+    let info;
 
     getUserInfo(token).then(function(response) {
         info = response;
-        for (var i = 0; i < response.emails.length; i++) {
-            var o = response.emails[i];
+        for (let i = 0; i < response.emails.length; i++) {
+            let o = response.emails[i];
             if (o.value == email) {
                 return pdb.collection('accounts').findOne({ _id: email });
             }
@@ -135,8 +136,8 @@ exports.authorize = function(req, res) {
     }).then(function(doc) {
         if (!doc) {
             return pdb.collection('cards').insert(starterCards()).then(function(cards) {
-                var cards = cards.map(function (o) {o.id = String(o._id); delete o._id; return o;});
-                var deck = cards.slice(-common.DECK_SIZE).map(function(o) {return o.id});
+                cards = cards.map(function (o) {o.id = String(o._id); delete o._id; return o;});
+                let deck = cards.slice(-common.DECK_SIZE).map(function(o) {return o.id});
                 doc = { _id: email, info: info,
                         win: 0, loss: 0,
                         coins: 7, exp: 0, lvl: 1,
@@ -155,13 +156,13 @@ exports.authorize = function(req, res) {
 }
 
 exports.myCards = function(req, res) {
-    var email = req.email;
+    let email = req.email;
     pdb.collection('accounts').findOne({ _id: email }).done(function(doc) {
         if (!doc) {
             res.status(400).end();
             return;
         }
-        for (var i = 0; i < doc.cards.length; i++) {
+        for (let i = 0; i < doc.cards.length; i++) {
             if (doc.deck.indexOf(doc.cards[i].id) != -1)
                 doc.cards[i].selected = true;
         }
@@ -173,8 +174,8 @@ exports.myCards = function(req, res) {
 }
 
 exports.setDeck = function(req, res) {
-    var email = req.email;
-    var deck = req.query.deck;
+    let email = req.email;
+    let deck = req.query.deck;
 
     if (!Array.isArray(deck) && deck.length != common.DECK_SIZE) {
         res.status(400).end();
@@ -184,7 +185,7 @@ exports.setDeck = function(req, res) {
         if (!doc)
             throw new Error('account does not exist');
 
-        var cards = doc.cards.filter(function(e) {
+        let cards = doc.cards.filter(function(e) {
             return deck.indexOf(e.id) != -1;
         });
         if (cards.length != common.DECK_SIZE)
@@ -202,12 +203,12 @@ exports.setDeck = function(req, res) {
 }
 
 function cardsForSale() {
-    var cards = [];
-    for (var i = 1;; i++) {
-        var id = 'h' + i;
+    let cards = [];
+    for (let i = 1;; i++) {
+        let id = 'h' + i;
         if (!(id in heroes.heroes))
             break;
-        var type = heroes.heroes[id];
+        let type = heroes.heroes[id];
         cards.push({type: id, damage: type.damage, cost: type.cost, health: type.health });
     }
 
@@ -215,14 +216,14 @@ function cardsForSale() {
 }
 
 exports.buyCards = function(req, res) {
-    var email = req.email;
+    let email = req.email;
     pdb.collection('accounts').findAndModify({ query: { _id: email, coins: { $gte: PACK_PRICE }},
                                                "new": true,
                                                update: { $inc: { coins: -PACK_PRICE } } }).then(function (doc) {
         if (!doc[0])
             return null;
         else {
-            var cards = common.shuffle(cardsForSale()).slice(0, 4);
+            let cards = common.shuffle(cardsForSale()).slice(0, 4);
             return pdb.collection('cards').insert(cards);
         }
     }).then(function(cards) {
@@ -246,14 +247,14 @@ exports.buyCards = function(req, res) {
 }
 
 exports.getAccountInfo = function(req, res) {
-    var email = req.email;
+    let email = req.email;
     pdb.collection('accounts').findOne({ _id: email }).then(function(doc) {
         if (!doc)
             throw new Error('account does not exist');
         return { exp: doc.exp, coins: doc.coins };
     }).done(function(o) {
-        var exp = o.exp;
-        var r = {
+        let exp = o.exp;
+        let r = {
             exp: exp,
             coins: o.coins,
             lvl: expToLvl(exp)

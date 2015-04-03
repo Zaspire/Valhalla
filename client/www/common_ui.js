@@ -1,4 +1,5 @@
-UIUtils = {
+"use strict";
+var UIUtils = {
     raster: function(id) {
         return new createjs.Bitmap(document.getElementById(id));
     }
@@ -28,7 +29,7 @@ BasicCardView.prototype = {
 
     _init: function() {
         // FIXME: remove all listeners on destroy
-        var group = new createjs.Container();
+        let group = new createjs.Container();
         this._group = group;
         this.group = new createjs.Container();
         this.group.addChild(this._group);
@@ -55,15 +56,15 @@ BasicCardView.prototype = {
     },
 
     _addBG: function() {
-        var bg = UIUtils.raster('bs');
+        let bg = UIUtils.raster('bs');
         this._bg = bg;
         bg.x = 0;
         bg.y = 0;
         this._group.addChild(bg);
 
-        var self = this;
+        let self = this;
         function update() {
-            var source = 'bs';
+            let source = 'bs';
             if (self.card.state === CardState.DEAD || self.card.state === CardState.TABLE || self.card.state === CardState.HAND && self.card.owner === Owner.ME)
                 source = 'fg';
             bg.image = document.getElementById(source);
@@ -74,8 +75,8 @@ BasicCardView.prototype = {
     },
 
     _addHeroImage: function() {
-        var self = this;
-        var hero = null;
+        let self = this;
+        let hero = null;
         function update() {
             if (hero)
                 hero.remove();
@@ -92,10 +93,10 @@ BasicCardView.prototype = {
     _addHighlite: function() {
         if (this.card.owner === Owner.OPPONENT)
             return;
-        var graphics = new createjs.Graphics().setStrokeStyle(8).beginStroke("#00ff00").drawRoundRect(0, 0, 378, 512, 40, 40, 40, 40);
-        var border = new createjs.Shape(graphics);
+        let graphics = new createjs.Graphics().setStrokeStyle(8).beginStroke("#00ff00").drawRoundRect(0, 0, 378, 512, 40, 40, 40, 40);
+        let border = new createjs.Shape(graphics);
 
-        var self = this;
+        let self = this;
         function updateVisibility() {
             border.visible = self.highlite;
             self._cache()
@@ -107,17 +108,17 @@ BasicCardView.prototype = {
     },
 
     _addDamage: function() {
-        var sword = UIUtils.raster('sword');
+        let sword = UIUtils.raster('sword');
         sword.x = 105;
         sword.y = 426;
 
-        var dTxt = new createjs.Text();
+        let dTxt = new createjs.Text();
         dTxt.x = 27;
         dTxt.y = 166;
         dTxt.textAlign = "center";
         dTxt.font = "30px Courier";
 
-        var self = this;
+        let self = this;
         function updateText() {
             dTxt.visible = self.card.damage !== undefined;
             sword.visible = self.card.damage !== undefined;
@@ -140,19 +141,19 @@ BasicCardView.prototype = {
     },
 
     _addHealth: function() {
-        var heart = UIUtils.raster('heart');
+        let heart = UIUtils.raster('heart');
         heart.x = 225;
         heart.y = 426;
 
-        var hTxt = new createjs.Text();
+        let hTxt = new createjs.Text();
         hTxt.x = 125;
         hTxt.y = 166;
         hTxt.textAlign = "center";
         hTxt.font = "30px Courier";
 
-        var self = this;
+        let self = this;
         function updateText() {
-            var visible = self.card.health !== undefined;
+            let visible = self.card.health !== undefined;
             hTxt.visible = visible;
             heart.visible = visible;
             if (visible) {
@@ -176,17 +177,17 @@ BasicCardView.prototype = {
     },
 
     _addCost: function() {
-        var circle = UIUtils.raster('circle');
+        let circle = UIUtils.raster('circle');
         circle.x = 7;
         circle.y = 7;
 
-        var cTxt = new createjs.Text();
+        let cTxt = new createjs.Text();
         cTxt.x = 21;
         cTxt.y = 8;
         cTxt.textAlign = "center";
         cTxt.font = "30px Courier";
 
-        var self = this;
+        let self = this;
         function updateText() {
             cTxt.visible = self.card.state === CardState.HAND;
             circle.visible = cTxt.visible;
@@ -202,11 +203,11 @@ BasicCardView.prototype = {
     },
 
     _addShield: function() {
-        var bg = UIUtils.raster('shield');
+        let bg = UIUtils.raster('shield');
         bg.x = 280;
         bg.y = 10;
 
-        var self = this;
+        let self = this;
         function update() {
             bg.visible = self.card.shield;
             bg.bringToFront();
@@ -221,11 +222,11 @@ BasicCardView.prototype = {
 };
 
 function insertHeroImages() {
-    for (var id in heroes) {
+    for (let id in heroes) {
         if (!heroes[id].img)
             continue;
 
-        var img = document.createElement("img");
+        let img = document.createElement("img");
         img.src = "assets/heroes/" + heroes[id].img;
         img.style.display = "none";
         img.id = id;

@@ -1,17 +1,17 @@
-var assert = require('assert');
-var Q = require('q');
-var pmongo = require('promised-mongo');
+"use strict";
+const assert = require('assert');
+const Q = require('q');
+const pmongo = require('promised-mongo');
 
-var common = require('./common');
+const common = require('./common');
+const game_state = require('./game_state');
 
-var game_state = require('./game_state');
-
-var pdb = pmongo(common.config.mongo);
+const pdb = pmongo(common.config.mongo);
 
 function generateDeck(account) {
-    var deck = [];
-    for (var i = 0; i < account.deck.length; i++) {
-        var card = account.cards.filter(function(o) {
+    let deck = [];
+    for (let i = 0; i < account.deck.length; i++) {
+        let card = account.cards.filter(function(o) {
             return account.deck[i] == o.id;
         });
         assert(card.length == 1);
@@ -25,23 +25,23 @@ function generateDeck(account) {
 }
 
 function onNewGame(email1, email2) {
-    var accounts = pdb.collection('accounts');
-    var account1;
+    let accounts = pdb.collection('accounts');
+    let account1;
     return accounts.findOne({ _id: email1 }).then(function (doc) {
         account1 = doc;
         return accounts.findOne({ _id: email2 });
     }).then(function (doc) {
-        var account2 = doc;
+        let account2 = doc;
 
-        var state = game_state.newGame(account1, account2);
+        let state = game_state.newGame(account1, account2);
 
         return pdb.collection('games').insert(state);
     });
 }
 
 exports.matchmaking = function(req, res) {
-    var bot = req.query.bot;
-    var email = req.email;
+    let bot = req.query.bot;
+    let email = req.email;
     if (bot) {
         bot = common.decrypt(bot);
         if (bot.indexOf('BOT:') == 0)
@@ -50,12 +50,12 @@ exports.matchmaking = function(req, res) {
             bot = false;
     }
 
-    var matchmaking = pdb.collection('matchmaking');
+    let matchmaking = pdb.collection('matchmaking');
     matchmaking.findOne({ $or: [{ _id: email}, { opponent: email }]}).then(function (doc) {
         if (doc) {
             return { gameid: doc.gameid };
         }
-        var query = { opponent: { $exists: false } };
+        let query = { opponent: { $exists: false } };
         if (bot) {
             query.time = { $lt: new Date(new Date() - 30000) };
         }

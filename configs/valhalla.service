@@ -1,5 +1,5 @@
 [Service]
-ExecStart=/usr/bin/node /srv/www/Valhalla.git/server/main.js
+ExecStart=/usr/bin/node --harmony /srv/www/Valhalla.git/server/main.js
 Restart=always
 StandardOutput=syslog
 StandardError=syslog

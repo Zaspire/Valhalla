@@ -1,14 +1,15 @@
-var env = process.env.NODE_ENV || 'development';
+"use strict";
+const env = process.env.NODE_ENV || 'development';
 
-var crypto = require('crypto');
+const crypto = require('crypto');
 
-var config = require('./config.' + env + '.json');
+const config = require('./config.' + env + '.json');
 
 function crypt(str) {
-    var cipher = crypto.createCipher('aes-256-cbc', config.aes_key);
+    let cipher = crypto.createCipher('aes-256-cbc', config.aes_key);
     cipher.setAutoPadding(true);
 
-    var t = [];
+    let t = [];
     t.push(cipher.update(str, 'utf-8', 'hex'));
     t.push(cipher.final('hex'));
     return t.join('');
@@ -20,8 +21,8 @@ console.log(crypt('example@gmail.com'));
 
 function decrypt(str) {
     // FIXME: verify data
-    var decipher = crypto.createDecipher('aes-256-cbc', config.aes_key);
-    var t = [];
+    let decipher = crypto.createDecipher('aes-256-cbc', config.aes_key);
+    let t = [];
     t.push(decipher.update(str, 'hex', 'utf-8'));
     t.push(decipher.final('utf-8'));
     return t.join('');
@@ -32,12 +33,12 @@ exports.clone = function(obj) {
 }
 
 exports.base64_encode = function(str) {
-    var b = new Buffer(str);
+    let b = new Buffer(str);
     return b.toString('base64');
 }
 
 exports.shuffle = function(o){
-    for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+    for(let j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
     return o;
 };
 

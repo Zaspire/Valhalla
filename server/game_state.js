@@ -1,34 +1,35 @@
-var assert = require('assert');
-var _ = require('underscore');
+"use strict";
+const assert = require('assert');
+const _ = require('underscore');
 
-var mongodb = require('mongodb');
-var pmongo = require('promised-mongo');
+const mongodb = require('mongodb');
+const pmongo = require('promised-mongo');
 
-var common = require('./common');
-var pdb = pmongo(common.config.mongo);
-var request = require('request');
+const common = require('./common');
+const pdb = pmongo(common.config.mongo);
+const request = require('request');
 
-var heroes = require('./heroes').heroes;
-var Accounts = require('./account');
-var GameStateController = require('../ai/game_model').GameStateController;
-var Owner = require('../ai/game_model').Owner;
-var CardState = require('../ai/game_model').CardState;
-var GameState = require('../ai/game_model').GameState;
-var StateModelCommon = require('../ai/game_model').StateModelCommon;
-var SillyRandom = require('../client/www/random.js');
+const heroes = require('./heroes').heroes;
+const Accounts = require('./account');
+const GameStateController = require('../ai/game_model').GameStateController;
+const Owner = require('../ai/game_model').Owner;
+const CardState = require('../ai/game_model').CardState;
+const GameState = require('../ai/game_model').GameState;
+const StateModelCommon = require('../ai/game_model').StateModelCommon;
+const SillyRandom = require('../client/www/random.js');
 
-var ATTACK_PLAYER = 'attack_player';
-var END_TURN = 'finish';
-var DRAW_CARD = 'draw_card';
-var PLAY_CARD = 'card';
-var ATTACK = 'attack';
-var PLAY_SPELL = 'spell';
-var CONCEDE = 'concede';
+const ATTACK_PLAYER = 'attack_player';
+const END_TURN = 'finish';
+const DRAW_CARD = 'draw_card';
+const PLAY_CARD = 'card';
+const ATTACK = 'attack';
+const PLAY_SPELL = 'spell';
+const CONCEDE = 'concede';
 
 function generateDeck(account) {
-    var deck = [];
-    for (var i = 0; i < account.deck.length; i++) {
-        var card = account.cards.filter(function(o) {
+    let deck = [];
+    for (let i = 0; i < account.deck.length; i++) {
+        let card = account.cards.filter(function(o) {
             return account.deck[i] == o.id;
         });
         assert(card.length == 1);
@@ -43,7 +44,7 @@ function generateDeck(account) {
 
 exports.newGame = function(account1, account2) {
     function createCard(doc) {
-        var o = common.clone(heroes[doc.type]);
+        let o = common.clone(heroes[doc.type]);
 
         o.id = doc.id;
         o.type = doc.type;
@@ -71,8 +72,8 @@ exports.newGame = function(account1, account2) {
 
         return o;
     }
-    var email1 = account1._id;
-    var email2 = account2._id;
+    let email1 = account1._id;
+    let email2 = account2._id;
     function getNameFromAccount(account) {
         if (!account.info)
             return 'Claire'; //FIXME: Bot
@@ -84,12 +85,12 @@ exports.newGame = function(account1, account2) {
             return account.info.displayName;
         return '_';
     }
-    var deck1 = generateDeck(account1).map(createCard);
-    var deck2 = generateDeck(account2).map(createCard);
-    var hand1 = [];
-    var hand2 = [];
-    for (var i = 0; i < 4; i++) {
-        var card = deck1.shift();
+    let deck1 = generateDeck(account1).map(createCard);
+    let deck2 = generateDeck(account2).map(createCard);
+    let hand1 = [];
+    let hand2 = [];
+    for (let i = 0; i < 4; i++) {
+        let card = deck1.shift();
         card.state = CardState.HAND;
         hand1.push(card);
 
@@ -98,7 +99,7 @@ exports.newGame = function(account1, account2) {
         hand2.push(card);
     }
 
-    var state = { players: [email1, email2],
+    let state = { players: [email1, email2],
                   data: { nextId: Math.floor(Math.random() * 1000000 + 1),
                           seed: Math.floor(Math.random() * 1000000000 + 1) },
                   turn: email1,
@@ -134,8 +135,8 @@ function StateModel(doc, email) {
     this.opponentEmail.splice(this.opponentEmail.indexOf(email), 1);
     this.opponentEmail = this.opponentEmail[0];
 
-    var me = doc[common.base64_encode(email)];
-    var opponent = doc[common.base64_encode(this.opponentEmail)];
+    let me = doc[common.base64_encode(email)];
+    let opponent = doc[common.base64_encode(this.opponentEmail)];
 
     this.turn = (doc.turn == email) ? Owner.ME: Owner.OPPONENT;
 
@@ -157,25 +158,25 @@ function StateModel(doc, email) {
 
     this._cards = [];
 
-    for (var i = 0; i < me.hand.length; i++) {
-        var card = me.hand[i];
-        var c = this._createCard(card, Owner.ME, card.state);
+    for (let i = 0; i < me.hand.length; i++) {
+        let card = me.hand[i];
+        let c = this._createCard(card, Owner.ME, card.state);
         this._cards.push(c);
     }
-    for (var i = 0; i < me.deck.length; i++) {
-        var card = me.deck[i];
-        var c = this._createCard(card, Owner.ME, CardState.DECK);
+    for (let i = 0; i < me.deck.length; i++) {
+        let card = me.deck[i];
+        let c = this._createCard(card, Owner.ME, CardState.DECK);
         this._cards.push(c);
     }
 
-    for (var i = 0; i < opponent.deck.length; i++) {
-        var card = opponent.deck[i];
-        var c = this._createCard(card, Owner.OPPONENT, CardState.DECK);
+    for (let i = 0; i < opponent.deck.length; i++) {
+        let card = opponent.deck[i];
+        let c = this._createCard(card, Owner.OPPONENT, CardState.DECK);
         this._cards.push(c);
     }
-    for (var i = 0; i < opponent.hand.length; i++) {
-        var card = opponent.hand[i];
-        var c = this._createCard(card, Owner.OPPONENT, card.state);
+    for (let i = 0; i < opponent.hand.length; i++) {
+        let card = opponent.hand[i];
+        let c = this._createCard(card, Owner.OPPONENT, card.state);
         this._cards.push(c);
     }
 }
@@ -184,7 +185,7 @@ StateModel.prototype = {
     __proto__: StateModelCommon.prototype,
 
     _createCard: function(card, owner, state) {
-        var o = common.clone(card);
+        let o = common.clone(card);
 
         o.emit = function() {}
         assert(o.state === state);
@@ -208,7 +209,7 @@ StateModel.prototype = {
         o.id = String(o.id);
         if (!o.visualState)
             o.visualState = '';
-        var card = this._createCard(o, o.owner, o.state);
+        let card = this._createCard(o, o.owner, o.state);
         this._cards.push(card);
     },
 
@@ -219,7 +220,7 @@ StateModel.prototype = {
 
     serialize: function() {
         this.data.seed = this.random.state;
-        var doc = {
+        let doc = {
             _id: this._id,
             turn: this.turn == Owner.ME? this.email: this.opponentEmail,
             players: [ this.email, this.opponentEmail ],
@@ -229,8 +230,8 @@ StateModel.prototype = {
             timestamp: this.timestamp
         };
 
-        var ce1 = common.base64_encode(this.email);
-        var ce2 = common.base64_encode(this.opponentEmail);
+        let ce1 = common.base64_encode(this.email);
+        let ce2 = common.base64_encode(this.opponentEmail);
 
         doc[ce1] = { health: this.me.health,
                      mana: this.me.mana,
@@ -257,7 +258,7 @@ StateModel.prototype = {
 };
 
 GameStateController.prototype._log = function(action, p1, p2) {
-    var email = this.model.email;
+    let email = this.model.email;
     if (action == DRAW_CARD) {
         if (p2 != Owner.ME)
             email = this.model.opponentEmail
@@ -266,20 +267,20 @@ GameStateController.prototype._log = function(action, p1, p2) {
 }
 
 exports.gameAction = function(req, res) {
-    var email = req.email;
-    var gameid = req.gameid;
-    var action = req.params.action;
-    var id1 = req.query.id1;
-    var id2 = req.query.id2;
+    let email = req.email;
+    let gameid = req.gameid;
+    let action = req.params.action;
+    let id1 = req.query.id1;
+    let id2 = req.query.id2;
 
-    var model;
+    let model;
     pdb.collection('games').findOne({ _id: new mongodb.ObjectID(gameid) }).then(function (doc) {
         if (!doc)
             throw new Error('incorrect gameid');
 
         model = new StateModel(doc, email);
-        var controller = new GameStateController(model, Owner.ME);
-        var opponentController = new GameStateController(model, Owner.OPPONENT);
+        let controller = new GameStateController(model, Owner.ME);
+        let opponentController = new GameStateController(model, Owner.OPPONENT);
 
         model.setMyController(controller);
         model.setOpponentController(opponentController);
@@ -313,7 +314,7 @@ exports.gameAction = function(req, res) {
             throw new Error('unknown action');
         };
 
-        var r = model.serialize();
+        let r = model.serialize();
         r.initial = doc.initial;
         delete r._id;
         if (controller.isFinished())
@@ -323,7 +324,7 @@ exports.gameAction = function(req, res) {
     }).done(function() {
         res.send('{}');
         if (model.me.health <= 0 || model.opponent.health <= 0) {
-            var looser, winer;
+            let loser, winer;
             if (model.me.health > 0) {
                 loser = model.opponentEmail;
                 winer = email;
@@ -346,8 +347,8 @@ exports.gameAction = function(req, res) {
 };
 
 exports.gameState = function(req, res) {
-    var email = req.email;
-    var gameid = req.gameid;
+    let email = req.email;
+    let gameid = req.gameid;
 
     pdb.collection('games').findOne({ _id: new mongodb.ObjectID(gameid) }).then(function (doc) {
         if (!doc)
@@ -355,7 +356,7 @@ exports.gameState = function(req, res) {
 
         assert(doc.players.indexOf(email) != -1);
 
-        var opponentEmail = common.clone(doc.players);
+        let opponentEmail = common.clone(doc.players);
         opponentEmail.splice(opponentEmail.indexOf(email), 1);
         opponentEmail = opponentEmail[0];
 
@@ -365,11 +366,11 @@ exports.gameState = function(req, res) {
             });
         }
 
-        var opponentState = doc.initial[common.base64_encode(opponentEmail)];
-        var myState = doc.initial[common.base64_encode(email)];
+        let opponentState = doc.initial[common.base64_encode(opponentEmail)];
+        let myState = doc.initial[common.base64_encode(email)];
 
-        var log = doc.log.map(function (e) {
-            var r = { action: e.action, params: e.params};
+        let log = doc.log.map(function (e) {
+            let r = { action: e.action, params: e.params};
             if (e.email == email)
                 r.me = true;
             if (r.action === END_TURN && e.params[1]) {
@@ -387,7 +388,7 @@ exports.gameState = function(req, res) {
             return r;
         });
 
-        var result = { log: log,
+        let result = { log: log,
                        initial: {
                            turn: doc.initial.turn == email,
                            data: doc.initial.data,
@@ -425,7 +426,7 @@ setInterval(function repeat() {
             return;
         console.log(doc._id);
 
-        var url = 'http://localhost:' + common.config.server_port
+        let url = 'http://localhost:' + common.config.server_port
             + '/v1/game_action/' + common.crypt(doc.turn) + '/' + doc._id + '/concede/?id1=' + doc.actionsCount;
         console.log(url);
 

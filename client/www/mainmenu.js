@@ -1,15 +1,16 @@
+"use strict";
 createjs.Sound.registerSound("assets/audio/mainmenu.mp3", 'mainmenu');
 createjs.Sound.registerSound("assets/audio/start.mp3", 'start');
 createjs.Sound.registerSound("assets/audio/mm2.mp3", 'mm2');
 
-SoundUtils = {
+var SoundUtils = {
     __current: null,
     play: function(id) {
         if (id === SoundUtils.__current)
             return;
         SoundUtils.__current = id;
         createjs.Sound.stop();
-        var res = createjs.Sound.play(id, { loop: -1 });
+        let res = createjs.Sound.play(id, { loop: -1 });
         if (res.playState === createjs.Sound.PLAY_FAILED) {
             createjs.Sound.on("fileload", function(event) {
                 if (event.id === SoundUtils.__current)
@@ -31,7 +32,7 @@ var Token = {
     __token: null,
     __q: [],
     _init: function() {
-        var val = localStorage.getItem('token');
+        let val = localStorage.getItem('token');
         if (val) {
             Token.__token = val;
             activateMainMenu();
@@ -47,7 +48,7 @@ var Token = {
     },
     set: function(token) {
         Token.__token = token;
-        for (var i = 0; i < Token.__q.length; i++)
+        for (let i = 0; i < Token.__q.length; i++)
             Token.__q[i](token);
         Token.__q = [];
     },
@@ -121,7 +122,7 @@ function activateMatchMaking() {
 
         if (isTranslated())
             $('#avg_wait_time').css({ "font-family": "time new roman", "font-size": "28px" });
-        var params = {};
+        let params = {};
         params.token = token;
 
         function request() {
@@ -138,11 +139,11 @@ function activateMatchMaking() {
         }
         request();
 
-        time = 0;
+        let time = 0;
         setInterval(function() {
             time++;
-            var m = String(Math.floor(time / 60));
-            var sec = String(time % 60);
+            let m = String(Math.floor(time / 60));
+            let sec = String(time % 60);
             if (m.length === 1)
                 m = '0' + m;
             if (sec.length === 1)

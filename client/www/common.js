@@ -1,3 +1,4 @@
+"use strict";
 var host = 'http://192.168.1.9:3000/';
 
 var GA_ACCOUNT = 'UA-56813809-1';
@@ -9,14 +10,14 @@ var ANALYTICS_VIEW_NAME = null;
 var cordovaDeviceReady = false;
 
 (function() {
-    var errors = [];
-    var ready = false;
+    let errors = [];
+    let ready = false;
     function reportErrors() {
         if (!ready)
             return;
-        var arr = errors;
+        let arr = errors;
         errors = [];
-        for (var i = 0; i < arr.length; i++) {
+        for (let i = 0; i < arr.length; i++) {
             analytics.trackEvent('error', arr[i].message, arr[i].filename, arr[i].lineno);
             analytics.trackException(arr[i].stack, true);
         }
@@ -38,26 +39,26 @@ var cordovaDeviceReady = false;
 })();
 
 function showDialog(msg, cb, icon) {
-    var dialog = document.createElement('div');
+    let dialog = document.createElement('div');
     dialog.className = 'bg hidden';
 
-    var img = document.createElement('img');
+    let img = document.createElement('img');
     img.className = 'dialog_bg';
     img.src = 'assets/dialog.webp';
     dialog.appendChild(img);
 
     if (icon) {
-        var ic = document.createElement('img');
+        let ic = document.createElement('img');
         ic.className = 'dialog_icon';
         ic.src = icon;
         dialog.appendChild(ic);
     }
 
-    var container = document.createElement('div');
+    let container = document.createElement('div');
     container.className = 'dialog_text_container';
     dialog.appendChild(container);
 
-    var text = document.createElement('div');
+    let text = document.createElement('div');
     text.className = 'dialog_text';
     text.appendChild(document.createTextNode(msg));
     container.appendChild(text);
@@ -88,9 +89,9 @@ NetworkRequestQueue.prototype = {
     _process: function() {
         if (this._queue.length <= 0)
             return;
-        var d = this._queue[0];
-        var self = this;
-        var timeout = 5000;
+        let d = this._queue[0];
+        let self = this;
+        let timeout = 5000;
         if (d.timeout)
             timeout = d.timeout;
         $.ajax({ url: d.url, data: d.data, timeout: timeout,
@@ -100,8 +101,8 @@ NetworkRequestQueue.prototype = {
                 d.success(data);
             self._process.apply(self);
         }).fail(function(xhr) {
-            var msg = _("Network problem");
-            var icon = 'assets/network_problem.png';
+            let msg = _("Network problem");
+            let icon = 'assets/network_problem.png';
             if (xhr.status == 412) {
                 msg = _('Client update required');
                 icon = 'assets/update.gif';
@@ -117,7 +118,7 @@ var _network = new NetworkRequestQueue();
 
 var translation = {};
 function _(str) {
-    var lang = navigator.language.toLowerCase();
+    let lang = navigator.language.toLowerCase();
     if (!lang || !lang.match(/^[a-z]+/))
         return str;
     lang = lang.match(/^[a-z]+/)[0];

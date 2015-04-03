@@ -1,20 +1,20 @@
-var assert = require('assert');
-var Q = require('q');
+const assert = require('assert');
+const Q = require('q');
 
-var fs = require('fs');
-var express = require('express');
-var cors = require('cors');
-var morgan = require('morgan');
+const fs = require('fs');
+const express = require('express');
+const cors = require('cors');
+const morgan = require('morgan');
 
-var mongodb = require('mongodb');
-var mongo = require('mongodb').MongoClient;
+const mongodb = require('mongodb');
+const mongo = require('mongodb').MongoClient;
 
-var account = require('./account');
-var common = require('./common');
+const account = require('./account');
+const common = require('./common');
 
 var app = express();
 
-var MIN_CLIENT_VERSION = 3;
+const MIN_CLIENT_VERSION = 3;
 
 app.use(cors());
 app.disable('x-powered-by');
@@ -54,10 +54,12 @@ app.get('/v1/buy/:token', account.buyCards);
 app.get('/v1/my_cards/:token', account.myCards);
 app.get('/v1/my_cards/:token/set', account.setDeck);
 
+var server;
+
 mongo.connect(common.config.mongo, function(err, db) {
     if(err) throw err;
 
-    var server = app.listen(common.config.server_port, function() {
+    server = app.listen(common.config.server_port, function() {
         console.log('Listening on port %d', server.address().port);
     });
 });
