@@ -12,6 +12,7 @@ var CardState = require('./game_model').CardState;
 var GameState = require('./game_model').GameState;
 var common = require('../server/common');
 var bots = require('./bots').bots;
+var heroes = require('../server/heroes').heroes;
 
 var TIMEOUT = 10000;
 var TIMEOUT_BETWEEN_MOVES = 3000;

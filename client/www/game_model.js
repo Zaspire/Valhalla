@@ -1,10 +1,26 @@
+"use strict";
 var runningUnderNode = typeof exports !== 'undefined';
 
 if (runningUnderNode) {
-    EventEmitter2 = require('events').EventEmitter;
+    var EventEmitter2 = require('events').EventEmitter;
 
-    heroes = require('./heroes').heroes;
-    CardType = require('./heroes').CardType;
+    var heroes = require('./heroes').heroes;
+    var CardType = require('./heroes').CardType;
+    var doRequest = function(url, cb) {
+        var options = require('url').parse(url);
+        options.headers = { 'valhalla-client': '3' };
+        require('http').request(options, function(res) {
+            res.setEncoding('utf8');
+            var data = "";
+            res.on('data', function (chunk) {
+                data += chunk;
+            }).on('end', function () {
+                cb(data);
+            });
+        }).on('error', function(e) {
+            console.log("Got error: " + e.message);
+        }).end();
+    }
 }
 
 function assert(a) {
@@ -191,21 +207,6 @@ GameStateModel.prototype = {
         var uri = this._host + 'v1/game_state/' + this._token + '/' + this._gameid;
 
         if (runningUnderNode) {
-            function doRequest(url, cb) {
-                var options = require('url').parse(url);
-                options.headers = { 'valhalla-client': '3' };
-                require('http').request(options, function(res) {
-                    res.setEncoding('utf8');
-                    var data = "";
-                    res.on('data', function (chunk) {
-                        data += chunk;
-                    }).on('end', function () {
-                        cb(data);
-                    });
-                }).on('error', function(e) {
-                    console.log("Got error: " + e.message);
-                }).end();
-            }
             doRequest(uri, cb);
         } else {
             _network.ajax(uri, undefined, cb, 20000);

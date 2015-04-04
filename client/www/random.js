@@ -1,3 +1,4 @@
+"use strict";
 // silly deterministic random number generator
 function hash(a) {
     a = (a + 0x7ed55d16) + (a << 12);
