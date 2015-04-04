@@ -110,8 +110,34 @@ function activateMainMenu() {
     trackView('MainMenu');
 }
 
+var tutorialPage = 1;
+
+function nextPage() {
+    tutorialPage++;
+    if (tutorialPage > 5) {
+        $('#game_tutorial').addClass('hidden');
+        localStorage.setItem('tutorial', true);
+        activateMatchMaking();
+        return;
+    }
+    let prefix = "tutorial_p";
+    $('#' + prefix + tutorialPage - 1).addClass('hidden');
+    $('#' + prefix + tutorialPage).removeClass('hidden');
+}
+
+function activateGameTutorial() {
+    $('#page1').addClass('hidden');
+    $('#page2').addClass('hidden');
+    $('#page3').addClass('hidden');
+    $('#game_tutorial').removeClass('hidden');
+}
+
 function activateMatchMaking() {
     SoundUtils.play('mm2');
+    if (!localStorage.getItem('tutorial')) {
+        activateGameTutorial();
+        return;
+    }
 
     $('#page1').addClass('hidden');
     $('#page2').addClass('hidden');
