@@ -98,8 +98,19 @@ function updateCoins() {
     });
 }
 
+function activateMainMenuTutorial() {
+    $('#page1').addClass('hidden');
+    $('#page2').addClass('hidden');
+    $('#page3').addClass('hidden');
+    $('#mainmenu_tutorial').removeClass('hidden');
+}
+
 function activateMainMenu() {
     SoundUtils.play('mainmenu');
+    if (!localStorage.getItem('mainmenu_tutorial')) {
+        activateMainMenuTutorial();
+        return;
+    }
 
     updateCoins();
     $('#page1').addClass('hidden');
@@ -110,11 +121,26 @@ function activateMainMenu() {
     trackView('MainMenu');
 }
 
+var mainMenuTutorialPage = 1;
+
+function nextMainMenuTutorialPage() {
+    mainMenuTutorialPage++;
+    if (mainMenuTutorialPage > 3) {
+        $('#mainmenu_tutorial').addClass('hidden');
+        localStorage.setItem('mainmenu_tutorial', true);
+        activateMainMenu();
+        return;
+    }
+    let prefix = "tutorial_m";
+    $('#' + prefix + mainMenuTutorialPage - 1).addClass('hidden');
+    $('#' + prefix + mainMenuTutorialPage).removeClass('hidden');
+}
+
 var tutorialPage = 1;
 
 function nextPage() {
     tutorialPage++;
-    if (tutorialPage > 5) {
+    if (tutorialPage > 6) {
         $('#game_tutorial').addClass('hidden');
         localStorage.setItem('tutorial', true);
         activateMatchMaking();

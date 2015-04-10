@@ -14,7 +14,7 @@
         <script type="text/javascript" src="translation.js" charset="UTF-8"></script>
         <link rel="prefetch" href="game.html" />
     </head>
-    <body>
+    <body style="font-family: 'Lobster', cursive, sans-serif;">
         <div id="page1">
             <img src="assets/main2.webp" class="bg" onclick="login()"></img>
             <img src="assets/main1.webp" class="bg pulse" onclick="login()"></img>
@@ -32,12 +32,64 @@
                 <div id="balance_text"></div>
             </div>
         </div>
-        <div id="game_tutorial" class="bg hidden" onclick="nextPage()">
-            <img src="assets/tutorial/1.webp" class="bg" id="tutorial_p1"></img>
-            <img src="assets/tutorial/2.webp" class="bg hidden" id="tutorial_p2"></img>
-            <img src="assets/tutorial/3.webp" class="bg hidden" id="tutorial_p3"></img>
-            <img src="assets/tutorial/4.webp" class="bg hidden" id="tutorial_p4"></img>
-            <img src="assets/tutorial/5.webp" class="bg hidden" id="tutorial_p5"></img>
+        <div id="game_tutorial" class="hidden" onclick="nextPage()">
+            <div id="tutorial_p1">
+                <img src="assets/tutorial/game/1.webp" class="bg"></img>
+                <div style="position: absolute;top:20%;left:36%;font-size: 5vw;width:45%;">
+                  Goal is to destroy opponent using your cards.
+                </div>
+            </div>
+            <div id="tutorial_p2" class="hidden">
+                <img src="assets/tutorial/game/2.webp" class="bg"></img>
+                <div style="position: absolute;top:20%;left:36%;font-size: 5vw;width:45%;">
+                  Opponent has mana and health,<br/>like you
+                </div>
+            </div>
+            <div id="tutorial_p3" class="hidden">
+                <img src="assets/tutorial/game/3.webp" class="bg"></img>
+                <div style="position: absolute;top:13%;left:26%;font-size: 4.5vw;width:40%;">
+                  At first you need to put your card on a table. If you have enough mana just swipe it.
+                </div>
+            </div>
+            <div id="tutorial_p4" class="hidden">
+                <img src="assets/tutorial/game/4.webp" class="bg"></img>
+                <div style="position: absolute;top:17%;left:33%;font-size: 5vw;width:35%;">
+                  Swipe active cards to attack opponent on a table.
+                </div>
+            </div>
+            <div id="tutorial_p5" class="hidden">
+                <img src="assets/tutorial/game/5.webp" class="bg"></img>
+                <div style="position: absolute;top:10%;left:6%;font-size: 5vw;width:45%;">
+                  If you can't attack or put cards on the table<br/>press "end turn".
+                </div>
+            </div>
+            <div id="tutorial_p6" class="hidden">
+                <img src="assets/tutorial/game/6.webp" class="bg"></img>
+                <div style="position: absolute;top:20%;left:36%;font-size: 5vw;width:45%;">
+                </div>
+            </div>
+        </div>
+        <div id="mainmenu_tutorial" class="hidden" onclick="nextMainMenuTutorialPage()">
+            <div id="tutorial_m1">
+                <img src="assets/tutorial/mainmenu/1.webp" class="bg"></img>
+                <div style="position: absolute;top:10%;left:28%;font-size: 5vw;width:45%;">
+                  Welcome my friend!<br/>Let me show you my tavern.
+                </div>
+            </div>
+            <div id="tutorial_m2" class="hidden">
+                <img src="assets/tutorial/mainmenu/2.webp" class="bg"></img>
+                <img src="assets/tutorial/mainmenu/3.webp" class="bg pulse"></img>
+                <div style="position: absolute;top:40%;left:35%;font-size: 5vw;width:45%;">
+                  Start playing right now!<br/>Tap "online"
+                </div>
+            </div>
+            <div id="tutorial_m3" class="hidden">
+                <img src="assets/tutorial/mainmenu/4.webp" class="bg"></img>
+                <img src="assets/tutorial/mainmenu/5.webp" class="bg pulse"></img>
+                <div style="position: absolute;top:10%;left:35%;font-size: 5vw;width:45%;">
+                  Edit deck in "my cards".<br/>Control progress in "achievements"
+                </div>
+            </div>
         </div>
         <div id="page3" class="hidden">
             <img src="assets/glass_bg.webp" class="bg"></img>
