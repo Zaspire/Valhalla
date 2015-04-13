@@ -453,7 +453,7 @@ CardView.prototype = {
                         continue;
                     if (other.card.owner !== this.card.owner)
                         continue;
-                    point = other.group.globalToLocal(event.stageX, event.stageY);
+                    let point = other.group.globalToLocal(event.stageX, event.stageY);
                     if (other.group.hitTest(point.x, point.y)) {
                         gameAction(PLAY_SPELL, this.card.id, other.card.id);
                         myController.playSpell(this.card.id, other.card.id);
