@@ -130,3 +130,12 @@ function _(str) {
 function isTranslated() {
     return _("Riki") !== "Riki";
 }
+
+var LocalStorage = {
+    setItem: function(item, value) {
+        localStorage.setItem(item, value);
+    },
+    getItem: function(item, cb) {
+        cb(localStorage.getItem(item));
+    }
+};

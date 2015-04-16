@@ -5,8 +5,12 @@ var stage;
 const TURN_TIMEOUT = 90;
 
 var params = {};
-params.token = localStorage.getItem('token');
-params.gameid = localStorage.getItem('gameid');
+LocalStorage.getItem('token', function(val) {
+    params.token = val;
+});
+LocalStorage.getItem('gameid', function(val) {
+    params.gameid = val;
+});
 
 function CardView(model, card, parent, view) {
     BasicCardView.call(this, card, parent);

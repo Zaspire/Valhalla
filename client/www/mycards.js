@@ -1,5 +1,4 @@
 var params = {};
-params.token = localStorage.getItem('token');
 
 function MyCards(stage) {
     EventEmitter2.call(this);
@@ -192,16 +191,20 @@ MyCards.prototype = {
     }
 };
 
-insertHeroImages();
-window.addEventListener("load", function() {
-    stage = new createjs.Stage("myCanvas");
-    createjs.Touch.enable(stage);
-    stage.canvas.width = SCREEN_WIDTH;
-    stage.canvas.height = SCREEN_HEIGHT;
+LocalStorage.getItem('token', function(token) {
+    params.token = token;
 
-    new MyCards(stage);
-    createjs.Ticker.timingMode = createjs.Ticker.RAF;
-	createjs.Ticker.addEventListener("tick", function tick(event) {
-        stage.update(event);
+    insertHeroImages();
+    window.addEventListener("load", function() {
+        stage = new createjs.Stage("myCanvas");
+        createjs.Touch.enable(stage);
+        stage.canvas.width = SCREEN_WIDTH;
+        stage.canvas.height = SCREEN_HEIGHT;
+
+        new MyCards(stage);
+        createjs.Ticker.timingMode = createjs.Ticker.RAF;
+	    createjs.Ticker.addEventListener("tick", function tick(event) {
+            stage.update(event);
+        });
     });
 });

@@ -42,7 +42,11 @@
     <div class="cost_text">5</div>
     <img class="buy_button" src="assets/buy.png" onclick="buy()" ></img>
     <script>
-        var token = localStorage.getItem('token');
+        var token;
+
+        LocalStorage.getItem('token', function(val) {
+            token = val;
+        });
 
         function buy() {
             _network.ajax(host + 'v1/buy/' + token, undefined, function (data) {

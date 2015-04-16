@@ -32,13 +32,14 @@ var Token = {
     __token: null,
     __q: [],
     _init: function() {
-        let val = localStorage.getItem('token');
-        if (val) {
-            Token.__token = val;
-            activateMainMenu();
-        } else {
-            SoundUtils.play('start');
-        }
+        LocalStorage.getItem('token', function(val) {
+            if (val) {
+                Token.__token = val;
+                activateMainMenu();
+            } else {
+                SoundUtils.play('start');
+            }
+        });
     },
     get: function(cb) {
         if (Token.__token)
@@ -78,7 +79,7 @@ function login() {
             _network.ajax(host + 'v1/authorize/' + token + '/' + encodeURIComponent(account), undefined, function(data) {
                 console.log("account verified");
                 console.log(data);
-                localStorage.setItem('token', data);
+                LocalStorage.setItem('token', data);
 
                 Token.set(data);
             });
@@ -107,18 +108,20 @@ function activateMainMenuTutorial() {
 
 function activateMainMenu() {
     SoundUtils.play('mainmenu');
-    if (!localStorage.getItem('mainmenu_tutorial')) {
-        activateMainMenuTutorial();
-        return;
-    }
+    LocalStorage.getItem('mainmenu_tutorial', function(val) {
+        if (!val) {
+            activateMainMenuTutorial();
+            return;
+        }
 
-    updateCoins();
-    $('#page1').addClass('hidden');
-    $('#page3').addClass('hidden');
-    $('#page2').removeClass('hidden');
-    $('img[usemap]').rwdImageMaps();
+        updateCoins();
+        $('#page1').addClass('hidden');
+        $('#page3').addClass('hidden');
+        $('#page2').removeClass('hidden');
+        $('img[usemap]').rwdImageMaps();
 
-    trackView('MainMenu');
+        trackView('MainMenu');
+    });
 }
 
 var mainMenuTutorialPage = 1;
@@ -127,7 +130,7 @@ function nextMainMenuTutorialPage() {
     mainMenuTutorialPage++;
     if (mainMenuTutorialPage > 3) {
         $('#mainmenu_tutorial').addClass('hidden');
-        localStorage.setItem('mainmenu_tutorial', true);
+        LocalStorage.setItem('mainmenu_tutorial', true);
         activateMainMenu();
         return;
     }
@@ -142,7 +145,7 @@ function nextPage() {
     tutorialPage++;
     if (tutorialPage > 6) {
         $('#game_tutorial').addClass('hidden');
-        localStorage.setItem('tutorial', true);
+        LocalStorage.setItem('tutorial', true);
         activateMatchMaking();
         return;
     }
@@ -158,13 +161,7 @@ function activateGameTutorial() {
     $('#game_tutorial').removeClass('hidden');
 }
 
-function activateMatchMaking() {
-    SoundUtils.play('mm2');
-    if (!localStorage.getItem('tutorial')) {
-        activateGameTutorial();
-        return;
-    }
-
+function _activateMatchMaking() {
     $('#page1').addClass('hidden');
     $('#page2').addClass('hidden');
     $('#page3').removeClass('hidden');
@@ -185,7 +182,7 @@ function activateMatchMaking() {
                 }
                 data = JSON.parse(data);
 
-                localStorage.setItem('gameid', data.gameid);
+                LocalStorage.setItem('gameid', data.gameid);
                 window.location = 'game.html';
             });
         }
@@ -204,6 +201,17 @@ function activateMatchMaking() {
         }, 1000);
     });
     trackView('MatchMaking');
+}
+
+function activateMatchMaking() {
+    SoundUtils.play('mm2');
+    LocalStorage.getItem('tutorial', function(val) {
+        if (!val) {
+            activateGameTutorial();
+            return;
+        }
+        _activateMatchMaking();
+    });
 }
 
 function navigate(location) {
