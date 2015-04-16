@@ -19,7 +19,6 @@ var cordovaDeviceReady = false;
         errors = [];
         for (let i = 0; i < arr.length; i++) {
             analytics.trackEvent('error', arr[i].message, arr[i].filename, arr[i].lineno);
-            analytics.trackException(arr[i].stack, true);
         }
     }
     window.onerror = function(message, filename, lineno) {
