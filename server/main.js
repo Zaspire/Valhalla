@@ -19,8 +19,8 @@ const MIN_CLIENT_VERSION = 3;
 app.use(cors());
 app.disable('x-powered-by');
 
-var accessLogStream = fs.createWriteStream(__dirname + '/access.log', {flags: 'a'})
-app.use(morgan('dev', {stream: accessLogStream}));
+//var accessLogStream = fs.createWriteStream(__dirname + '/access.log', {flags: 'a'})
+//app.use(morgan('dev', {stream: accessLogStream}));
 
 app.get('/ok', function(req, res){
     res.send('ok');

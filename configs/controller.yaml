@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  labels:
+    name: valhalla
+  name: valhalla
+spec:
+  replicas: 1
+  selector:
+    name: valhalla
+  template:
+    metadata:
+      labels:
+        name: valhalla
+    spec:
+      containers:
+      - image: gcr.io/valhalla-0/valhalla.game
+        name: valhalla-game
+        ports:
+        - containerPort: 3000
+          name: http-server
+      - image: gcr.io/valhalla-0/website
+        name: valhalla-website
+        ports:
+        - containerPort: 80
+          name: http-server

@@ -1,5 +1,5 @@
 {
-    "mongo": "mongodb://192.168.1.8:27017/Valhalla",
+    "mongo": "mongodb://localhost:27017/Valhalla",
     "server_port": 3000,
     "aes_key": "demopassword1234245"
 }

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: valhalla
+  labels:
+    name: valhalla
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 3000
+      name: game
+      targetPort: 3000
+      protocol: TCP
+    - port: 80
+      name: website
+      targetPort: 80
+      protocol: TCP
+  selector:
+    name: valhalla
